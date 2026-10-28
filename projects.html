@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>项目 — 吕迪</title>
+<meta name="description" content="吕迪的项目与开源工具：半监督检测系统、RPC 框架、ref-corrector、游戏工具等。">
+<meta name="author" content="Di Lv (吕迪)">
+<link rel="canonical" href="https://lvdi-profile.vercel.app/projects.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="项目 — 吕迪">
+<meta property="og:description" content="吕迪的项目与开源工具：半监督检测系统、RPC 框架、ref-corrector、游戏工具等。">
+<meta property="og:url" content="https://lvdi-profile.vercel.app/projects.html">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/">吕迪</a>
+    <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">菜单</button>
+    <nav id="nav" aria-label="页面导航">
+      <ul>
+        <li><a href="/">首页</a></li>
+        <li><a href="/about.html">关于</a></li>
+        <li><a href="/projects.html" class="active" aria-current="page">项目</a></li>
+        <li><a href="/blog/">文章</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="page-head">
+    <div class="wrap">
+      <h1>项目</h1>
+      <p>项目、开源和小工具。7 个里有几个还在维护，剩下的多少都还能跑。</p>
+    </div>
+  </div>
+
+  <section id="projects">
+    <div class="wrap">
+      <div class="card-grid" data-paginate data-page-size="6" data-pager-target="#pager-projects">
+        <article class="card reveal" data-page-item>
+          <div class="card-top"><span class="card-role">CV 算法 · 2025.12–2026.04</span></div>
+          <h3>宫颈细胞病理学半监督目标检测系统</h3>
+          <ul><li>针对临床 TCT 涂片背景复杂、极端长尾与稀疏标注的确认偏差问题，设计区域级半监督框架 <strong>MPG-RSCD</strong></li><li>基线 YOLO-TCT：自适应硬极化自注意力 + 类别平衡质量焦点损失，全局召回提升至 <strong>46.27%</strong></li><li>医学先验引导伪标签提纯：动态门控融合 BiomedCLIP 全局语义与 ResNet50 局部纹理</li><li>1338 张真实临床涂片：高风险病变召回 <strong>58.39% → 64.98%</strong>，低误报敏感性 <strong>42.70% → 55.83%</strong></li></ul>
+          <div class="stack"><span>Python</span><span>PyTorch</span><span>Ultralytics YOLO</span><span>BiomedCLIP</span><span>OpenCV</span></div>
+        </article>
+        <article class="card reveal" data-page-item>
+          <div class="card-top"><span class="card-role">后端开发 · 2024</span></div>
+          <h3>RPC 框架：从零实现到性能优化</h3>
+          <ul><li>从零实现分布式 RPC：Netty Reactor 通信层 + 自定义私有协议解决 TCP 粘包/拆包，延迟反序列化剥离 IO 线程阻塞</li><li>Zookeeper 注册发现 + 本地缓存 &amp; Watcher；基于请求参数特征的一致性哈希负载均衡</li><li>节点级状态机熔断（半开探测 / 自动愈合）+ 纳秒级时间窗口令牌桶限流</li><li>JFR/JMC 全链路剖析：单机回环吞吐 <strong>1 万 → 9.4 万 QPS</strong>，P99 <strong>83ms</strong>，99.9% 可用性</li></ul>
+          <div class="stack"><span>Java</span><span>Netty</span><span>Zookeeper</span><span>Kryo/Protobuf</span><span>SPI</span><span>JFR/JMC</span></div>
+        </article>
+        <article class="card reveal" data-page-item>
+          <div class="card-top"><span class="card-role">开源</span></div>
+          <h3>ref-corrector</h3>
+          <ul><li>基于 <strong>LangGraph</strong> 的 BibTeX 参考文献校验与修正 CLI，解析条目、校验字段格式、识别重复项</li><li>多源元数据交叉校验（OpenAlex / Crossref / Semantic Scholar）+ DeepSeek LLM 生成修正建议</li><li>输出规范化 <strong>corrected.bib</strong> 与结构化修正报告</li></ul>
+          <div class="stack"><span>Python</span><span>LangGraph</span><span>DeepSeek</span><span>OpenAlex</span><span>Crossref</span></div>
+        </article>
+        <article class="card reveal" data-page-item>
+          <div class="card-top"><span class="card-role">开源 · 游戏工具</span></div>
+          <h3>GameWorkplace</h3>
+          <ul><li>自动从 War Thunder 录像中识别并导出连杀片段，支持连杀时间阈值与最少击杀数配置</li><li>自动选择最佳视频源（单视频优先 / 必要时多视频拼接），GPU / CPU 编码自适应切换</li></ul>
+          <div class="stack"><span>Python</span><span>PyQt5</span><span>FFmpeg</span></div>
+        </article>
+        <article class="card reveal" data-page-item>
+          <div class="card-top"><span class="card-role">开源</span></div>
+          <h3>ae2-bus-scanner</h3>
+          <ul><li>扫描 Minecraft 存档中的 AE2 输入/输出总线与接口，定位包含指定过滤物品的设备</li><li>可复用扫描引擎 + CLI + tkinter 桌面 GUI，支持多进程并行扫描</li></ul>
+          <div class="stack"><span>Python</span><span>tkinter</span><span>多进程</span></div>
+        </article>
+        <article class="card reveal" data-page-item>
+          <div class="card-top"><span class="card-role">开源</span></div>
+          <h3>CampusAutoLogin</h3>
+          <ul><li>dr.com 校园网自动登录后台服务：网络状态监控、断线自动认证</li><li>静默后台运行 + 系统通知，配置界面化</li></ul>
+          <div class="stack"><span>Python</span><span>自动化</span></div>
+        </article>
+        <article class="card reveal" data-page-item>
+          <div class="card-top"><span class="card-role">课程项目</span></div>
+          <h3>TapTap 数据分析</h3>
+          <ul><li>TapTap 平台数据采集与分析实训项目</li></ul>
+          <div class="stack"><span>Python</span><span>数据分析</span></div>
+        </article>
+      </div>
+      <nav class="pager" id="pager-projects" data-pager aria-label="项目分页" hidden></nav>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="foot-contact">
+      <a href="mailto:lvdifine@foxmail.com">lvdifine@foxmail.com</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub</a>
+      <span class="sep">·</span>
+      <a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">ResearchGate</a>
+      <span class="sep">·</span>
+      <a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">Bilibili</a>
+    </div>
+    <p class="foot-meta">© <span id="year">2026</span> 吕迪 · LYU Di · 手写 HTML/CSS/JS</p>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

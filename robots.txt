@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lvdi-profile.vercel.app/sitemap.xml

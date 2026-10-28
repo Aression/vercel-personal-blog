@@ -4,733 +4,114 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
-<title>吕迪 · LYU Di — Agentic RL / AI Infra</title>
-<meta name="description" content="吕迪（LYU Di，@Aression）的个人主页。Agentic RL 与 AI Infra 方向；ICASSP 2025 第一作者、Pattern Recognition 共同第一作者，两项发明专利。">
+<title>吕迪 · LYU Di — Agentic RL · AI Infra</title>
+<meta name="description" content="吕迪（LYU Di，@Aression）的个人主页：Agentic RL、AI Infra，以及偶尔写的技术长文。">
 <meta name="author" content="Di Lv (吕迪)">
 <link rel="canonical" href="https://lvdi-profile.vercel.app/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
-<meta property="og:type" content="profile">
-<meta property="og:title" content="吕迪 · LYU Di — Agentic RL / AI Infra">
-<meta property="og:description" content="上海 · Agentic RL / AI Infra；ICASSP 2025 第一作者、Pattern Recognition 共同第一作者，4 篇论文 / h-index 3，两项发明专利。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="吕迪 · LYU Di — Agentic RL · AI Infra">
+<meta property="og:description" content="吕迪（LYU Di，@Aression）的个人主页：Agentic RL、AI Infra，以及偶尔写的技术长文。">
 <meta property="og:url" content="https://lvdi-profile.vercel.app/">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="吕迪 · LYU Di — Agentic RL / AI Infra">
-<meta name="twitter:description" content="上海 · Agentic RL / AI Infra；4 篇论文 / h-index 3，两项发明专利。">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Person","name":"吕迪","alternateName":"Di Lv","url":"https://lvdi-profile.vercel.app/","jobTitle":"Agentic RL / AI Infra","email":"mailto:lvdifine@foxmail.com","sameAs":["https://github.com/Aression","https://www.researchgate.net/profile/Di-Lv-6","https://space.bilibili.com/7676105"],"alumniOf":[{"@type":"Organization","name":"重庆大学"}],"knowsAbout":["Agentic RL","AI Infra","Computer Vision","Object Detection"]}
-</script>
-<style>
-  /* ============ tokens（照 openai.com 实测） ============ */
-  :root{
-    --bg:#fff;
-    --bg-soft:#f9f9f9;
-    --card:#fff;
-    --card-hi:#f9f9f9;
-    --border:#e6e6e6;
-    --border-hi:#d0d0d0;
-    --fg:#111;
-    --fg-soft:#3d3d3d;
-    --muted:#5d5d5d;
-    --dim:#8f8f8f;
-    --ink:#0d0d0d;
-    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
-    --wrap:1280px;
-    --r:12px;
-    --r-sm:8px;
-  }
-  *,*::before,*::after{box-sizing:border-box}
-  html{scroll-behavior:smooth;scroll-padding-top:88px}
-  body{
-    margin:0;background:var(--bg);color:var(--fg);
-    font-family:var(--sans);font-size:16px;line-height:1.7;
-    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
-  }
-  a{color:var(--fg);text-decoration:none}
-  a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--border-hi)}
-  ::selection{background:#eaeaea;color:var(--fg)}
-  :focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
-
-  .wrap{max-width:var(--wrap);margin:0 auto;padding:0 32px}
-  @media (max-width:640px){ .wrap{padding:0 20px} }
-
-  /* ============ nav ============ */
-  header.nav{
-    position:sticky;top:0;z-index:50;
-    background:rgba(255,255,255,.86);backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--border);
-  }
-  .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;gap:20px}
-  .brand{font-size:15.5px;font-weight:600;color:var(--fg);letter-spacing:-.01em}
-  nav ul{display:flex;gap:2px;list-style:none;margin:0;padding:0}
-  nav a{
-    display:block;padding:7px 12px;border-radius:var(--r-sm);
-    font-size:14.5px;color:var(--muted);
-    transition:color .18s,background .18s;
-  }
-  nav a:hover{color:var(--fg);background:var(--bg-soft);text-decoration:none}
-  nav a.active{color:var(--fg);background:var(--bg-soft);font-weight:500}
-  .nav-toggle{
-    display:none;background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);
-    color:var(--fg);font-family:var(--sans);font-size:14px;padding:7px 13px;cursor:pointer;
-  }
-  .nav-toggle:hover{background:var(--bg-soft)}
-  @media (max-width:820px){
-    .nav-toggle{display:block}
-    nav{position:absolute;top:64px;left:0;right:0;background:#fff;
-        border-bottom:1px solid var(--border);display:none}
-    nav.open{display:block}
-    nav ul{flex-direction:column;gap:0;padding:10px}
-    nav a{padding:11px 12px}
-  }
-
-  /* ============ layout ============ */
-  main{padding:0 0 20px}
-  section{padding:80px 0;border-bottom:1px solid var(--border)}
-  section:last-of-type{border-bottom:none}
-  @media (max-width:640px){ section{padding:52px 0} }
-
-  .sec-head{margin:0 0 34px}
-  .sec-title{
-    font-size:clamp(26px,2.6vw,34px);line-height:1.16;letter-spacing:-.02em;
-    font-weight:600;color:var(--fg);margin:0;
-  }
-  .sec-note{font-size:15px;color:var(--muted);margin:9px 0 0}
-
-  /* ============ hero ============ */
-  #home{padding:104px 0 88px;border-bottom:1px solid var(--border)}
-  .hero{text-align:center;max-width:880px;margin:0 auto}
-  h1{
-    font-size:clamp(44px,6vw,72px);line-height:1.04;
-    margin:0 0 14px;font-weight:600;letter-spacing:-.03em;
-  }
-  .id-line{font-size:15.5px;color:var(--muted);margin:0 0 22px}
-  .tagline{font-size:clamp(18px,1.7vw,22px);color:var(--fg-soft);margin:0 0 16px;line-height:1.5}
-  .status{
-    display:inline-flex;align-items:center;gap:9px;font-size:14.5px;
-    color:var(--muted);background:var(--bg-soft);border:1px solid var(--border);
-    border-radius:999px;padding:7px 16px;margin:2px 0 30px;
-  }
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--ink);flex:none}
-  .links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;list-style:none;margin:0;padding:0}
-  .links a{
-    display:inline-block;font-size:14.5px;color:var(--fg);
-    border:1px solid var(--border-hi);border-radius:999px;padding:9px 18px;
-    transition:background .18s,color .18s,border-color .18s;
-  }
-  .links a:hover{background:var(--ink);color:#fff;border-color:var(--ink);text-decoration:none}
-
-  /* stats */
-  .stats{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
-    background:var(--border);border:1px solid var(--border);
-    border-radius:var(--r);overflow:hidden;margin:60px 0 0;text-align:left;
-  }
-  .stat{background:#fff;padding:24px 22px}
-  .stat b{display:block;font-size:34px;line-height:1.1;color:var(--fg);font-weight:600;letter-spacing:-.02em}
-  .stat span{display:block;font-size:13.5px;color:var(--muted);margin-top:4px}
-  @media (max-width:820px){
-    .stats{grid-template-columns:repeat(2,1fr);margin-top:44px}
-    .stat{padding:20px 18px}
-    .stat b{font-size:29px}
-  }
-  @media (max-width:420px){ .stats{grid-template-columns:1fr 1fr} }
-
-  /* ============ about ============ */
-  .about-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:52px;align-items:start}
-  .about-grid p{margin:0 0 18px;color:var(--fg-soft)}
-  .about-grid p:last-child{margin-bottom:0}
-  .about-grid p strong{color:var(--fg);font-weight:600}
-  .edu{border-left:2px solid var(--border-hi);padding-left:22px}
-  .edu-item{margin:0 0 24px}
-  .edu-item:last-child{margin-bottom:0}
-  .edu-t{font-weight:600;color:var(--fg);font-size:15.5px}
-  .edu-s{font-size:13.5px;color:var(--muted);margin-top:3px}
-  .edu-d{font-size:14.5px;color:var(--fg-soft);margin-top:7px}
-  .edu-d em{color:var(--fg);font-style:normal;font-weight:500}
-  @media (max-width:920px){ .about-grid{grid-template-columns:1fr;gap:36px} }
-
-  /* ============ publications ============ */
-  .pub-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-  .pub{
-    background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-    padding:26px;display:flex;flex-direction:column;gap:12px;
-    transition:border-color .2s,background .2s;
-  }
-  .pub:hover{border-color:var(--border-hi);background:var(--card-hi)}
-  .pub.featured{grid-column:1/-1;background:var(--bg-soft)}
-  .pub-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-  .chip{
-    font-size:12.5px;color:var(--muted);background:#f2f2f2;
-    border-radius:6px;padding:3px 10px;white-space:nowrap;
-  }
-  .chip.accent{color:#fff;background:var(--ink)}
-  .chip.venue{color:var(--fg);font-weight:500}
-  .pub h3{font-size:17px;line-height:1.5;margin:0;font-weight:600;letter-spacing:-.01em}
-  .pub h3 a{color:var(--fg)}
-  .pub h3 a:hover{text-decoration:underline;text-underline-offset:3px}
-  .pub-meta{font-size:13.5px;color:var(--muted)}
-  .pub ul{margin:2px 0 0;padding-left:0;list-style:none}
-  .pub ul li{
-    position:relative;padding-left:18px;font-size:15px;color:var(--fg-soft);margin-bottom:7px;
-  }
-  .pub ul li:last-child{margin-bottom:0}
-  .pub ul li::before{
-    content:'';position:absolute;left:0;top:.72em;
-    width:4px;height:4px;border-radius:50%;background:var(--dim);
-  }
-  .pub-foot{margin-top:auto;display:flex;flex-wrap:wrap;gap:14px;padding-top:10px}
-  .pub-foot a{font-size:13.5px;color:var(--muted)}
-  .pub-foot a:hover{color:var(--fg)}
-  @media (max-width:920px){ .pub-grid{grid-template-columns:1fr} }
-
-  /* ============ projects ============ */
-  .proj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-  .proj{
-    background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:26px;
-    display:flex;flex-direction:column;gap:11px;
-    transition:border-color .2s,background .2s;
-  }
-  .proj:hover{border-color:var(--border-hi);background:var(--card-hi)}
-  .proj-top{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap}
-  .proj h3{font-size:16.5px;margin:0;font-weight:600;letter-spacing:-.01em}
-  .proj-role{font-size:13px;color:var(--dim);white-space:nowrap}
-  .proj ul{margin:0;padding-left:0;list-style:none}
-  .proj ul li{position:relative;padding-left:18px;font-size:15px;color:var(--fg-soft);margin-bottom:7px}
-  .proj ul li:last-child{margin-bottom:0}
-  .proj ul li::before{
-    content:'';position:absolute;left:0;top:.72em;
-    width:4px;height:4px;border-radius:50%;background:var(--dim);
-  }
-  .proj ul li strong{color:var(--fg);font-weight:600}
-  .stack{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto;padding-top:10px}
-  .stack span{
-    font-size:12.5px;color:var(--dim);background:var(--bg-soft);
-    border-radius:6px;padding:3px 10px;
-  }
-  @media (max-width:920px){ .proj-grid{grid-template-columns:1fr} }
-
-  /* ============ skills ============ */
-  .skill-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:36px}
-  .skill-h{font-size:15.5px;color:var(--fg);margin:0 0 14px;font-weight:600}
-  .skill-list{display:flex;flex-wrap:wrap;gap:8px}
-  .skill-list span{
-    font-size:13.5px;color:var(--fg-soft);background:var(--bg-soft);
-    border-radius:6px;padding:5px 12px;
-    transition:background .18s,color .18s;
-  }
-  .skill-list span:hover{background:#efefef;color:var(--fg)}
-  @media (max-width:920px){ .skill-grid{grid-template-columns:1fr 1fr;gap:30px} }
-  @media (max-width:560px){ .skill-grid{grid-template-columns:1fr} }
-
-  /* ============ honors ============ */
-  .honor-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-  .honor{
-    display:flex;justify-content:space-between;align-items:baseline;gap:16px;
-    background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-    padding:18px 20px;transition:border-color .2s,background .2s;
-  }
-  .honor:hover{border-color:var(--border-hi);background:var(--card-hi)}
-  .honor-t{font-size:15.5px;color:var(--fg);font-weight:500}
-  .honor-t small{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:3px}
-  .honor-y{font-size:13.5px;color:var(--dim);white-space:nowrap}
-  @media (max-width:820px){ .honor-grid{grid-template-columns:1fr} }
-
-  /* ============ contact ============ */
-  #contact{text-align:left}
-  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:820px}
-  .contact-item{
-    background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;
-  }
-  .contact-k{font-size:12.5px;color:var(--dim);letter-spacing:.06em;margin-bottom:8px;text-transform:uppercase}
-  .contact-v{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .contact-v a{font-size:14.5px;color:var(--fg)}
-  .contact-v a:hover{text-decoration:underline;text-underline-offset:3px}
-  .copy{
-    background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--muted);
-    font-family:var(--sans);font-size:13px;padding:4px 11px;cursor:pointer;
-    transition:color .18s,border-color .18s,background .18s;
-  }
-  .copy:hover{color:var(--fg);background:var(--bg-soft)}
-  .copy.done{color:var(--fg);background:#efefef;border-color:var(--border-hi)}
-  @media (max-width:640px){ .contact-grid{grid-template-columns:1fr} }
-
-  /* ============ footer ============ */
-  footer{border-top:1px solid var(--border);padding:32px 0}
-  .foot-in{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-  .foot-in p{margin:0;font-size:13.5px;color:var(--dim)}
-  .foot-in a{color:var(--muted)}
-  .foot-in a:hover{color:var(--fg)}
-
-  /* ============ reveal ============ */
-  .reveal{opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s ease}
-  .reveal.in{opacity:1;transform:none}
-
-  /* ============ 跳转链接（无障碍） ============ */
-  .skip{
-    position:absolute;left:-9999px;top:0;z-index:100;
-    font-size:14px;color:#fff;background:var(--ink);
-    padding:9px 16px;border-radius:0 0 var(--r-sm) 0;
-  }
-  .skip:focus{left:0}
-
-  @media (prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-    .reveal{opacity:1;transform:none;transition:none}
-    *{transition:none!important}
-  }
-
-  /* ============ 打印 ============ */
-  @media print{
-    :root{
-      --bg:#fff;--bg-soft:#fff;--card:#fff;--card-hi:#fff;
-      --border:#d8d8d8;--border-hi:#bdbdbd;
-      --fg:#111;--fg-soft:#222;--muted:#555;--dim:#666;--ink:#000;
-    }
-    header.nav,.skip{display:none!important}
-    body{background:#fff;font-size:11.5pt}
-    .wrap{padding:0;max-width:100%}
-    section{padding:14px 0;break-inside:avoid}
-    .pub,.proj,.honor,.stat,.contact-item,.stats{break-inside:avoid}
-    .reveal{opacity:1!important;transform:none!important}
-    a{color:var(--fg)}
-  }
-</style>
+<link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
-
 <a class="skip" href="#main">跳到主要内容</a>
 
 <header class="nav">
   <div class="wrap nav-in">
-    <a class="brand" href="#home">吕迪</a>
+    <a class="brand" href="/">吕迪</a>
     <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">菜单</button>
     <nav id="nav" aria-label="页面导航">
       <ul>
-        <li><a href="#home">首页</a></li>
-        <li><a href="#about">关于</a></li>
-        <li><a href="#publications">论文</a></li>
-        <li><a href="#projects">项目</a></li>
-        <li><a href="#skills">技能</a></li>
-        <li><a href="#honors">荣誉</a></li>
-        <li><a href="#writing">写作</a></li>
-        <li><a href="#contact">联系</a></li>
+        <li><a href="/" class="active" aria-current="page">首页</a></li>
+        <li><a href="/about.html">关于</a></li>
+        <li><a href="/projects.html">项目</a></li>
+        <li><a href="/blog/">文章</a></li>
       </ul>
     </nav>
   </div>
 </header>
 
 <main id="main">
-
-  <!-- ================= HERO ================= -->
-  <section id="home">
+  <section class="hero">
     <div class="wrap">
-      <div class="hero">
-        <h1>吕迪</h1>
-        <p class="id-line">LYU Di · @Aression</p>
-        <p class="tagline">Agentic RL · AI Infra</p>
-        <p class="status"><span class="dot" aria-hidden="true"></span> 上海 · 白天写 Agentic RL / AI Infra，晚上折腾小工具</p>
-        <ul class="links">
-          <li><a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub ↗</a></li>
-          <li><a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">ResearchGate ↗</a></li>
-          <li><a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">Bilibili ↗</a></li>
-          <li><a href="mailto:lvdifine@foxmail.com">Email</a></li>
-        </ul>
-        <aside class="stats" aria-label="学术指标">
-          <div class="stat"><b>4</b><span>发表论文</span></div>
-          <div class="stat"><b>20</b><span>总被引</span></div>
-          <div class="stat"><b>3</b><span>h-index</span></div>
-          <div class="stat"><b>2</b><span>一作 / 共一</span></div>
-        </aside>
-      </div>
+      <h1>吕迪</h1>
+      <p class="id-line">LYU Di · @Aression</p>
+      <p class="tagline">Agentic RL · AI Infra</p>
+      <p class="status"><span class="dot" aria-hidden="true"></span> 上海 · 白天写 Agentic RL / AI Infra，晚上折腾小工具</p>
+      <ul class="links">
+        <li><a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub ↗</a></li>
+        <li><a href="/blog/">文章</a></li>
+        <li><a href="mailto:lvdifine@foxmail.com">Email</a></li>
+      </ul>
     </div>
   </section>
 
-  <!-- ================= ABOUT ================= -->
-  <section id="about">
+  <section id="now">
     <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">关于</h2>
-        <p class="sec-note">一个在上海写代码的人</p>
-      </div>
-      <div class="about-grid">
-        <div class="reveal">
+      <div class="two-col">
+        <div class="prose-sm reveal">
           <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——大模型智能体的强化学习训练、推理与基础设施那一摊；晚上大概率在折腾什么小工具。</p>
-          <p>重庆大学计算机技术硕士毕业，之前做计算机视觉（长尾识别、半监督检测、医学影像），现在算是在往 Agent 和系统方向转。</p>
+          <p>重庆大学计算机技术硕士毕业，之前做计算机视觉（长尾识别、半监督检测、医学影像），现在在往 Agent 和系统方向转。发过几篇论文，也有两项发明专利，具体都在<a href="/about.html">关于</a>里。</p>
           <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优；偶尔为了搞懂原理，会把底层的东西自己实现一遍。</p>
         </div>
-        <div class="edu reveal">
-          <div class="edu-item">
-            <div class="edu-t">重庆大学（985）</div>
-            <div class="edu-s">计算机技术 · 硕士 | 2023.09 – 2026.06</div>
-            <div class="edu-d">GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。</div>
-          </div>
-          <div class="edu-item">
-            <div class="edu-t">重庆大学（985）</div>
-            <div class="edu-s">计算机科学与技术 · 本科 | 2019.09 – 2023.06</div>
-            <div class="edu-d">GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。</div>
-          </div>
-          <div class="edu-item">
-            <div class="edu-t">生物感知与智能信息处理</div>
-            <div class="edu-s">重庆市重点实验室 · 成员</div>
-          </div>
+        <div class="side-list reveal">
+          <div class="side-item"><div class="side-t">重庆大学（985）</div><div class="side-s">计算机技术 · 硕士 | 2023.09 – 2026.06</div><div class="side-d">GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。</div></div><div class="side-item"><div class="side-t">重庆大学（985）</div><div class="side-s">计算机科学与技术 · 本科 | 2019.09 – 2023.06</div><div class="side-d">GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。</div></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ================= PUBLICATIONS ================= -->
-  <section id="publications">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">论文与专利</h2>
-        <p class="sec-note">4 篇论文 · 总被引 20 · h-index 3</p>
-      </div>
-      <div class="pub-grid">
-
-        <article class="pub featured reveal">
-          <div class="pub-top">
-            <span class="chip venue">Pattern Recognition</span>
-            <span class="chip accent">SCI 一区</span>
-            <span class="chip">共同第一作者</span>
-            <span class="chip">被引 11</span>
-          </div>
-          <h3><a href="https://doi.org/10.1016/j.patcog.2024.110747" target="_blank" rel="noopener">Self-Training-Transductive-Learning Broad Learning System (STTL-BLS): A model for effective and efficient image classification</a></h3>
-          <p class="pub-meta">Lin Yi; <strong>Di Lv</strong>; Dinghao Liu; Suhuan Li; Ran Liu · 2024</p>
-          <ul>
-            <li>将自训练与转导学习引入宽度学习系统，面向高效图像分类</li>
-            <li>在保证精度的同时显著降低训练开销，适合资源受限场景</li>
-          </ul>
-          <div class="pub-foot">
-            <a href="https://doi.org/10.1016/j.patcog.2024.110747" target="_blank" rel="noopener">DOI ↗</a>
-          </div>
-        </article>
-
-        <article class="pub reveal">
-          <div class="pub-top">
-            <span class="chip venue">ICASSP 2025</span>
-            <span class="chip accent">CCF-B</span>
-            <span class="chip">第一作者</span>
-            <span class="chip">被引 5</span>
-          </div>
-          <h3><a href="https://doi.org/10.1109/ICASSP49660.2025.10888567" target="_blank" rel="noopener">YOLO-TCT: An Effective Network For Long-Tailed Cervical Cell Detection</a></h3>
-          <p class="pub-meta"><strong>Di Lv</strong>; Lin Yi; Li Liu; Yuze Chen; Xin Chen; Ran Liu · 2025</p>
-          <ul>
-            <li>基于 YOLOv9 改进，提出自适应加权检测头与硬极化自注意力（HPSA）</li>
-            <li>检测框质量因子引入分类损失 + 类别平衡质量焦点损失，缓解长尾不平衡</li>
-            <li>AP50 <strong>26.37%</strong>、mAR <strong>46.10%</strong>，尾部类别召回提升 <strong>+26%</strong>，推理约为 R-CNN 的 <strong>5 倍</strong></li>
-          </ul>
-          <div class="pub-foot">
-            <a href="https://doi.org/10.1109/ICASSP49660.2025.10888567" target="_blank" rel="noopener">DOI ↗</a>
-            <a href="https://github.com/threedteam/YOLO-TCT" target="_blank" rel="noopener">代码仓库 ↗</a>
-          </div>
-        </article>
-
-        <article class="pub reveal">
-          <div class="pub-top">
-            <span class="chip venue">Electronics</span>
-            <span class="chip">参与作者</span>
-            <span class="chip">被引 3</span>
-          </div>
-          <h3><a href="https://doi.org/10.3390/electronics13101941" target="_blank" rel="noopener">Unstructured Document Information Extraction Method with Multi-Faceted Domain Knowledge Graph Assistance for M2M Customs Risk Prevention and Screening</a></h3>
-          <p class="pub-meta">Fengchun Tian; Haochen Wang; Zhenlong Wan; Ran Liu; Ruilong Liu; <strong>Di Lv</strong>; Yingcheng Lin · 2024</p>
-          <ul>
-            <li>面向海关 M2M 风险防控，提出多面领域知识图谱辅助的非结构化文档信息抽取方法</li>
-          </ul>
-          <div class="pub-foot">
-            <a href="https://doi.org/10.3390/electronics13101941" target="_blank" rel="noopener">DOI ↗</a>
-          </div>
-        </article>
-
-        <article class="pub reveal">
-          <div class="pub-top">
-            <span class="chip venue">IJCNN 2024</span>
-            <span class="chip">参与作者</span>
-            <span class="chip">被引 1</span>
-          </div>
-          <h3><a href="https://doi.org/10.1109/IJCNN60899.2024.10650706" target="_blank" rel="noopener">TSO-DETR: A Network for Small Object Detection of Cervical Cells in TCT Smear</a></h3>
-          <p class="pub-meta">Xin Chen; Lin Yi; Li Liu; <strong>Di Lv</strong>; Ziheng Liu; Ran Liu · 2024</p>
-          <ul>
-            <li>基于 DETR 架构的 TCT 涂片宫颈细胞小目标检测网络</li>
-          </ul>
-          <div class="pub-foot">
-            <a href="https://doi.org/10.1109/IJCNN60899.2024.10650706" target="_blank" rel="noopener">DOI ↗</a>
-          </div>
-        </article>
-
-        <article class="pub reveal">
-          <div class="pub-top">
-            <span class="chip venue">发明专利</span>
-            <span class="chip accent">已授权</span>
-            <span class="chip">CN116740455A</span>
-          </div>
-          <h3>图像分类宽度学习系统及其训练方法和图像分类方法</h3>
-          <ul>
-            <li>宽度学习系统的训练与图像分类方法专利，已获授权</li>
-          </ul>
-        </article>
-
-        <article class="pub reveal">
-          <div class="pub-top">
-            <span class="chip venue">发明专利</span>
-            <span class="chip">已受理</span>
-            <span class="chip">CN119007194A</span>
-          </div>
-          <h3>多层次硬极化特征融合的 TCT 涂片自动检测系统</h3>
-          <ul>
-            <li>面向 TCT 涂片的自动检测系统专利，已受理</li>
-          </ul>
-        </article>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= PROJECTS ================= -->
-  <section id="projects">
+  <section id="projects-preview">
     <div class="wrap">
       <div class="sec-head reveal">
         <h2 class="sec-title">在折腾的东西</h2>
-        <p class="sec-note">项目、开源和小工具</p>
+        <p class="sec-note">挑三个最近的，全部在<a href="/projects.html">项目</a></p>
       </div>
-      <div class="proj-grid">
-
-        <article class="proj reveal">
-          <div class="proj-top">
-            <h3>宫颈细胞病理学半监督目标检测系统</h3>
-            <span class="proj-role">CV 算法 · 2025.12–2026.04</span>
-          </div>
-          <ul>
-            <li>针对临床 TCT 涂片背景复杂、极端长尾与稀疏标注的确认偏差问题，设计区域级半监督框架 <strong>MPG-RSCD</strong></li>
-            <li>基线 YOLO-TCT：自适应硬极化自注意力 + 类别平衡质量焦点损失，全局召回提升至 <strong>46.27%</strong></li>
-            <li>医学先验引导伪标签提纯：动态门控融合 BiomedCLIP 全局语义与 ResNet50 局部纹理</li>
-            <li>1338 张真实临床涂片：高风险病变召回 <strong>58.39% → 64.98%</strong>，低误报敏感性 <strong>42.70% → 55.83%</strong></li>
-          </ul>
-          <div class="stack"><span>Python</span><span>PyTorch</span><span>Ultralytics YOLO</span><span>BiomedCLIP</span><span>OpenCV</span></div>
+      <div class="card-grid">
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">CV 算法 · 2025.12–2026.04</span></div>
+          <h3>宫颈细胞病理学半监督目标检测系统</h3>
+          <ul><li>针对临床 TCT 涂片背景复杂、极端长尾与稀疏标注的确认偏差问题，设计区域级半监督框架 <strong>MPG-RSCD</strong></li><li>基线 YOLO-TCT：自适应硬极化自注意力 + 类别平衡质量焦点损失，全局召回提升至 <strong>46.27%</strong></li></ul>
+          <div class="stack"><span>Python</span><span>PyTorch</span><span>Ultralytics YOLO</span><span>BiomedCLIP</span></div>
         </article>
-
-        <article class="proj reveal">
-          <div class="proj-top">
-            <h3>RPC 框架：从零实现到性能优化</h3>
-            <span class="proj-role">后端开发 · 2024</span>
-          </div>
-          <ul>
-            <li>从零实现分布式 RPC：Netty Reactor 通信层 + 自定义私有协议解决 TCP 粘包/拆包，延迟反序列化剥离 IO 线程阻塞</li>
-            <li>Zookeeper 注册发现 + 本地缓存 &amp; Watcher；基于请求参数特征的一致性哈希负载均衡</li>
-            <li>节点级状态机熔断（半开探测 / 自动愈合）+ 纳秒级时间窗口令牌桶限流</li>
-            <li>JFR/JMC 全链路剖析：单机回环吞吐 <strong>1 万 → 9.4 万 QPS</strong>，P99 <strong>83ms</strong>，99.9% 可用性</li>
-          </ul>
-          <div class="stack"><span>Java</span><span>Netty</span><span>Zookeeper</span><span>Kryo/Protobuf</span><span>SPI</span><span>JFR/JMC</span></div>
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">后端开发 · 2024</span></div>
+          <h3>RPC 框架：从零实现到性能优化</h3>
+          <ul><li>从零实现分布式 RPC：Netty Reactor 通信层 + 自定义私有协议解决 TCP 粘包/拆包，延迟反序列化剥离 IO 线程阻塞</li><li>Zookeeper 注册发现 + 本地缓存 &amp; Watcher；基于请求参数特征的一致性哈希负载均衡</li></ul>
+          <div class="stack"><span>Java</span><span>Netty</span><span>Zookeeper</span><span>Kryo/Protobuf</span></div>
         </article>
-
-        <article class="proj reveal">
-          <div class="proj-top">
-            <h3>ref-corrector</h3>
-            <span class="proj-role">开源</span>
-          </div>
-          <ul>
-            <li>基于 <strong>LangGraph</strong> 的 BibTeX 参考文献校验与修正 CLI，解析条目、校验字段格式、识别重复项</li>
-            <li>多源元数据交叉校验（OpenAlex / Crossref / Semantic Scholar）+ DeepSeek LLM 生成修正建议</li>
-            <li>输出规范化 <strong>corrected.bib</strong> 与结构化修正报告</li>
-          </ul>
-          <div class="stack"><span>Python</span><span>LangGraph</span><span>DeepSeek</span><span>OpenAlex</span><span>Crossref</span></div>
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">开源</span></div>
+          <h3>ref-corrector</h3>
+          <ul><li>基于 <strong>LangGraph</strong> 的 BibTeX 参考文献校验与修正 CLI，解析条目、校验字段格式、识别重复项</li><li>多源元数据交叉校验（OpenAlex / Crossref / Semantic Scholar）+ DeepSeek LLM 生成修正建议</li></ul>
+          <div class="stack"><span>Python</span><span>LangGraph</span><span>DeepSeek</span><span>OpenAlex</span></div>
         </article>
-
-        <article class="proj reveal">
-          <div class="proj-top">
-            <h3>GameWorkplace</h3>
-            <span class="proj-role">开源 · 游戏工具</span>
-          </div>
-          <ul>
-            <li>自动从 War Thunder 录像中识别并导出连杀片段，支持连杀时间阈值与最少击杀数配置</li>
-            <li>自动选择最佳视频源（单视频优先 / 必要时多视频拼接），GPU / CPU 编码自适应切换</li>
-          </ul>
-          <div class="stack"><span>Python</span><span>PyQt5</span><span>FFmpeg</span></div>
-        </article>
-
-        <article class="proj reveal">
-          <div class="proj-top">
-            <h3>ae2-bus-scanner</h3>
-            <span class="proj-role">开源</span>
-          </div>
-          <ul>
-            <li>扫描 Minecraft 存档中的 AE2 输入/输出总线与接口，定位包含指定过滤物品的设备</li>
-            <li>可复用扫描引擎 + CLI + tkinter 桌面 GUI，支持多进程并行扫描</li>
-          </ul>
-          <div class="stack"><span>Python</span><span>tkinter</span><span>多进程</span></div>
-        </article>
-
-        <article class="proj reveal">
-          <div class="proj-top">
-            <h3>CampusAutoLogin</h3>
-            <span class="proj-role">开源</span>
-          </div>
-          <ul>
-            <li>dr.com 校园网自动登录后台服务：网络状态监控、断线自动认证</li>
-            <li>静默后台运行 + 系统通知，配置界面化</li>
-          </ul>
-          <div class="stack"><span>Python</span><span>自动化</span></div>
-        </article>
-
-        <article class="proj reveal">
-          <div class="proj-top">
-            <h3>TapTap-Big-Data-Analysis-Project</h3>
-            <span class="proj-role">课程项目</span>
-          </div>
-          <ul>
-            <li>TapTap 平台数据采集与分析实训项目</li>
-          </ul>
-          <div class="stack"><span>Python</span><span>数据分析</span></div>
-        </article>
-
       </div>
+      <p class="sec-more"><a href="/projects.html">全部项目 →</a></p>
     </div>
   </section>
 
-  <!-- ================= WRITING ================= -->
   <section id="writing">
     <div class="wrap">
       <div class="sec-head reveal">
-        <h2 class="sec-title">写作</h2>
-        <p class="sec-note">技术长文与笔记 · 不追热点，追把原理讲清楚</p>
+        <h2 class="sec-title">最近写的</h2>
+        <p class="sec-note">技术长文，不追热点，追把原理讲清楚</p>
       </div>
-      <div class="pub-grid">
-
-        <article class="pub featured reveal">
-          <div class="pub-top">
-            <span class="chip venue">复杂性理论</span>
-            <span class="chip accent">长文</span>
-            <span class="chip">2026-10-28</span>
-            <span class="chip">约 32 分钟</span>
-          </div>
-          <h3><a href="/blog/eth-exponential-time-hypothesis.html">ETH 倒塌记：从零读懂指数时间假设，以及 AI 是怎么拆掉这块 27 年地基的</a></h3>
-          <ul>
-            <li>2026-10-26，OpenAI 宣布内部模型给出 k-SAT 的确定性亚指数精确计数算法，据此推翻统治理论计算机科学 27 年的指数时间假设，连带 SETH / Gap-ETH / NSETH / #ETH 一起倒下。</li>
-            <li>从 3-SAT 的第一性原理讲起：指数壁垒怎么形成、ETH 家族各自断言什么、它替多少人撑起了下界。</li>
-            <li>拆解 2^(n/√log n) 算法的五步骨架（共享线性测量 → Hermite 插值 → 代价平衡 → 稀疏奇偶校验测试 → 张量收缩），并自己复算了新旧算法的交叉点。</li>
-          </ul>
-          <div class="pub-foot">
-            <a href="/blog/eth-exponential-time-hypothesis.html">阅读全文 →</a>
-            <a href="/blog/">全部文章 →</a>
-          </div>
-        </article>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= SKILLS ================= -->
-  <section id="skills">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">会点啥</h2>
-        <p class="sec-note">技能栈</p>
-      </div>
-      <div class="skill-grid">
-        <div class="reveal">
-          <h3 class="skill-h">编程语言</h3>
-          <div class="skill-list"><span>Python</span><span>Java</span></div>
+      <ul class="post-list">
+      <li class="post-item reveal" data-page-item>
+        <div class="post-date">2026-10-28</div>
+        <div>
+          <h3 class="post-h"><a href="/blog/eth-exponential-time-hypothesis.html">ETH 倒塌记：从零读懂指数时间假设，以及 AI 是怎么拆掉这块 27 年地基的</a></h3>
+          <p class="post-sum">2026 年 10 月 26 日，OpenAI 宣布内部模型给出了 k-SAT 的确定性亚指数精确计数算法，据此推翻统治理论计算机科学近三十年的指数时间假设（ETH），连带击倒 SETH、Gap-ETH、NSETH、#ETH。本文从 3-SAT 的第一性原理讲起：指数壁垒是怎么形成的、ETH 家族各自断言什么、它替多少人撑起了下界，再拆解这个 2^(n/√log n) 算法到底做了什么、为什么被称作「理论上颠覆、工程上无感」，以及后 ETH 时代该拿什么当假设。</p>
+          <div class="post-tags"><span>复杂性理论</span><span>ETH</span><span>SAT</span><span>约 14 分钟</span></div>
         </div>
-        <div class="reveal">
-          <h3 class="skill-h">AI / 大模型</h3>
-          <div class="skill-list">
-            <span>Agentic RL</span><span>LLM Agent</span><span>强化学习</span>
-            <span>RAG 检索增强</span><span>LoRA 参数高效微调</span><span>vLLM 推理部署</span>
-            <span>CLIP 多模态适配</span>
-          </div>
-        </div>
-        <div class="reveal">
-          <h3 class="skill-h">计算机视觉</h3>
-          <div class="skill-list">
-            <span>PyTorch</span><span>Ultralytics YOLO</span><span>目标检测</span>
-            <span>半监督学习</span><span>注意力机制与损失函数设计</span>
-          </div>
-        </div>
-        <div class="reveal">
-          <h3 class="skill-h">后端 / 分布式</h3>
-          <div class="skill-list">
-            <span>Netty</span><span>Spring Boot</span><span>Zookeeper</span>
-            <span>分布式 RPC</span><span>一致性哈希</span><span>令牌桶限流</span>
-            <span>熔断状态机</span><span>MySQL</span><span>Redis</span>
-          </div>
-        </div>
-        <div class="reveal">
-          <h3 class="skill-h">工程工具</h3>
-          <div class="skill-list">
-            <span>Git</span><span>Linux</span><span>JFR/JMC 性能剖析</span><span>pytest</span>
-          </div>
-        </div>
-        <div class="reveal">
-          <h3 class="skill-h">语言能力</h3>
-          <div class="skill-list"><span>CET-6 533</span><span>CET-4 502</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= HONORS ================= -->
-  <section id="honors">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">顺手拿的几个奖</h2>
-        <p class="sec-note">荣誉</p>
-      </div>
-      <div class="honor-grid">
-        <div class="honor reveal">
-          <div class="honor-t">研究生国家奖学金<small>国家级</small></div>
-          <div class="honor-y">2025</div>
-        </div>
-        <div class="honor reveal">
-          <div class="honor-t">重庆大学硕士学业奖学金 一等奖<small>校级</small></div>
-          <div class="honor-y">2024–2025</div>
-        </div>
-        <div class="honor reveal">
-          <div class="honor-t">美国大学生数学建模竞赛 M 奖<small>国际一等奖</small></div>
-          <div class="honor-y">2021</div>
-        </div>
-        <div class="honor reveal">
-          <div class="honor-t">研究生电子设计竞赛 省级二等奖<small>省级</small></div>
-          <div class="honor-y">2024</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= CONTACT ================= -->
-  <section id="contact">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">找我</h2>
-        <p class="sec-note">联系方式</p>
-      </div>
-      <div class="contact-grid">
-        <div class="contact-item reveal">
-          <div class="contact-k">Email</div>
-          <div class="contact-v">
-            <a href="mailto:lvdifine@foxmail.com">lvdifine@foxmail.com</a>
-            <button class="copy" id="copyMail" data-mail="lvdifine@foxmail.com">复制</button>
-          </div>
-        </div>
-        <div class="contact-item reveal">
-          <div class="contact-k">GitHub</div>
-          <div class="contact-v">
-            <a href="https://github.com/Aression" target="_blank" rel="noopener">github.com/Aression</a>
-          </div>
-        </div>
-        <div class="contact-item reveal">
-          <div class="contact-k">ResearchGate</div>
-          <div class="contact-v">
-            <a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">researchgate.net/profile/Di-Lv-6</a>
-          </div>
-        </div>
-        <div class="contact-item reveal">
-          <div class="contact-k">Bilibili</div>
-          <div class="contact-v">
-            <a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">space.bilibili.com/7676105</a>
-          </div>
-        </div>
-      </div>
+      </li>
+      </ul>
+      <p class="sec-more"><a href="/blog/">全部文章 →</a></p>
     </div>
   </section>
 
@@ -738,99 +119,18 @@
 
 <footer>
   <div class="wrap foot-in">
-    <p>© <span id="year">2026</span> 吕迪 · LYU Di</p>
-    <p>手写 HTML / CSS / JS · 零依赖 · <a href="#home">回到顶部 ↑</a></p>
+    <div class="foot-contact">
+      <a href="mailto:lvdifine@foxmail.com">lvdifine@foxmail.com</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub</a>
+      <span class="sep">·</span>
+      <a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">ResearchGate</a>
+      <span class="sep">·</span>
+      <a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">Bilibili</a>
+    </div>
+    <p class="foot-meta">© <span id="year">2026</span> 吕迪 · LYU Di · 手写 HTML/CSS/JS</p>
   </div>
 </footer>
-
-<script>
-(function () {
-  'use strict';
-  var doc = document;
-
-  /* ---------- 年份 ---------- */
-  var yearEl = doc.getElementById('year');
-  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
-
-  /* ---------- 移动端导航 ---------- */
-  var toggle = doc.getElementById('navToggle');
-  var nav = doc.getElementById('nav');
-  if (toggle && nav) {
-    toggle.addEventListener('click', function () {
-      var open = nav.classList.toggle('open');
-      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    nav.addEventListener('click', function (e) {
-      if (e.target.tagName === 'A') {
-        nav.classList.remove('open');
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }
-
-  /* ---------- 滚动渐显 ---------- */
-  var revealEls = doc.querySelectorAll('.reveal');
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce || !('IntersectionObserver' in window)) {
-    Array.prototype.forEach.call(revealEls, function (el) { el.classList.add('in'); });
-  } else {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    Array.prototype.forEach.call(revealEls, function (el) { io.observe(el); });
-  }
-
-  /* ---------- 导航高亮 ---------- */
-  var navLinks = Array.prototype.slice.call(doc.querySelectorAll('nav a[href^="#"]'));
-  var sections = navLinks.map(function (a) { return doc.getElementById(a.getAttribute('href').slice(1)); })
-                         .filter(Boolean);
-  if ('IntersectionObserver' in window && sections.length) {
-    var spy = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        navLinks.forEach(function (a) {
-          var on = a.getAttribute('href') === '#' + en.target.id;
-          a.classList.toggle('active', on);
-          if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
-        });
-      });
-    }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
-    sections.forEach(function (s) { spy.observe(s); });
-  }
-
-  /* ---------- 复制邮箱 ---------- */
-  var copyBtn = doc.getElementById('copyMail');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function () {
-      var mail = copyBtn.getAttribute('data-mail') || '';
-      var done = function () {
-        var old = copyBtn.textContent;
-        copyBtn.textContent = '已复制 ✓';
-        copyBtn.classList.add('done');
-        setTimeout(function () { copyBtn.textContent = old; copyBtn.classList.remove('done'); }, 1800);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(mail).then(done, function () { fallback(mail, done); });
-      } else {
-        fallback(mail, done);
-      }
-    });
-  }
-  function fallback(text, cb) {
-    var ta = doc.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    doc.body.appendChild(ta);
-    ta.select();
-    try { doc.execCommand('copy'); } catch (err) { /* ignore */ }
-    doc.body.removeChild(ta);
-    if (cb) cb();
-  }
-})();
-</script>
+<script src="/assets/site.js" defer></script>
 </body>
 </html>
