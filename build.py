@@ -25,7 +25,7 @@ SITE = {
     "name_en": "LYU Di",
     "handle": "@Aression",
     "tagline": "Agentic RL · AI Infra",
-    "status": "上海 · 白天写 Agentic RL / AI Infra，晚上折腾小工具",
+    "status": "上海 · 白天写 Agentic RL / AI Infra，晚上折腾本地推理栈",
     "email": "lvdifine@foxmail.com",
     "github": "https://github.com/Aression",
     "researchgate": "https://www.researchgate.net/profile/Di-Lv-6",
@@ -152,6 +152,11 @@ section:last-of-type{border-bottom:none}
 .stack{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:6px}
 .stack span{font-size:12px;color:var(--muted);background:var(--bg-soft);border:1px solid var(--border);
   border-radius:6px;padding:2px 8px}
+
+.card-links{display:flex;flex-wrap:wrap;gap:14px;margin-top:2px}
+.card-links a{font-size:13px;color:var(--muted)}
+.card-links a:hover{color:var(--fg)}
+.grp + .grp{border-top:1px solid var(--border)}
 
 /* ── 论文紧凑列表 ── */
 .pub-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
@@ -470,72 +475,168 @@ def page(title, desc, path, body, active, og_type="website"):
 
 
 # ────────────────────────────── 数据 ──────────────────────────────
-PROJECTS = [
-    {
-        "title": "宫颈细胞病理学半监督目标检测系统",
-        "role": "CV 算法 · 2025.12–2026.04",
-        "points": [
-            "针对临床 TCT 涂片背景复杂、极端长尾与稀疏标注的确认偏差问题，设计区域级半监督框架 <strong>MPG-RSCD</strong>",
-            "基线 YOLO-TCT：自适应硬极化自注意力 + 类别平衡质量焦点损失，全局召回提升至 <strong>46.27%</strong>",
-            "医学先验引导伪标签提纯：动态门控融合 BiomedCLIP 全局语义与 ResNet50 局部纹理",
-            "1338 张真实临床涂片：高风险病变召回 <strong>58.39% → 64.98%</strong>，低误报敏感性 <strong>42.70% → 55.83%</strong>",
+PROJECT_GROUPS = [
+    (
+        "Agent / LLM Infra",
+        "现在主要在做的方向：agent 的上下文与记忆、本地推理栈、以及把研究过程本身工程化",
+        [
+            {
+                "title": "Human's Last Dashboard",
+                "role": "TypeScript · 2026.10 · 进行中",
+                "url": "https://github.com/Aression/human-last-dashboard",
+                "points": [
+                    "证据可追溯的 AGI 进展监控与递归自我改进看板，核心是一张<strong>版本化证据图</strong>：连接来源、主张、证据、能力评估、因果假设与预测",
+                    "自建 L0–L7 能力分级（明确声明为项目内工作分类而非行业标准），每一级都必须过证据门与反证据检验",
+                    "四条硬约束：证据先于结论、区分事实与推断、反证据是一等公民、<strong>不允许因为新闻头条自动升级阶段</strong>",
+                    "输出显式置信度与验证状态，而不是一个误导性的“AGI 百分比”",
+                ],
+                "stack": ["TypeScript", "证据图", "数据看板"],
+            },
+            {
+                "title": "Finding Ledger · 发现账本",
+                "role": "DeepSeek Harness 插件 · 2026.10",
+                "url": "https://github.com/Aression/Finding-Ledger",
+                "points": [
+                    "面向长程故障排查的<strong>证据化发现账本</strong>：上下文压缩、换会话、任务切换之后，只把「仍然相关且适用条件仍然成立」的发现交回模型",
+                    "直指三种可复现的失败模式——压缩后遗忘、假设被摘要写成事实、结论在版本/后端变化后仍被套用",
+                    "三个正交状态（认知状态 / 生命周期 / 适用性）互不替代：`refuted` 不等于 `superseded`，条件不明一律落到 `unknown` 而不是静默匹配成功",
+                    "确定性规则检索 + token 预算注入，持久化在本地 SQLite（`node:sqlite`）",
+                ],
+                "stack": ["Node.js", "node:sqlite", "DSH 插件"],
+            },
+            {
+                "title": "Agentic RL Atlas",
+                "role": "知识库 + 研究导航 · 2026.09",
+                "url": "https://agentic-rl-atlas.vercel.app",
+                "points": [
+                    "可持续维护的 Agentic RL 个人知识库：原子笔记 → SQLite 内容库 → 导出 JSON → 站点",
+                    "内置<strong>知识图谱</strong>视图（先修、相关、共享来源、共享概念）与<strong>研究雷达</strong>：抓 HuggingFace Daily Papers，按关键词过滤后交由 DeepSeek 分成 review / archive / skip",
+                    "每篇笔记标注 A–D 证据分级；深读档案必须包含主张表、机制、实验设置、证据强度、边界与反例、复现计划",
+                ],
+                "stack": ["Python", "SQLite", "DeepSeek", "HF Papers"],
+            },
+            {
+                "title": "本地 KVMem 推理栈（llama-inf + 自有补丁）",
+                "role": "AI Infra · 2026.09",
+                "url": "https://github.com/Aression/llama-inf",
+                "points": [
+                    "AMD RX 9070 XT（gfx1201）上的 ROCm/HIP + KVMem 推理工作区：OpenAI 兼容单实例网关、共享模型注册表、GGUF 元数据与 KV 缓存显存预检、基准脚本",
+                    "给上游打了 4 个自有补丁：HIP 可移植性修复、给 qwen35moe 注入 KV 捕获（修长文检索不生效）、放开 ngram 免 draft 自投机、Quest 式 min/max 上界打分",
+                    "沉淀出一批实测约束：`ROCBLAS_USE_HIPBLASLT=0`、PATH 必须前置 ROCm SDK 的 bin 否则静默 0xC0000135、iGPU 不计入显存预算",
+                ],
+                "stack": ["Python", "ROCm/HIP", "llama.cpp", "KVMem", "GGUF"],
+            },
+            {
+                "title": "dsh-maend",
+                "role": "DeepSeek Harness 插件 · 2026.10",
+                "url": "https://github.com/Aression/dsh-maend",
+                "points": [
+                    "把 MaaEnd（终末地小助手）接进 DeepSeek Harness：agent 直接跑日常、看板看进度",
+                    "启动静音、成功门控的自动关游戏钩子；基于 MaaFramework v5 + MXU，带 GitHub Actions CI",
+                ],
+                "stack": ["Node.js", "MaaFramework", "Windows", "GitHub Actions"],
+            },
         ],
-        "stack": ["Python", "PyTorch", "Ultralytics YOLO", "BiomedCLIP", "OpenCV"],
-    },
-    {
-        "title": "RPC 框架：从零实现到性能优化",
-        "role": "后端开发 · 2024",
-        "points": [
-            "从零实现分布式 RPC：Netty Reactor 通信层 + 自定义私有协议解决 TCP 粘包/拆包，延迟反序列化剥离 IO 线程阻塞",
-            "Zookeeper 注册发现 + 本地缓存 &amp; Watcher；基于请求参数特征的一致性哈希负载均衡",
-            "节点级状态机熔断（半开探测 / 自动愈合）+ 纳秒级时间窗口令牌桶限流",
-            "JFR/JMC 全链路剖析：单机回环吞吐 <strong>1 万 → 9.4 万 QPS</strong>，P99 <strong>83ms</strong>，99.9% 可用性",
+    ),
+    (
+        "CV / 论文",
+        "研究生阶段的方向，代码和论文配套",
+        [
+            {
+                "title": "宫颈细胞病理学半监督目标检测系统",
+                "role": "CV 算法 · 2025.12–2026.04",
+                "url": "https://github.com/threedteam/YOLO-TCT",
+                "points": [
+                    "针对临床 TCT 涂片背景复杂、极端长尾与稀疏标注的确认偏差问题，设计区域级半监督框架 <strong>MPG-RSCD</strong>",
+                    "基线 YOLO-TCT：自适应硬极化自注意力 + 类别平衡质量焦点损失，全局召回提升至 <strong>46.27%</strong>",
+                    "医学先验引导伪标签提纯：动态门控融合 BiomedCLIP 全局语义与 ResNet50 局部纹理",
+                    "1338 张真实临床涂片：高风险病变召回 <strong>58.39% → 64.98%</strong>，低误报敏感性 <strong>42.70% → 55.83%</strong>",
+                ],
+                "stack": ["Python", "PyTorch", "Ultralytics YOLO", "BiomedCLIP"],
+            },
+            {
+                "title": "STTL-BLS 复现与改进",
+                "role": "研究复现 · ICASSP / PR 配套",
+                "url": "https://github.com/Aression/STTLBLS_rev",
+                "points": [
+                    "Self-Training-Transductive-Learning Broad Learning System 的复现实现，针对 GTX 3080 平台做了适配与调优",
+                    "宽度学习系统的关键是把自训练与转导学习塞进闭式解框架，省掉反向传播的训练开销",
+                ],
+                "stack": ["Python", "PyTorch", "宽度学习"],
+            },
         ],
-        "stack": ["Java", "Netty", "Zookeeper", "Kryo/Protobuf", "SPI", "JFR/JMC"],
-    },
-    {
-        "title": "ref-corrector",
-        "role": "开源",
-        "points": [
-            "基于 <strong>LangGraph</strong> 的 BibTeX 参考文献校验与修正 CLI，解析条目、校验字段格式、识别重复项",
-            "多源元数据交叉校验（OpenAlex / Crossref / Semantic Scholar）+ DeepSeek LLM 生成修正建议",
-            "输出规范化 <strong>corrected.bib</strong> 与结构化修正报告",
+    ),
+    (
+        "后端 / 系统",
+        "往系统和基础设施方向转的练习",
+        [
+            {
+                "title": "myRPC · 从零实现到性能优化",
+                "role": "后端开发 · Java",
+                "url": "https://github.com/Aression/myRPC",
+                "points": [
+                    "从零实现分布式 RPC：Netty Reactor 通信层 + 自定义私有协议解决 TCP 粘包/拆包，延迟反序列化剥离 IO 线程阻塞",
+                    "Zookeeper 注册发现 + 本地缓存 &amp; Watcher；基于请求参数特征的一致性哈希负载均衡",
+                    "节点级状态机熔断（半开探测 / 自动愈合）+ 纳秒级时间窗口令牌桶限流",
+                    "JFR/JMC 全链路剖析：单机回环吞吐 <strong>1 万 → 9.4 万 QPS</strong>，P99 <strong>83ms</strong>，99.9% 可用性",
+                ],
+                "stack": ["Java", "Netty", "Zookeeper", "Kryo/Protobuf", "JFR/JMC"],
+            },
         ],
-        "stack": ["Python", "LangGraph", "DeepSeek", "OpenAlex", "Crossref"],
-    },
-    {
-        "title": "GameWorkplace",
-        "role": "开源 · 游戏工具",
-        "points": [
-            "自动从 War Thunder 录像中识别并导出连杀片段，支持连杀时间阈值与最少击杀数配置",
-            "自动选择最佳视频源（单视频优先 / 必要时多视频拼接），GPU / CPU 编码自适应切换",
+    ),
+    (
+        "小工具 / 自动化",
+        "能脚本化的绝不手动，所以顺手写了这些",
+        [
+            {
+                "title": "ref-corrector",
+                "role": "开源",
+                "url": "https://github.com/Aression/ref-corrector",
+                "points": [
+                    "基于 <strong>LangGraph</strong> 的 BibTeX 参考文献校验与修正 CLI：解析条目、校验字段、识别重复",
+                    "多源元数据交叉校验（OpenAlex / Crossref / Semantic Scholar）+ LLM 生成修正建议，输出规范化 corrected.bib 与修正报告",
+                ],
+                "stack": ["Python", "LangGraph", "DeepSeek"],
+            },
+            {
+                "title": "GameWorkplace",
+                "role": "开源 · 游戏工具",
+                "url": "https://github.com/Aression/GameWorkplace",
+                "points": [
+                    "自动从 War Thunder 录像中识别并导出连杀片段，支持连杀时间阈值与最少击杀数配置",
+                    "自动选择最佳视频源（单视频优先 / 必要时多视频拼接），GPU / CPU 编码自适应切换",
+                ],
+                "stack": ["Python", "PyQt5", "FFmpeg"],
+            },
+            {
+                "title": "ae2-bus-scanner",
+                "role": "开源",
+                "url": "https://github.com/Aression/ae2-bus-scanner",
+                "points": [
+                    "扫描 Minecraft 存档中的 AE2 输入/输出总线与接口，定位包含指定过滤物品的设备",
+                    "可复用扫描引擎 + CLI + tkinter 桌面 GUI，支持多进程并行扫描",
+                ],
+                "stack": ["Python", "tkinter", "多进程"],
+            },
+            {
+                "title": "CampusAutoLogin",
+                "role": "开源",
+                "url": "https://github.com/Aression/CampusAutoLogin",
+                "points": [
+                    "dr.com 校园网自动登录后台服务：网络状态监控、断线自动认证",
+                    "静默后台运行 + 系统通知，配置界面化",
+                ],
+                "stack": ["Python", "自动化"],
+            },
+            {
+                "title": "TapTap 数据分析",
+                "role": "课程项目 · ★7",
+                "url": "https://github.com/Aression/TapTap-Big-Data-Analysis-Project",
+                "points": ["TapTap 平台数据采集与分析实训项目，目前是仓库里星数最多的一个"],
+                "stack": ["Python", "数据分析"],
+            },
         ],
-        "stack": ["Python", "PyQt5", "FFmpeg"],
-    },
-    {
-        "title": "ae2-bus-scanner",
-        "role": "开源",
-        "points": [
-            "扫描 Minecraft 存档中的 AE2 输入/输出总线与接口，定位包含指定过滤物品的设备",
-            "可复用扫描引擎 + CLI + tkinter 桌面 GUI，支持多进程并行扫描",
-        ],
-        "stack": ["Python", "tkinter", "多进程"],
-    },
-    {
-        "title": "CampusAutoLogin",
-        "role": "开源",
-        "points": [
-            "dr.com 校园网自动登录后台服务：网络状态监控、断线自动认证",
-            "静默后台运行 + 系统通知，配置界面化",
-        ],
-        "stack": ["Python", "自动化"],
-    },
-    {
-        "title": "TapTap 数据分析",
-        "role": "课程项目",
-        "points": ["TapTap 平台数据采集与分析实训项目"],
-        "stack": ["Python", "数据分析"],
-    },
+    ),
 ]
 
 PUBS = [
@@ -588,19 +689,27 @@ HONORS = [
 ]
 
 SKILLS = [
-    ("编程语言", ["Python", "Java"]),
-    ("AI / 大模型", ["Agentic RL", "LLM Agent", "强化学习", "RAG 检索增强", "LoRA 参数高效微调", "vLLM 推理部署", "CLIP 多模态适配"]),
+    ("编程语言", ["Python", "TypeScript / Node", "Java"]),
+    ("Agent / 大模型", ["Agentic RL", "LLM Agent", "强化学习", "上下文压缩与记忆", "DeepSeek Harness 插件", "RAG 检索增强", "LoRA 参数高效微调"]),
+    ("推理 / AI Infra", ["vLLM 推理部署", "llama.cpp / GGUF", "KV cache 调优", "ROCm / HIP", "OpenAI 兼容网关"]),
     ("计算机视觉", ["PyTorch", "Ultralytics YOLO", "目标检测", "半监督学习", "注意力机制与损失函数设计"]),
     ("后端 / 分布式", ["Netty", "Spring Boot", "Zookeeper", "分布式 RPC", "一致性哈希", "令牌桶限流", "熔断状态机", "MySQL", "Redis"]),
-    ("工程工具", ["Git", "Linux", "JFR/JMC 性能剖析", "pytest"]),
-    ("语言能力", ["CET-6 533", "CET-4 502"]),
+    ("工程工具", ["Git", "Linux", "ROCm / HIP 工具链", "JFR/JMC 性能剖析", "SQLite", "pytest"]),
+    ("英语", ["CET-6", "CET-4"]),
 ]
-
 EDU = [
     ("重庆大学（985）", "计算机技术 · 硕士 | 2023.09 – 2026.06", "GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。"),
     ("重庆大学（985）", "计算机科学与技术 · 本科 | 2019.09 – 2021.06".replace("2021", "2023"), "GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。"),
     ("生物感知与智能信息处理", "重庆市重点实验室 · 成员", ""),
 ]
+
+
+def card_link(p):
+    """卡片底部的外链：GitHub 仓库用 GitHub 标签，其他站点用「访问」。"""
+    if not p.get("url"):
+        return ""
+    label = "GitHub ↗" if "github.com" in p["url"] else "访问 ↗"
+    return (f'<div class="card-links"><a href="{p["url"]}" target="_blank" rel="noopener">{label}</a></div>')
 
 
 def edu_items(limit=None):
@@ -667,14 +776,16 @@ def post_card(post):
 # ────────────────────────────── 页面 ──────────────────────────────
 def build_home(posts):
     proj_cards = []
-    for p in PROJECTS[:3]:
+    for p in PROJECT_GROUPS[0][2][:3]:
         pts = "".join(f"<li>{x}</li>" for x in p["points"][:2])
         stack = "".join(f"<span>{esc(s)}</span>" for s in p["stack"][:4])
+        link = card_link(p)
         proj_cards.append(f"""        <article class="card reveal">
           <div class="card-top"><span class="card-role">{esc(p['role'])}</span></div>
           <h3>{esc(p['title'])}</h3>
           <ul>{pts}</ul>
           <div class="stack">{stack}</div>
+          {link}
         </article>""")
 
     latest = posts[:2]
@@ -704,9 +815,9 @@ def build_home(posts):
     <div class="wrap">
       <div class="two-col">
         <div class="prose-sm reveal">
-          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——大模型智能体的强化学习训练、推理与基础设施那一摊；晚上大概率在折腾什么小工具。</p>
-          <p>重庆大学计算机技术硕士毕业，之前做计算机视觉（长尾识别、半监督检测、医学影像），现在在往 Agent 和系统方向转。发过几篇论文，也有两项发明专利，具体都在<a href="/about.html">关于</a>里。</p>
-          <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优；偶尔为了搞懂原理，会把底层的东西自己实现一遍。</p>
+          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——agent 的上下文与记忆、本地推理栈、RL 训练与推理基础设施那一摊；晚上大概率在折腾什么小工具。</p>
+          <p>重庆大学计算机技术硕士毕业。研究生阶段做计算机视觉（长尾识别、半监督检测、医学影像），一作发过 ICASSP、共一发过 Pattern Recognition，两项发明专利，细节都在<a href="/about.html">关于</a>里；现在重心已经整个挪到 Agent 和系统方向，<a href="/projects.html">项目</a>里大半是这半年新写的。</p>
+          <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优；偶尔为了搞懂原理，会把底层的东西自己实现一遍——RPC 框架、推理后端、甚至这个站点的排版。</p>
         </div>
         <div class="side-list reveal">
           {edu_items(2)}
@@ -793,8 +904,9 @@ def build_about(posts):
     <div class="wrap">
       <div class="two-col">
         <div class="prose-sm reveal">
-          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——大模型智能体的强化学习训练、推理与基础设施那一摊；晚上大概率在折腾什么小工具。</p>
+          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——agent 的上下文与记忆、本地推理栈、RL 训练与推理基础设施那一摊；晚上大概率在折腾什么小工具。</p>
           <p>重庆大学计算机技术硕士（2026 届），本科也在重大。研究生阶段做计算机视觉：长尾识别、半监督目标检测、医学影像，一作发过 ICASSP、共一发过 Pattern Recognition，两项发明专利。现在把重心挪到 Agent 与系统方向。</p>
+          <p>最近折腾的四件事：给 agent 做证据化的长期记忆（压缩之后只交回仍然成立的发现）、给 AGI 进展做一张不许被新闻头条带跑的证据看板、在 AMD 卡上搭一整套 ROCm/HIP + KVMem 的本地推理栈并给上游打了几个补丁、以及把「读论文」这件事本身工程化成一座 Agentic RL 知识库。<a href="/projects.html">项目</a>页有全部。</p>
           <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优。偶尔为了搞懂原理，会把底层的东西自己实现一遍——RPC 框架、推理后端、甚至这个站点的排版。</p>
         </div>
         <div class="side-list reveal">
@@ -840,38 +952,48 @@ def build_about(posts):
     </div>
   </section>
 """
-    return page(f"关于 — {SITE['name']}", "吕迪（LYU Di）的简介、教育经历、论文与专利、技能栈与荣誉。",
+    return page(f"关于 — {SITE['name']}", "吕迪（LYU Di）的简介、教育经历、正在做的方向、论文与专利、技能栈与荣誉。",
                 "/about.html", body, "/about.html")
 
 
 def build_projects(posts):
-    cards = []
-    for p in PROJECTS:
-        pts = "".join(f"<li>{x}</li>" for x in p["points"])
-        stack = "".join(f"<span>{esc(s)}</span>" for s in p["stack"])
-        cards.append(f"""        <article class="card reveal" data-page-item>
+    blocks = []
+    total = sum(len(g[2]) for g in PROJECT_GROUPS)
+    for gname, gdesc, items in PROJECT_GROUPS:
+        cards = []
+        for p in items:
+            pts = "".join(f"<li>{x}</li>" for x in p["points"])
+            stack = "".join(f"<span>{esc(s)}</span>" for s in p["stack"])
+            link = card_link(p)
+            cards.append(f"""        <article class="card reveal">
           <div class="card-top"><span class="card-role">{esc(p['role'])}</span></div>
           <h3>{esc(p['title'])}</h3>
           <ul>{pts}</ul>
           <div class="stack">{stack}</div>
+          {link}
         </article>""")
+        blocks.append(f"""  <section class="grp">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="sec-title">{esc(gname)}</h2>
+        <p class="sec-note">{esc(gdesc)}</p>
+      </div>
+      <div class="card-grid">
+{chr(10).join(cards)}
+      </div>
+    </div>
+  </section>""")
+
     body = f"""  <div class="page-head">
     <div class="wrap">
       <h1>项目</h1>
-      <p>项目、开源和小工具。{len(PROJECTS)} 个里有几个还在维护，剩下的多少都还能跑。</p>
+      <p>按方向分组，共 {total} 个。代码大多在 <a href="{SITE['github']}" target="_blank" rel="noopener">GitHub</a> 上，有几个还能跑。</p>
     </div>
   </div>
 
-  <section id="projects">
-    <div class="wrap">
-      <div class="card-grid" data-paginate data-page-size="6" data-pager-target="#pager-projects">
-{chr(10).join(cards)}
-      </div>
-      <nav class="pager" id="pager-projects" data-pager aria-label="项目分页" hidden></nav>
-    </div>
-  </section>
+{chr(10).join(blocks)}
 """
-    return page(f"项目 — {SITE['name']}", "吕迪的项目与开源工具：半监督检测系统、RPC 框架、ref-corrector、游戏工具等。",
+    return page(f"项目 — {SITE['name']}", "吕迪的项目：Agent / LLM Infra（证据化发现账本、AGI 进展看板、本地推理栈、Agentic RL 知识库）、CV 算法、后端 RPC 与自动化小工具。",
                 "/projects.html", body, "/projects.html")
 
 

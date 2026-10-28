@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
 <title>关于 — 吕迪</title>
-<meta name="description" content="吕迪（LYU Di）的简介、教育经历、论文与专利、技能栈与荣誉。">
+<meta name="description" content="吕迪（LYU Di）的简介、教育经历、正在做的方向、论文与专利、技能栈与荣誉。">
 <meta name="author" content="Di Lv (吕迪)">
 <link rel="canonical" href="https://lvdi-profile.vercel.app/about.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:title" content="关于 — 吕迪">
-<meta property="og:description" content="吕迪（LYU Di）的简介、教育经历、论文与专利、技能栈与荣誉。">
+<meta property="og:description" content="吕迪（LYU Di）的简介、教育经历、正在做的方向、论文与专利、技能栈与荣誉。">
 <meta property="og:url" content="https://lvdi-profile.vercel.app/about.html">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary">
@@ -47,8 +47,9 @@
     <div class="wrap">
       <div class="two-col">
         <div class="prose-sm reveal">
-          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——大模型智能体的强化学习训练、推理与基础设施那一摊；晚上大概率在折腾什么小工具。</p>
+          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——agent 的上下文与记忆、本地推理栈、RL 训练与推理基础设施那一摊；晚上大概率在折腾什么小工具。</p>
           <p>重庆大学计算机技术硕士（2026 届），本科也在重大。研究生阶段做计算机视觉：长尾识别、半监督目标检测、医学影像，一作发过 ICASSP、共一发过 Pattern Recognition，两项发明专利。现在把重心挪到 Agent 与系统方向。</p>
+          <p>最近折腾的四件事：给 agent 做证据化的长期记忆（压缩之后只交回仍然成立的发现）、给 AGI 进展做一张不许被新闻头条带跑的证据看板、在 AMD 卡上搭一整套 ROCm/HIP + KVMem 的本地推理栈并给上游打了几个补丁、以及把「读论文」这件事本身工程化成一座 Agentic RL 知识库。<a href="/projects.html">项目</a>页有全部。</p>
           <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优。偶尔为了搞懂原理，会把底层的东西自己实现一遍——RPC 框架、推理后端、甚至这个站点的排版。</p>
         </div>
         <div class="side-list reveal">
@@ -128,7 +129,7 @@
         <p class="sec-note">技能栈</p>
       </div>
       <div class="skill-grid reveal">
-        <div><h3 class="skill-h">编程语言</h3><div class="skill-list"><span>Python</span><span>Java</span></div></div><div><h3 class="skill-h">AI / 大模型</h3><div class="skill-list"><span>Agentic RL</span><span>LLM Agent</span><span>强化学习</span><span>RAG 检索增强</span><span>LoRA 参数高效微调</span><span>vLLM 推理部署</span><span>CLIP 多模态适配</span></div></div><div><h3 class="skill-h">计算机视觉</h3><div class="skill-list"><span>PyTorch</span><span>Ultralytics YOLO</span><span>目标检测</span><span>半监督学习</span><span>注意力机制与损失函数设计</span></div></div><div><h3 class="skill-h">后端 / 分布式</h3><div class="skill-list"><span>Netty</span><span>Spring Boot</span><span>Zookeeper</span><span>分布式 RPC</span><span>一致性哈希</span><span>令牌桶限流</span><span>熔断状态机</span><span>MySQL</span><span>Redis</span></div></div><div><h3 class="skill-h">工程工具</h3><div class="skill-list"><span>Git</span><span>Linux</span><span>JFR/JMC 性能剖析</span><span>pytest</span></div></div><div><h3 class="skill-h">语言能力</h3><div class="skill-list"><span>CET-6 533</span><span>CET-4 502</span></div></div>
+        <div><h3 class="skill-h">编程语言</h3><div class="skill-list"><span>Python</span><span>TypeScript / Node</span><span>Java</span></div></div><div><h3 class="skill-h">Agent / 大模型</h3><div class="skill-list"><span>Agentic RL</span><span>LLM Agent</span><span>强化学习</span><span>上下文压缩与记忆</span><span>DeepSeek Harness 插件</span><span>RAG 检索增强</span><span>LoRA 参数高效微调</span></div></div><div><h3 class="skill-h">推理 / AI Infra</h3><div class="skill-list"><span>vLLM 推理部署</span><span>llama.cpp / GGUF</span><span>KV cache 调优</span><span>ROCm / HIP</span><span>OpenAI 兼容网关</span></div></div><div><h3 class="skill-h">计算机视觉</h3><div class="skill-list"><span>PyTorch</span><span>Ultralytics YOLO</span><span>目标检测</span><span>半监督学习</span><span>注意力机制与损失函数设计</span></div></div><div><h3 class="skill-h">后端 / 分布式</h3><div class="skill-list"><span>Netty</span><span>Spring Boot</span><span>Zookeeper</span><span>分布式 RPC</span><span>一致性哈希</span><span>令牌桶限流</span><span>熔断状态机</span><span>MySQL</span><span>Redis</span></div></div><div><h3 class="skill-h">工程工具</h3><div class="skill-list"><span>Git</span><span>Linux</span><span>ROCm / HIP 工具链</span><span>JFR/JMC 性能剖析</span><span>SQLite</span><span>pytest</span></div></div><div><h3 class="skill-h">英语</h3><div class="skill-list"><span>CET-6</span><span>CET-4</span></div></div>
       </div>
     </div>
   </section>

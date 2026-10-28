@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
 <title>项目 — 吕迪</title>
-<meta name="description" content="吕迪的项目与开源工具：半监督检测系统、RPC 框架、ref-corrector、游戏工具等。">
+<meta name="description" content="吕迪的项目：Agent / LLM Infra（证据化发现账本、AGI 进展看板、本地推理栈、Agentic RL 知识库）、CV 算法、后端 RPC 与自动化小工具。">
 <meta name="author" content="Di Lv (吕迪)">
 <link rel="canonical" href="https://lvdi-profile.vercel.app/projects.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:title" content="项目 — 吕迪">
-<meta property="og:description" content="吕迪的项目与开源工具：半监督检测系统、RPC 框架、ref-corrector、游戏工具等。">
+<meta property="og:description" content="吕迪的项目：Agent / LLM Infra（证据化发现账本、AGI 进展看板、本地推理栈、Agentic RL 知识库）、CV 算法、后端 RPC 与自动化小工具。">
 <meta property="og:url" content="https://lvdi-profile.vercel.app/projects.html">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary">
@@ -39,57 +39,139 @@
   <div class="page-head">
     <div class="wrap">
       <h1>项目</h1>
-      <p>项目、开源和小工具。7 个里有几个还在维护，剩下的多少都还能跑。</p>
+      <p>按方向分组，共 13 个。代码大多在 <a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub</a> 上，有几个还能跑。</p>
     </div>
   </div>
 
-  <section id="projects">
+  <section class="grp">
     <div class="wrap">
-      <div class="card-grid" data-paginate data-page-size="6" data-pager-target="#pager-projects">
-        <article class="card reveal" data-page-item>
+      <div class="sec-head reveal">
+        <h2 class="sec-title">Agent / LLM Infra</h2>
+        <p class="sec-note">现在主要在做的方向：agent 的上下文与记忆、本地推理栈、以及把研究过程本身工程化</p>
+      </div>
+      <div class="card-grid">
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">TypeScript · 2026.10 · 进行中</span></div>
+          <h3>Human&#x27;s Last Dashboard</h3>
+          <ul><li>证据可追溯的 AGI 进展监控与递归自我改进看板，核心是一张<strong>版本化证据图</strong>：连接来源、主张、证据、能力评估、因果假设与预测</li><li>自建 L0–L7 能力分级（明确声明为项目内工作分类而非行业标准），每一级都必须过证据门与反证据检验</li><li>四条硬约束：证据先于结论、区分事实与推断、反证据是一等公民、<strong>不允许因为新闻头条自动升级阶段</strong></li><li>输出显式置信度与验证状态，而不是一个误导性的“AGI 百分比”</li></ul>
+          <div class="stack"><span>TypeScript</span><span>证据图</span><span>数据看板</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/human-last-dashboard" target="_blank" rel="noopener">GitHub ↗</a></div>
+        </article>
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">DeepSeek Harness 插件 · 2026.10</span></div>
+          <h3>Finding Ledger · 发现账本</h3>
+          <ul><li>面向长程故障排查的<strong>证据化发现账本</strong>：上下文压缩、换会话、任务切换之后，只把「仍然相关且适用条件仍然成立」的发现交回模型</li><li>直指三种可复现的失败模式——压缩后遗忘、假设被摘要写成事实、结论在版本/后端变化后仍被套用</li><li>三个正交状态（认知状态 / 生命周期 / 适用性）互不替代：`refuted` 不等于 `superseded`，条件不明一律落到 `unknown` 而不是静默匹配成功</li><li>确定性规则检索 + token 预算注入，持久化在本地 SQLite（`node:sqlite`）</li></ul>
+          <div class="stack"><span>Node.js</span><span>node:sqlite</span><span>DSH 插件</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/Finding-Ledger" target="_blank" rel="noopener">GitHub ↗</a></div>
+        </article>
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">知识库 + 研究导航 · 2026.09</span></div>
+          <h3>Agentic RL Atlas</h3>
+          <ul><li>可持续维护的 Agentic RL 个人知识库：原子笔记 → SQLite 内容库 → 导出 JSON → 站点</li><li>内置<strong>知识图谱</strong>视图（先修、相关、共享来源、共享概念）与<strong>研究雷达</strong>：抓 HuggingFace Daily Papers，按关键词过滤后交由 DeepSeek 分成 review / archive / skip</li><li>每篇笔记标注 A–D 证据分级；深读档案必须包含主张表、机制、实验设置、证据强度、边界与反例、复现计划</li></ul>
+          <div class="stack"><span>Python</span><span>SQLite</span><span>DeepSeek</span><span>HF Papers</span></div>
+          <div class="card-links"><a href="https://agentic-rl-atlas.vercel.app" target="_blank" rel="noopener">访问 ↗</a></div>
+        </article>
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">AI Infra · 2026.09</span></div>
+          <h3>本地 KVMem 推理栈（llama-inf + 自有补丁）</h3>
+          <ul><li>AMD RX 9070 XT（gfx1201）上的 ROCm/HIP + KVMem 推理工作区：OpenAI 兼容单实例网关、共享模型注册表、GGUF 元数据与 KV 缓存显存预检、基准脚本</li><li>给上游打了 4 个自有补丁：HIP 可移植性修复、给 qwen35moe 注入 KV 捕获（修长文检索不生效）、放开 ngram 免 draft 自投机、Quest 式 min/max 上界打分</li><li>沉淀出一批实测约束：`ROCBLAS_USE_HIPBLASLT=0`、PATH 必须前置 ROCm SDK 的 bin 否则静默 0xC0000135、iGPU 不计入显存预算</li></ul>
+          <div class="stack"><span>Python</span><span>ROCm/HIP</span><span>llama.cpp</span><span>KVMem</span><span>GGUF</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/llama-inf" target="_blank" rel="noopener">GitHub ↗</a></div>
+        </article>
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">DeepSeek Harness 插件 · 2026.10</span></div>
+          <h3>dsh-maend</h3>
+          <ul><li>把 MaaEnd（终末地小助手）接进 DeepSeek Harness：agent 直接跑日常、看板看进度</li><li>启动静音、成功门控的自动关游戏钩子；基于 MaaFramework v5 + MXU，带 GitHub Actions CI</li></ul>
+          <div class="stack"><span>Node.js</span><span>MaaFramework</span><span>Windows</span><span>GitHub Actions</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/dsh-maend" target="_blank" rel="noopener">GitHub ↗</a></div>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="grp">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="sec-title">CV / 论文</h2>
+        <p class="sec-note">研究生阶段的方向，代码和论文配套</p>
+      </div>
+      <div class="card-grid">
+        <article class="card reveal">
           <div class="card-top"><span class="card-role">CV 算法 · 2025.12–2026.04</span></div>
           <h3>宫颈细胞病理学半监督目标检测系统</h3>
           <ul><li>针对临床 TCT 涂片背景复杂、极端长尾与稀疏标注的确认偏差问题，设计区域级半监督框架 <strong>MPG-RSCD</strong></li><li>基线 YOLO-TCT：自适应硬极化自注意力 + 类别平衡质量焦点损失，全局召回提升至 <strong>46.27%</strong></li><li>医学先验引导伪标签提纯：动态门控融合 BiomedCLIP 全局语义与 ResNet50 局部纹理</li><li>1338 张真实临床涂片：高风险病变召回 <strong>58.39% → 64.98%</strong>，低误报敏感性 <strong>42.70% → 55.83%</strong></li></ul>
-          <div class="stack"><span>Python</span><span>PyTorch</span><span>Ultralytics YOLO</span><span>BiomedCLIP</span><span>OpenCV</span></div>
+          <div class="stack"><span>Python</span><span>PyTorch</span><span>Ultralytics YOLO</span><span>BiomedCLIP</span></div>
+          <div class="card-links"><a href="https://github.com/threedteam/YOLO-TCT" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
-        <article class="card reveal" data-page-item>
-          <div class="card-top"><span class="card-role">后端开发 · 2024</span></div>
-          <h3>RPC 框架：从零实现到性能优化</h3>
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">研究复现 · ICASSP / PR 配套</span></div>
+          <h3>STTL-BLS 复现与改进</h3>
+          <ul><li>Self-Training-Transductive-Learning Broad Learning System 的复现实现，针对 GTX 3080 平台做了适配与调优</li><li>宽度学习系统的关键是把自训练与转导学习塞进闭式解框架，省掉反向传播的训练开销</li></ul>
+          <div class="stack"><span>Python</span><span>PyTorch</span><span>宽度学习</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/STTLBLS_rev" target="_blank" rel="noopener">GitHub ↗</a></div>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="grp">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="sec-title">后端 / 系统</h2>
+        <p class="sec-note">往系统和基础设施方向转的练习</p>
+      </div>
+      <div class="card-grid">
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">后端开发 · Java</span></div>
+          <h3>myRPC · 从零实现到性能优化</h3>
           <ul><li>从零实现分布式 RPC：Netty Reactor 通信层 + 自定义私有协议解决 TCP 粘包/拆包，延迟反序列化剥离 IO 线程阻塞</li><li>Zookeeper 注册发现 + 本地缓存 &amp; Watcher；基于请求参数特征的一致性哈希负载均衡</li><li>节点级状态机熔断（半开探测 / 自动愈合）+ 纳秒级时间窗口令牌桶限流</li><li>JFR/JMC 全链路剖析：单机回环吞吐 <strong>1 万 → 9.4 万 QPS</strong>，P99 <strong>83ms</strong>，99.9% 可用性</li></ul>
-          <div class="stack"><span>Java</span><span>Netty</span><span>Zookeeper</span><span>Kryo/Protobuf</span><span>SPI</span><span>JFR/JMC</span></div>
+          <div class="stack"><span>Java</span><span>Netty</span><span>Zookeeper</span><span>Kryo/Protobuf</span><span>JFR/JMC</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/myRPC" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
-        <article class="card reveal" data-page-item>
+      </div>
+    </div>
+  </section>
+  <section class="grp">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="sec-title">小工具 / 自动化</h2>
+        <p class="sec-note">能脚本化的绝不手动，所以顺手写了这些</p>
+      </div>
+      <div class="card-grid">
+        <article class="card reveal">
           <div class="card-top"><span class="card-role">开源</span></div>
           <h3>ref-corrector</h3>
-          <ul><li>基于 <strong>LangGraph</strong> 的 BibTeX 参考文献校验与修正 CLI，解析条目、校验字段格式、识别重复项</li><li>多源元数据交叉校验（OpenAlex / Crossref / Semantic Scholar）+ DeepSeek LLM 生成修正建议</li><li>输出规范化 <strong>corrected.bib</strong> 与结构化修正报告</li></ul>
-          <div class="stack"><span>Python</span><span>LangGraph</span><span>DeepSeek</span><span>OpenAlex</span><span>Crossref</span></div>
+          <ul><li>基于 <strong>LangGraph</strong> 的 BibTeX 参考文献校验与修正 CLI：解析条目、校验字段、识别重复</li><li>多源元数据交叉校验（OpenAlex / Crossref / Semantic Scholar）+ LLM 生成修正建议，输出规范化 corrected.bib 与修正报告</li></ul>
+          <div class="stack"><span>Python</span><span>LangGraph</span><span>DeepSeek</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/ref-corrector" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
-        <article class="card reveal" data-page-item>
+        <article class="card reveal">
           <div class="card-top"><span class="card-role">开源 · 游戏工具</span></div>
           <h3>GameWorkplace</h3>
           <ul><li>自动从 War Thunder 录像中识别并导出连杀片段，支持连杀时间阈值与最少击杀数配置</li><li>自动选择最佳视频源（单视频优先 / 必要时多视频拼接），GPU / CPU 编码自适应切换</li></ul>
           <div class="stack"><span>Python</span><span>PyQt5</span><span>FFmpeg</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/GameWorkplace" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
-        <article class="card reveal" data-page-item>
+        <article class="card reveal">
           <div class="card-top"><span class="card-role">开源</span></div>
           <h3>ae2-bus-scanner</h3>
           <ul><li>扫描 Minecraft 存档中的 AE2 输入/输出总线与接口，定位包含指定过滤物品的设备</li><li>可复用扫描引擎 + CLI + tkinter 桌面 GUI，支持多进程并行扫描</li></ul>
           <div class="stack"><span>Python</span><span>tkinter</span><span>多进程</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/ae2-bus-scanner" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
-        <article class="card reveal" data-page-item>
+        <article class="card reveal">
           <div class="card-top"><span class="card-role">开源</span></div>
           <h3>CampusAutoLogin</h3>
           <ul><li>dr.com 校园网自动登录后台服务：网络状态监控、断线自动认证</li><li>静默后台运行 + 系统通知，配置界面化</li></ul>
           <div class="stack"><span>Python</span><span>自动化</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/CampusAutoLogin" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
-        <article class="card reveal" data-page-item>
-          <div class="card-top"><span class="card-role">课程项目</span></div>
+        <article class="card reveal">
+          <div class="card-top"><span class="card-role">课程项目 · ★7</span></div>
           <h3>TapTap 数据分析</h3>
-          <ul><li>TapTap 平台数据采集与分析实训项目</li></ul>
+          <ul><li>TapTap 平台数据采集与分析实训项目，目前是仓库里星数最多的一个</li></ul>
           <div class="stack"><span>Python</span><span>数据分析</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/TapTap-Big-Data-Analysis-Project" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
       </div>
-      <nav class="pager" id="pager-projects" data-pager aria-label="项目分页" hidden></nav>
     </div>
   </section>
 

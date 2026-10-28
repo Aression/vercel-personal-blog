@@ -41,7 +41,7 @@
       <h1>吕迪</h1>
       <p class="id-line">LYU Di · @Aression</p>
       <p class="tagline">Agentic RL · AI Infra</p>
-      <p class="status"><span class="dot" aria-hidden="true"></span> 上海 · 白天写 Agentic RL / AI Infra，晚上折腾小工具</p>
+      <p class="status"><span class="dot" aria-hidden="true"></span> 上海 · 白天写 Agentic RL / AI Infra，晚上折腾本地推理栈</p>
       <ul class="links">
         <li><a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub ↗</a></li>
         <li><a href="/blog/">文章</a></li>
@@ -54,9 +54,9 @@
     <div class="wrap">
       <div class="two-col">
         <div class="prose-sm reveal">
-          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——大模型智能体的强化学习训练、推理与基础设施那一摊；晚上大概率在折腾什么小工具。</p>
-          <p>重庆大学计算机技术硕士毕业，之前做计算机视觉（长尾识别、半监督检测、医学影像），现在在往 Agent 和系统方向转。发过几篇论文，也有两项发明专利，具体都在<a href="/about.html">关于</a>里。</p>
-          <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优；偶尔为了搞懂原理，会把底层的东西自己实现一遍。</p>
+          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——agent 的上下文与记忆、本地推理栈、RL 训练与推理基础设施那一摊；晚上大概率在折腾什么小工具。</p>
+          <p>重庆大学计算机技术硕士毕业。研究生阶段做计算机视觉（长尾识别、半监督检测、医学影像），一作发过 ICASSP、共一发过 Pattern Recognition，两项发明专利，细节都在<a href="/about.html">关于</a>里；现在重心已经整个挪到 Agent 和系统方向，<a href="/projects.html">项目</a>里大半是这半年新写的。</p>
+          <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优；偶尔为了搞懂原理，会把底层的东西自己实现一遍——RPC 框架、推理后端、甚至这个站点的排版。</p>
         </div>
         <div class="side-list reveal">
           <div class="side-item"><div class="side-t">重庆大学（985）</div><div class="side-s">计算机技术 · 硕士 | 2023.09 – 2026.06</div><div class="side-d">GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。</div></div><div class="side-item"><div class="side-t">重庆大学（985）</div><div class="side-s">计算机科学与技术 · 本科 | 2019.09 – 2023.06</div><div class="side-d">GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。</div></div>
@@ -73,22 +73,25 @@
       </div>
       <div class="card-grid">
         <article class="card reveal">
-          <div class="card-top"><span class="card-role">CV 算法 · 2025.12–2026.04</span></div>
-          <h3>宫颈细胞病理学半监督目标检测系统</h3>
-          <ul><li>针对临床 TCT 涂片背景复杂、极端长尾与稀疏标注的确认偏差问题，设计区域级半监督框架 <strong>MPG-RSCD</strong></li><li>基线 YOLO-TCT：自适应硬极化自注意力 + 类别平衡质量焦点损失，全局召回提升至 <strong>46.27%</strong></li></ul>
-          <div class="stack"><span>Python</span><span>PyTorch</span><span>Ultralytics YOLO</span><span>BiomedCLIP</span></div>
+          <div class="card-top"><span class="card-role">TypeScript · 2026.10 · 进行中</span></div>
+          <h3>Human&#x27;s Last Dashboard</h3>
+          <ul><li>证据可追溯的 AGI 进展监控与递归自我改进看板，核心是一张<strong>版本化证据图</strong>：连接来源、主张、证据、能力评估、因果假设与预测</li><li>自建 L0–L7 能力分级（明确声明为项目内工作分类而非行业标准），每一级都必须过证据门与反证据检验</li></ul>
+          <div class="stack"><span>TypeScript</span><span>证据图</span><span>数据看板</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/human-last-dashboard" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
         <article class="card reveal">
-          <div class="card-top"><span class="card-role">后端开发 · 2024</span></div>
-          <h3>RPC 框架：从零实现到性能优化</h3>
-          <ul><li>从零实现分布式 RPC：Netty Reactor 通信层 + 自定义私有协议解决 TCP 粘包/拆包，延迟反序列化剥离 IO 线程阻塞</li><li>Zookeeper 注册发现 + 本地缓存 &amp; Watcher；基于请求参数特征的一致性哈希负载均衡</li></ul>
-          <div class="stack"><span>Java</span><span>Netty</span><span>Zookeeper</span><span>Kryo/Protobuf</span></div>
+          <div class="card-top"><span class="card-role">DeepSeek Harness 插件 · 2026.10</span></div>
+          <h3>Finding Ledger · 发现账本</h3>
+          <ul><li>面向长程故障排查的<strong>证据化发现账本</strong>：上下文压缩、换会话、任务切换之后，只把「仍然相关且适用条件仍然成立」的发现交回模型</li><li>直指三种可复现的失败模式——压缩后遗忘、假设被摘要写成事实、结论在版本/后端变化后仍被套用</li></ul>
+          <div class="stack"><span>Node.js</span><span>node:sqlite</span><span>DSH 插件</span></div>
+          <div class="card-links"><a href="https://github.com/Aression/Finding-Ledger" target="_blank" rel="noopener">GitHub ↗</a></div>
         </article>
         <article class="card reveal">
-          <div class="card-top"><span class="card-role">开源</span></div>
-          <h3>ref-corrector</h3>
-          <ul><li>基于 <strong>LangGraph</strong> 的 BibTeX 参考文献校验与修正 CLI，解析条目、校验字段格式、识别重复项</li><li>多源元数据交叉校验（OpenAlex / Crossref / Semantic Scholar）+ DeepSeek LLM 生成修正建议</li></ul>
-          <div class="stack"><span>Python</span><span>LangGraph</span><span>DeepSeek</span><span>OpenAlex</span></div>
+          <div class="card-top"><span class="card-role">知识库 + 研究导航 · 2026.09</span></div>
+          <h3>Agentic RL Atlas</h3>
+          <ul><li>可持续维护的 Agentic RL 个人知识库：原子笔记 → SQLite 内容库 → 导出 JSON → 站点</li><li>内置<strong>知识图谱</strong>视图（先修、相关、共享来源、共享概念）与<strong>研究雷达</strong>：抓 HuggingFace Daily Papers，按关键词过滤后交由 DeepSeek 分成 review / archive / skip</li></ul>
+          <div class="stack"><span>Python</span><span>SQLite</span><span>DeepSeek</span><span>HF Papers</span></div>
+          <div class="card-links"><a href="https://agentic-rl-atlas.vercel.app" target="_blank" rel="noopener">访问 ↗</a></div>
         </article>
       </div>
       <p class="sec-more"><a href="/projects.html">全部项目 →</a></p>
