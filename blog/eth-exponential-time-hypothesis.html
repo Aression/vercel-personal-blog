@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
-<title>ETH 倒塌记：从零读懂指数时间假设，以及 AI 是怎么拆掉这块 27 年地基的 — 吕迪</title>
-<meta name="description" content="2026 年 10 月 26 日，OpenAI 宣布内部模型给出了 k-SAT 的确定性亚指数精确计数算法，据此推翻统治理论计算机科学近三十年的指数时间假设（ETH），连带击倒 SETH、Gap-ETH、NSETH、#ETH。本文从 3-SAT 的第一性原理讲起：指数壁垒是怎么形成的、ETH 家族各">
+<title>ETH 被证伪之后，哪些下界还站得住 — 吕迪</title>
+<meta name="description" content="2026 年 10 月 26 日，OpenAI 说内部模型证伪了指数时间假设。它是过去 27 年里几百篇「某算法不可能更快」论文的地基。这篇从 3-SAT 讲起，说清它到底断言了什么、算法做了什么，以及现在哪些结论真的倒了。">
 <meta name="author" content="Di Lv (吕迪)">
 <link rel="canonical" href="https://lvdi-profile.vercel.app/blog/eth-exponential-time-hypothesis.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ETH 倒塌记：从零读懂指数时间假设，以及 AI 是怎么拆掉这块 27 年地基的 — 吕迪">
-<meta property="og:description" content="2026 年 10 月 26 日，OpenAI 宣布内部模型给出了 k-SAT 的确定性亚指数精确计数算法，据此推翻统治理论计算机科学近三十年的指数时间假设（ETH），连带击倒 SETH、Gap-ETH、NSETH、#ETH。本文从 3-SAT 的第一性原理讲起：指数壁垒是怎么形成的、ETH 家族各">
+<meta property="og:title" content="ETH 被证伪之后，哪些下界还站得住 — 吕迪">
+<meta property="og:description" content="2026 年 10 月 26 日，OpenAI 说内部模型证伪了指数时间假设。它是过去 27 年里几百篇「某算法不可能更快」论文的地基。这篇从 3-SAT 讲起，说清它到底断言了什么、算法做了什么，以及现在哪些结论真的倒了。">
 <meta property="og:url" content="https://lvdi-profile.vercel.app/blog/eth-exponential-time-hypothesis.html">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary">
@@ -41,63 +41,54 @@
       <div class="art-meta">
         <span>2026-10-28</span>
         <span class="sep">·</span>
-        <span>约 18 分钟</span>
-        <span>复杂性理论</span><span>ETH</span><span>SAT</span><span>算法</span><span>AI for Math</span>
+        <span>约 15 分钟</span>
+        <span>复杂性理论</span><span>ETH</span><span>SAT</span><span>算法</span>
       </div>
-      <h1>ETH 倒塌记：从零读懂指数时间假设，以及 AI 是怎么拆掉这块 27 年地基的</h1>
-      <p class="art-sum">2026 年 10 月 26 日，OpenAI 宣布内部模型给出了 k-SAT 的确定性亚指数精确计数算法，据此推翻统治理论计算机科学近三十年的指数时间假设（ETH），连带击倒 SETH、Gap-ETH、NSETH、#ETH。本文从 3-SAT 的第一性原理讲起：指数壁垒是怎么形成的、ETH 家族各自断言什么、它替多少人撑起了下界，再拆解这个 2^(n/√log n) 算法到底做了什么、为什么被称作「理论上颠覆、工程上无感」，以及后 ETH 时代该拿什么当假设。</p>
+      <h1>ETH 被证伪之后，哪些下界还站得住</h1>
+      <p class="art-sum">2026 年 10 月 26 日，OpenAI 说内部模型证伪了指数时间假设。它是过去 27 年里几百篇「某算法不可能更快」论文的地基。这篇从 3-SAT 讲起，说清它到底断言了什么、算法做了什么，以及现在哪些结论真的倒了。</p>
       <hr class="art-rule">
       <div class="prose">
-<blockquote>
-<p>先澄清一个高频误会：这里的 ETH 不是以太坊，是 <strong>Exponential Time Hypothesis</strong>，指数时间假设。它讨论的是「3-SAT 最快能有多快」，跟区块链没有任何关系。10 月 26 日之后，我在好几个群里看到有人把它当成币圈新闻，实在有点哭笑不得。</p>
-</blockquote>
-<h2>0. 一句话版本</h2>
-<p>2026 年 10 月 26 日，OpenAI 发布公告称其内部模型在三个领域同时取得结果，其中计算机科学这一项是：<strong>给出了一个确定性算法，能在 <code>2^(n / (log n)^(1/2+o(1)))</code> 时间内精确统计任意固定宽度 k-CNF 的满足解个数</strong>。这是 <code>2^o(n)</code>，也就是亚指数时间。而 1999 年提出的指数时间假设说，3-SAT 无论如何都需要 <code>2^Ω(n)</code> 时间。矛盾，于是 ETH 被推翻——顺带把 SETH、Gap-ETH、NSETH、#ETH 一起带走了。</p>
-<p>三件必须先分清的事，不然后面全是误读：</p>
-<ol>
-<li><strong>这不等于 P = NP。</strong> 论文明确说了，<code>2^o(n)</code> 这种加速<strong>不会通过一般的多项式时间归约传递</strong>（那需要 <code>2^(n^o(1))</code>）。所以本结果不蕴含「一般 NP 问题有亚指数算法」。P vs NP 原地不动。</li>
-<li><strong>这不威胁密码学。</strong> 攻击 RSA/ECC 需要的是<strong>多项式时间</strong>算法，这里没有；Ryan Williams 还专门让人检查过有没有现成密码系统被这个结果波及，结论是暂时没有。</li>
-<li><strong>这在工程上几乎没有即时影响。</strong> 把隐藏常数都当成 1 来算，这个算法的渐近优势要等到 n 大到荒谬时才体现出来（我算了一遍，见第 8 节）。它是理论上的地震，不是「SAT 被破解了，SAT solver 明天全部重写」。</li>
-</ol>
-<h2>1. 从零开始：SAT 到底是个什么问题</h2>
+<p>2026 年 10 月 26 日，OpenAI 发了一篇公告，说自己内部的一个模型证伪了指数时间假设（Exponential Time Hypothesis，ETH）。当天 Hacker News 上那个帖子 778 点，282 条评论。国内几个群里也转了，有一半人以为说的是以太坊。</p>
+<p>不是以太坊。ETH 讨论的是 3-SAT 最快能有多快，跟区块链无关。它比 P 与 NP 冷门得多，但比 P 与 NP 更常被引用：过去二十多年里，几百篇算法论文用「假设 ETH 成立」来证明自己那个问题不可能更快。</p>
+<p>现在地基被抽走了一块。这篇想把事故讲清楚：ETH 到底断言了什么，那个算法做了什么，哪些结论真的倒了、哪些只是形式上倒了。</p>
+<h2>公告说了什么</h2>
+<p>OpenAI 同一天宣布了三项结果，分别是数学、计算机科学、物理。CS 这一项是：对每个固定宽度 k ≥ 2，都存在一个确定性算法，能在亚指数时间内精确统计 k-CNF 的满足解个数。</p>
+<p>论文标题就是 THE EXPONENTIAL TIME HYPOTHESIS IS FALSE，PDF 元数据里的标题更直接，写着 ETH is False。日期 10 月 17 日，10 月 25 日修订到第三版。模型 10 月 16 日给出证明，10 月 17 日 Lean 形式化通过，10 月 26 日连同 Lean 文件一起公开在 <code>github.com/openai/math</code>。</p>
+<p>公告里有个安排值得单独说。OpenAI 把这几份手稿称为「原始研究数据」，把「变成科学理解」这一步交给外部专家，CS 这一项的组织者是 Russell Impagliazzo、Ramamohan Paturi 和 Ryan Williams。前两位是 1999 年提出 ETH 的人，第三位是「用更快的 SAT 算法推出电路下界」这条技术路线的开创者。</p>
+<p>让原提出者和主要对手方一起组织验证，这个姿态是到位的。但话也得说清楚：这是 OpenAI 的声明，加上 Lean 形式化和公开论文，不等于通过了同行评审。Lean 通过检查意味着定理在形式化语句下成立，不意味着形式化语句就是大家想说的那句话。这两件事之间隔着一大段距离，做过形式化的人都清楚。</p>
+<p>还有一条反对意见值得记下来。数学与 AI 顾问组（AGMAI）在 10 月 25 日发过声明，反对把 AI 结果先交给少数内部专家看，理由是这会制造信息不对称。</p>
+<h2>3-SAT 到底是个什么问题</h2>
 <p>所有故事都从这张纸开始。</p>
-<p>给一堆布尔变量 <code>x1, x2, ..., xn</code>，每个只能取 0 或 1。再给一堆「子句」，每个子句是若干个文字（变量或其否定）的「或」。整个公式是所有子句的「与」。这种形式叫 <strong>CNF</strong>（合取范式）。如果每个子句最多 3 个文字，就叫 <strong>3-CNF</strong>。</p>
+<p>给一堆布尔变量 <code>x1, x2, ..., xn</code>，每个只能取 0 或 1。再给一堆子句，每个子句是若干个文字（变量或它的否定）的「或」，整个公式是所有子句的「与」。这种形式叫 CNF（合取范式）。每个子句最多 3 个文字，就叫 3-CNF。</p>
 <p>举个具体例子，4 个变量、4 个子句：</p>
 <pre><code class="language-text">F = (x1 ∨ ¬x2 ∨ x3) ∧ (¬x1 ∨ x2) ∧ (¬x3 ∨ ¬x4 ∨ x1) ∧ (x4 ∨ ¬x2)
 </code></pre>
-<p><strong>SAT 问题</strong>：是否存在一组赋值，让所有子句同时为真？上面这个例子是 <code>x1=1, x2=1, x3=1, x4=1</code>，你可以逐条验一遍。</p>
-<p><strong>#SAT 问题</strong>（读作 "sharp SAT"）：不是问「有没有」，而是问「<strong>有多少组赋值满足</strong>」。这个更强——只要数出来是 0，就顺带回答了 SAT。</p>
-<p>最笨的办法？把 <code>2^n</code> 组赋值全试一遍。n=20 是 100 万，还行；n=50 是 1 后面跟 15 个零，GPU 也扛不住；n=1000 就别想了，宇宙里原子数都不够。</p>
-<p>那么问题来了：<strong>有没有比暴力更聪明的办法？</strong></p>
-<p>有的。而且几十年来一直在变聪明：</p>
-<pre><code class="language-text">算法                                     3-SAT 时间复杂度
-穷举                                      2^n
-Schöning 随机局部搜索 (1999)               (4/3)^n ≈ 1.333^n
-PPSZ 随机算法 (2005) + 后续分析            ≈ 1.308^n
-Liu 确定性分支 + 去随机化局部搜索 (2018)     1.32793^n
-Jiang–Cai 随机算法 (2026, preprint)        1.307031578^n
+<p>SAT 问的是：有没有一组赋值让所有子句同时为真。上面这个例子有，<code>x1=1, x2=1, x3=1, x4=1</code>，逐条验一遍就能确认。</p>
+<p>另一个问题叫「#SAT」：有多少组赋值满足。这个更强，数出来是 0 就直接回答了 SAT。</p>
+<p>最笨的办法是把 <code>2^n</code> 组赋值全试一遍。n=20 是一百万次，还行；n=50 是 1 后面 15 个零，GPU 也扛不住；n=1000 就别想了，宇宙里的原子数都不够。</p>
+<p>过去三十年，这个指数底数一直被往下压：</p>
+<pre><code class="language-text">算法                                  3-SAT 时间复杂度
+穷举                                   2^n
+Schöning 随机局部搜索（1999）           (4/3)^n ≈ 1.333^n
+PPSZ 及后续分析（2005 起）              ≈ 1.308^n
+Liu 确定性分支 + 去随机化局部搜索（2018）  1.32793^n
+Jiang–Cai 随机算法（2026，preprint）     1.307031578^n
 </code></pre>
-<p>注意看这条曲线的走向：<strong>底数从 2 掉到 1.33，然后掉得越来越慢</strong>。每一次进步都是「榨出一点点」，1.333 → 1.308 → 1.3070。这就是 ETH 出场的心理背景。</p>
-<h2>2. 为什么「最快的算法」这么难谈</h2>
-<p>传统复杂性理论问的是：多项式时间够不够？这就是 P vs NP。它的世界观很粗：<code>n^100</code> 和 <code>n^2</code> 一样都算「快」，<code>2^n</code> 算「慢」。</p>
-<p>但对真正要跑代码的人来说，这个粒度不够用。<code>1.3^n</code> 和 <code>2^n</code> 在多项式意义上都是「指数、都慢」，可实际差的是天文数字。</p>
-<p>于是 2000 年代之后出现了另一条路：<strong>精确指数算法</strong>（exact exponential algorithms）与 <strong>细粒度复杂性</strong>（fine-grained complexity）。它问的问题变成：</p>
+<p>底数从 2 掉到 1.33，然后越来越慢，1.333 到 1.308 到 1.3070。ETH 的心理背景就在这张表里。</p>
+<h2>从 P 与 NP 到指数底数</h2>
+<p>传统复杂性理论问的是多项式时间够不够，这就是 P 与 NP。它的世界观很粗：<code>n^100</code> 和 <code>n^2</code> 都算快，<code>2^n</code> 算慢。</p>
+<p>对真要跑代码的人来说，这个粒度不够用。<code>1.3^n</code> 和 <code>2^n</code> 在多项式意义上都叫指数，实际差的是天文数字。</p>
+<p>2000 年代之后出现了另一条路，叫精确指数算法和细粒度复杂性。它换了个问法：这个问题的最优指数底数是多少，能不能证明不可能更好。</p>
+<p>这个转向绕开了一个几乎无望的困境。想直接证明问题 X 很难，等于去证 P≠NP，二十多年没人做到。那就改证条件命题：如果 3-SAT 很难，那么 X 也很难。</p>
+<p>只要大家对「3-SAT 很难」有共识，整套体系就能跑起来。这个共识的名字，就是指数时间假设。</p>
+<h2>ETH 的正式陈述</h2>
+<p>Impagliazzo 和 Paturi 在 1999 年提出，2001 年正式发表。用白话说：</p>
 <blockquote>
-<p>这个问题的<strong>最优指数底数</strong>是多少？能不能证明「不可能更好」？</p>
+<p>存在常数 s &gt; 0：3-SAT（n 个变量）在最坏情况下不能在 <code>O(2^(s·n))</code> 时间内求解。</p>
 </blockquote>
-<p>这个转向很关键，因为它把「证明下界」这件几乎无望的事（P≠NP 都没证出来）<strong>转移到了条件假设上</strong>：</p>
-<blockquote>
-<p>我不直接证明「问题 X 很难」，我证明「如果 3-SAT 很难，那么 X 也很难」。</p>
-</blockquote>
-<p>于是，只要大家对「3-SAT 很难」有共识，整套体系就能运转。共识的名字，就叫指数时间假设。</p>
-<h2>3. ETH 的正式陈述</h2>
-<p>Impagliazzo 和 Paturi 在 1999 年提出、2001 年正式发表了这个假设。用最白的话说：</p>
-<blockquote>
-<p><strong>存在一个常数 s &gt; 0，使得 3-SAT（n 个变量）在最坏情况下不能在 <code>O(2^(s·n))</code> 时间内求解。</strong></p>
-</blockquote>
-<p>翻译一下：不管你怎么巧，解 3-SAT 的时间总得是<strong>某个指数级</strong>的，指数上至少要正比于 n。换句话说，<strong>亚指数时间（<code>2^o(n)</code>）不可能</strong>。</p>
-<p>这里有个很漂亮的技术件——<strong>稀疏化引理</strong>（sparsification lemma，Impagliazzo–Paturi–Zane 2001）：任何一个 k-CNF 都能被写成「至多 <code>2^(εn)</code> 个稀疏 CNF 的并」，每个稀疏 CNF 每个变量只出现常数次。有了它，ETH 从「3-SAT 一个问题的假设」升级成「<strong>所有</strong> k-SAT 的统一假设」：ETH 成立 ⟺ 每个固定 k ≥ 3 的 k-SAT 都没有亚指数算法。</p>
-<p>围绕 ETH 还有一整个家族，各管一段：</p>
+<p>也就是：不管你怎么巧，解 3-SAT 的时间总得是某个指数级，指数上至少正比于 n。亚指数时间，也就是 <code>2^o(n)</code>，不可能。</p>
+<p>这里有个很漂亮的技术件，稀疏化引理（sparsification lemma，Impagliazzo–Paturi–Zane 2001）。它说任何一个 k-CNF 都能写成「至多 <code>2^(εn)</code> 个稀疏 CNF 的并」，每个稀疏 CNF 里每个变量只出现常数次。有了它，ETH 从「3-SAT 一个问题的假设」升级成「所有 k-SAT 的统一假设」：ETH 成立，等价于每个固定 k ≥ 3 的 k-SAT 都没有亚指数算法。</p>
+<p>围绕它还有一整个家族，各管一段：</p>
 <table>
 <thead>
 <tr>
@@ -107,255 +98,166 @@ Jiang–Cai 随机算法 (2026, preprint)        1.307031578^n
 </thead>
 <tbody>
 <tr>
-<td><strong>ETH</strong></td>
+<td>ETH</td>
 <td>3-SAT 不能 <code>2^(s·n)</code>，即需要 <code>2^Ω(n)</code></td>
 </tr>
 <tr>
-<td><strong>SETH</strong></td>
-<td>更强的版本：对每个 ε&gt;0，存在某个 k，使 k-SAT 不能 <code>2^((1-ε)n)</code>。也就是说 k 增大时，底数逼到 2，没有余量</td>
+<td>SETH</td>
+<td>对每个 ε&gt;0，存在某个 k，使 k-SAT 不能 <code>2^((1-ε)n)</code>。k 增大时底数逼到 2，没有余量</td>
 </tr>
 <tr>
-<td><strong>Gap-ETH</strong></td>
-<td>即使 m=O(n)，也没有 <code>O(2^(γn))</code> 算法能区分「可满足」与「任何赋值都违反 δ 比例子句」的实例</td>
+<td>Gap-ETH</td>
+<td>即使 m=O(n)，也没有 <code>O(2^(γn))</code> 算法能区分「可满足」和「任何赋值都违反 δ 比例子句」的实例</td>
 </tr>
 <tr>
-<td><strong>NSETH</strong></td>
+<td>NSETH</td>
 <td>非确定性版本：没有非确定性 <code>2^((1-ε)n)</code> 算法判定 k-CNF 不可满足</td>
 </tr>
 <tr>
-<td><strong>#ETH</strong></td>
+<td>#ETH</td>
 <td>精确计数版本：精确统计 3-CNF 的满足解个数需要 <code>2^Ω(n)</code></td>
 </tr>
 </tbody>
 </table>
-<p>这张表就是本文后面所有「下界」的地基。<strong>每一条都写着「不能更快」，因此每一条都能被一个「更快」的算法击穿。</strong></p>
-<h2>4. 为什么过去 27 年大家都信它</h2>
-<p>三个原因，都挺有说服力：</p>
-<p><strong>第一，算法进步的斜率在衰减。</strong> 回到第 1 节那张表：从 2 到 1.333 是巨幅改进，之后 1.333 → 1.308 → 1.3070，每步都更小。SETH 的提出动机之一正是这个现象——Schöning 和 PPSZ 的改进幅度随着 k 增大而消失，看起来就像在逼近一堵墙。</p>
-<p><strong>第二，它是「能干活」的假设。</strong> 一个假设好不好，不只看真假，还看它能不能生出一堆可检验、可用的推论。ETH 家族在这件事上极其成功，构成了「细粒度复杂性」整个子领域的骨架（下一节展开）。</p>
-<p><strong>第三，反例太贵。</strong> 想推翻 ETH，你得交出一个真算法，而不是一个论证。没人交得出来。</p>
-<h2>5. ETH 撑起了什么：几百篇论文的地基</h2>
-<p>这才是这次「倒塌」为什么震感这么强——<strong>倒的不是一个孤立的猜想，是一批论文的承重墙</strong>。</p>
-<p>ETH 与 SETH 支撑的下界，大致分四类：</p>
-<p><strong>（1）参数化复杂性的最优点。</strong> 以团问题 Clique 为例：<code>k</code>-Clique 最好的算法是 <code>n^Θ(k)</code>，用 ETH 做归约可以证明这个 <code>k</code> 在指数上是紧的。树宽（treewidth）参数下的独立集、支配集、约束满足，SETH 给出的是<strong>连指数底数的常数都紧</strong>的界。</p>
-<p><strong>（2）多项式时间问题里的「二次壁垒」。</strong> 这是工程上最有感的一类：SETH 曾被用来证明一批 P 内问题不可能在「真正亚二次」时间里解，包括编辑距离（Edit Distance）、最长公共子序列（LCS）、动态时间规整（DTW）、Fréchet 距离、正则表达式匹配。也就是说，过去十年里那些「我们相信 O(n²) 已经最优」的说法，很多是靠 SETH 背书的。</p>
-<p><strong>（3）近似算法的硬度。</strong> Gap-ETH 用来证明 Label Cover、稠密 CSP 的近似难度，并且排除 Clique、支配集在参数化近似上的非平凡算法。</p>
-<p><strong>（4）动态算法与数据结构下界。</strong> 维护可达性计数、动态最大强连通分量之类的问题，也有 SETH 链条上的下界。</p>
-<p>一句话：<strong>细粒度复杂性里，凡是「证明某算法不可能更好」的论文，八成在引用 ETH 或 SETH。</strong> 论文里那句轻描淡写的 "assuming SETH"，就是这次的震中。</p>
-<h2>6. 2026 年 10 月到底发生了什么</h2>
-<p>时间线（都是公开信息）：</p>
-<table>
-<thead>
-<tr>
-<th>日期</th>
-<th>事件</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2026-10-16</td>
-<td>OpenAI 内部模型产出 ETH 推翻的自然语言证明</td>
-</tr>
-<tr>
-<td>2026-10-17</td>
-<td>Lean 形式化完成（形式化版本的界比论文的锐界略松）</td>
-</tr>
-<tr>
-<td>2026-10-18</td>
-<td>同一批模型在局部平滑猜想上的结果（这是另一件事，别混）</td>
-</tr>
-<tr>
-<td>2026-10-25</td>
-<td>论文修订为第 3 版；同日「数学与 AI 顾问组」(AGMAI) 发表声明，<strong>反对</strong>「把 AI 结果先交给少数内部专家看」这种发布方式</td>
-</tr>
-<tr>
-<td>2026-10-26</td>
-<td>OpenAI 正式公告；论文与 Lean 文件公开在 <code>github.com/openai/math</code></td>
-</tr>
-<tr>
-<td>同期</td>
-<td>Hacker News 上 778 点、282 条评论；Scott Aaronson 在博客里写「上一道菜还没消化完，无限自助餐又来了」（原文 <em>Even as we struggle to digest the previous courses, the endless buffet continues!</em>）</td>
-</tr>
-</tbody>
-</table>
-<p>公告本身的措辞挺值得注意：OpenAI 说这些手稿应该被理解为「<strong>原始研究数据</strong>」，把「把数据变成科学理解」这一步交给外部专家。CS 这一项的组织者是 <strong>Russell Impagliazzo、Ramamohan Paturi（UCSD）和 Ryan Williams（MIT）</strong>——前两位正是 1999 年提出 ETH 的人，第三位是「用更快 SAT 算法推出电路下界」这条技术路线的开创者。让原提出者 + 主要对手方来组织验证，姿态是到位的。</p>
-<p>同时要说清楚：<strong>这是 OpenAI 的声明 + Lean 形式化 + 公开论文，不等于已经通过同行评审。</strong> 完整的社区消化估计要几个月到一年。Lean 通过检查意味着「定理在形式化语句下成立」，不意味着「形式化语句就是大家想说的那句话」——这是两件事，做形式化的人都懂。</p>
-<h2>7. 定理本身：这个算法在做什么</h2>
-<p>先把定理抄准确（论文 Theorem 1.1 的简化版）：</p>
+<p>这张表就是后面所有下界的地基。每一条都在说「不能更快」，所以每一条都能被一个更快的算法击穿。</p>
+<h2>为什么信了 27 年</h2>
+<p>三个原因。</p>
+<p>算法进步的斜率在衰减。回到前面那张表，从 2 到 1.333 是巨幅改进，之后 1.333 到 1.308 到 1.3070，每一步都更小。SETH 的提出动机就在这个现象里：Schöning 和 PPSZ 的改进幅度随 k 增大而消失，看起来像在逼近一堵墙。</p>
+<p>它是能干活的假设。一个假设好不好，不只看真假，还看它能不能生出一堆可检验的推论。ETH 家族在这件事上极其成功，整个细粒度复杂性子领域都是它的产物。</p>
+<p>反例太贵。想推翻 ETH，你得交出一个真算法，不是一个论证。二十七年里没人交得出来。</p>
+<h2>ETH 撑起的那些下界</h2>
+<p>这才是这次倒塌震感强的原因：倒的不是一个孤立猜想，是一批论文的承重墙。</p>
+<p>参数化复杂性的最优点。以团问题 Clique 为例，<code>k</code>-Clique 最好的算法是 <code>n^Θ(k)</code>，用 ETH 做归约可以证明这个 <code>k</code> 在指数上是紧的。树宽（treewidth）参数下的独立集、支配集、约束满足，SETH 给出的界连指数底数的常数都紧。</p>
+<p>多项式时间问题里的二次壁垒。这一类工程上最有感。SETH 曾被用来证明一批 P 内问题不可能在真正亚二次时间里解，包括编辑距离、最长公共子序列、动态时间规整、Fréchet 距离、正则表达式匹配。过去十年里那些「我们相信 O(n²) 已经最优」的说法，很多是靠 SETH 背书的。</p>
+<p>近似算法的硬度。Gap-ETH 用来证明 Label Cover、稠密 CSP 的近似难度，也排除 Clique 和支配集在参数化近似上的非平凡算法。</p>
+<p>动态算法的下界。维护可达性计数、动态最大强连通分量这类问题，也有挂在 SETH 链条上的下界。</p>
+<p>一句话：细粒度复杂性里，凡是证明某算法不可能更好的论文，八成在引用 ETH 或 SETH。论文里那句轻描淡写的 assuming SETH，就是这次的震中。</p>
+<h2>时间线</h2>
+<pre><code class="language-text">1999      Impagliazzo &amp; Paturi 提出 ETH
+2001      稀疏化引理发表；SETH 提出
+2010s     细粒度复杂性繁荣：编辑距离、LCS、OV、k-SUM 等大量 SETH 条件下界
+2013      Ryan Williams：ETH 假 ⟹ ENP ⊄ SIZE(O(n))（条件结果）
+2016      Williams 推翻 MA-SETH（不是 SETH 本体）
+2021      Chan &amp; Williams：确定性精确计数 2^(n-Ω(n/k))
+2026-10-16  AI 模型产出 ETH 推翻的自然语言证明
+2026-10-17  Lean 形式化完成
+2026-10-25  论文第三版；AGMAI 声明反对「内部专家先看」的发布方式
+2026-10-26  OpenAI 公告，论文与 Lean 文件公开；Impagliazzo / Paturi / Williams 组织独立验证
+</code></pre>
+<h2>算法做了什么</h2>
+<p>先把定理抄准确。论文 Theorem 1.1 的简化版：</p>
 <blockquote>
-<p>对每个固定的 k ≥ 2，存在<strong>确定性</strong>算法，输入 n 个变量、m 个子句的 k-CNF，在 <code>poly(n,m) · 2^(O(n·log log n / √log n))</code> 位运算与多项式空间内，精确输出满足解个数 <code>#F</code>。当 m ≤ Dn（固定 D）时，界收紧到 <code>poly(n,m) · 2^(O(n / √log n))</code>。</p>
+<p>对每个固定的 k ≥ 2，存在确定性算法，输入 n 个变量、m 个子句的 k-CNF，在 <code>poly(n,m) · 2^(O(n·log log n / √log n))</code> 位运算与多项式空间内，精确输出满足解个数 <code>#F</code>。当 m ≤ Dn（固定 D）时，界收紧到 <code>poly(n,m) · 2^(O(n / √log n))</code>。</p>
 </blockquote>
-<p>关键点罗列：</p>
-<ul>
-<li><strong>确定性</strong>：不是期望时间，不是平均情况，不是随机化的高概率界。这一条很重要，因为 ETH 的<strong>随机</strong>版本也被它一并推翻了。</li>
-<li><strong>精确计数</strong>：不是近似，是精确值。所以 <code>#ETH</code> 也倒了。</li>
-<li><strong>多项式空间</strong>：不是拿空间换时间的那种暴力 DP。</li>
-<li><strong>每个固定宽度 k 都成立</strong>，包括 k=3，所以 ETH、SETH、Gap-ETH、NSETH 全部被击穿（因为「判断计数是否 &gt; 0」就顺带判定了可满足性与不可满足性）。</li>
-</ul>
-<h3>7.1 思路拆解（不追求严格）</h3>
-<p>我读论文第 2 节的技术概述时，觉得它的骨架可以用四步概括：</p>
-<p><strong>第一步：把「计数」写成多项式求和。</strong></p>
-<p>对每个子句 e 构造一个「满足指示多项式」：</p>
+<p>四个修饰词都很关键。确定性，所以 ETH 的随机版本也倒了；精确计数，所以 #ETH 也倒了；多项式空间，不是拿空间换时间；每个固定宽度 k 都成立，k=3 就够击穿 ETH。</p>
+<p>我读第 2 节技术概述时，把它的骨架分成五步。</p>
+<p>第一步，把计数写成多项式求和。对每个子句 e 构造满足指示多项式：</p>
 <pre><code class="language-text">Φe(X) = 1 - Π_{v∈Ie} (1 - L_{e,v}(Xv))
 </code></pre>
-<p>在布尔点上，这个多项式正好在子句被满足时等于 1、否则等于 0。于是把全部子句乘起来再对所有 <code>2^n</code> 个赋值求和，就得到精确的解个数：</p>
+<p>在布尔点上，这个多项式在子句被满足时等于 1，否则等于 0。把全部子句乘起来，对所有 <code>2^n</code> 个赋值求和，就得到精确解个数：</p>
 <pre><code class="language-text">#F = Σ_{x∈{0,1}^n} Π_e Φe(x)
 </code></pre>
-<p><strong>第二步：正视障碍——子句之间共享变量，求和分不开。</strong></p>
-<p>如果这堆多项式彼此不共享变量，求和就能拆成若干个小组的乘积，立刻变快。但现实中变量到处串门，这就是整个问题的难点所在。</p>
-<p><strong>第三步：用「共享线性测量」把耦合切断。</strong></p>
-<p>论文引入了依赖参数 T 的<strong>线性替换</strong>：把每个变量在因子里的每次出现，替换成一个带参数 T 的线性形式。T=0 时它退化成原变量；而在挑选过的非零 T 值上，不同变量组之间的依赖只剩<strong>少数几个整数线性测量</strong>（shared linear measurements）。一旦把这些测量定住，每个因子就只属于一个组，求和就真的分解成了独立的小组求和。</p>
-<p><strong>第四步：用 Hermite 插值把答案拼回来。</strong></p>
-<p>替换后的和变成关于 T 的一元多项式 H(T)，而我们真正想要的 <code>#F</code> 就是 <code>H(0)</code>。可惜只在几个点上取到值不够（度数会超），所以要连<strong>泰勒系数</strong>（即局部导数值）一起算，再用 <strong>Hermite 插值</strong>（用值和导数信息重建多项式）把 H 恢复出来，读 H(0)。</p>
-<p>为什么这样省？因为替换形式在离开插值点时的偏移，每次都至少带一个「局部偏移量」的因子，所以算到 q 阶泰勒系数只需要涉及至多 q 个形式坐标的替换。再加上对「固定某些坐标为 1」做容斥，就能在不展开整个多元多项式的前提下拿到需要的系数和。</p>
-<p><strong>代价平衡</strong>是本方法的核心美学：三项成本要一起平衡——泰勒数据量、测量元组的枚举、小组内赋值的枚举。三项相乘，最优点正好落在 <code>2^(n log log n / √log n)</code> 这个量级上（附录 D 用<strong>布尔张量网络收缩</strong>重证了一遍，网络的「线数」直接决定代价）。</p>
-<p>对一般的 k-CNF，还要先做两步无损变换：用<strong>保计数的稀疏化</strong>把实例拆成稀疏实例之和，再用 OR 门 + <strong>变量复制 + Tovey 蕴含环</strong>把每个变量的出现次数压到 3 次——整条链上「解个数」始终不变。</p>
-<p><strong>第五步（更锐的界）：稀疏低次多项式 + 稀疏奇偶校验测试。</strong></p>
-<p>锐界版本走的是另一条路：在 <code>F_2</code> 上用稀疏低次多项式表示「哪些子句被违反」，再对若干子句集合施加<strong>奇偶校验测试</strong>。可行的赋值能通过所有测试，但任意校验系统都可能漏过不合格赋值，于是论文用 <strong>expander 码 / Tanner 码</strong>让「漏网的」赋值在扩展图上违反大量子句，再用确定性的贪心挑选测试、用模整数多项式把「偶数个违反」变成精确表达式里的一个因子，从而保证计数精确。</p>
-<h3>7.2 一个必须记住的限制</h3>
-<p>论文自己明确写了：<code>2^o(n)</code> 的加速<strong>不会</strong>通过一般多项式时间归约传递（那需要 <code>2^(n^o(1))</code>）。所以：</p>
-<ul>
-<li>本结果 ≠ 一般 NP 问题有亚指数算法；</li>
-<li>要把加速搬到具体问题上，需要一个<strong>能控制变量数</strong>的归约（从目标问题到固定宽度 SAT）。论文自己点出的正面例子是 Set Splitting（见 9.3），其余的要逐个看归约的具体形态。</li>
-</ul>
-<h2>8. 数字感受：为什么说「理论上颠覆，工程上无感」</h2>
-<p>这一节我自己动手算了一遍，因为媒体上流传的版本五花八门。</p>
-<p>比较对象是当前 3-SAT 最好的已知算法：随机 <code>1.307031578^n</code>（Jiang–Cai preprint），确定性 <code>1.32793^n</code>（Liu 2018）。新界的指数是 <code>n / √(ln n)</code>（对数取自然对数，且忽略多项式因子、把常数都当 1）：</p>
+<p>第二步，正视障碍。子句之间共享变量，求和拆不开。如果这堆多项式彼此不共享变量，求和立刻变成若干小组独立的求和，整个问题就变快了。现实中变量到处串门，这就是难点。</p>
+<p>第三步，用共享线性测量切断耦合。论文引入依赖参数 T 的线性替换，把每个变量在因子里的每次出现换成带参数 T 的线性形式。T=0 时它退化成原变量；在挑过的非零 T 值上，不同变量组之间的依赖只剩下少数几个整数线性测量。把这些测量定住，每个因子就只属于一个组，求和真的分解成了独立的组内求和。</p>
+<p>第四步，用 Hermite 插值把答案拼回来。替换后的和变成以 T 为变量的一元多项式 H(T)，我们要的 <code>#F</code> 就是 <code>H(0)</code>。只在几个点取值不够，度数会超，所以还得连泰勒系数一起算，再用 Hermite 插值（拿值和导数信息重建多项式）把 H 恢复出来，读 H(0)。</p>
+<p>这样省的原因是：替换形式离开插值点时，偏移量每次都至少带一个因子，所以算到 q 阶泰勒系数只需要涉及至多 q 个形式坐标。再对「固定某些坐标为 1」做容斥，就能不展开整个多元多项式，直接拿到需要的系数和。</p>
+<p>第五步，平衡三项代价。泰勒数据量、测量元组枚举、组内赋值枚举，三项相乘，最优点正好落在 <code>2^(n log log n / √log n)</code> 这个量级。附录 D 用布尔张量网络收缩重证了一遍，网络的线数直接决定代价。</p>
+<p>对一般 k-CNF 还要先做两步无损变换：用保计数的稀疏化把实例拆成稀疏实例之和，再用 OR 门加变量复制和 Tovey 蕴含环，把每个变量的出现次数压到 3 次。整条链上解个数始终不变。</p>
+<p>更锐的界走另一条路。在 <code>F_2</code> 上用稀疏低次多项式表示哪些子句被违反，再对若干子句集合施加稀疏奇偶校验测试。可行赋值能通过所有测试，但任意校验系统都可能漏过不合格赋值，于是论文用 expander 码（Tanner 码）让漏网的赋值在扩展图上违反大量子句，再用确定性贪心挑测试、用模整数多项式把「偶数个违反」变成精确表达式里的一个因子，保证计数不失真。</p>
+<p>论文自己写了限制：<strong><code>2^o(n)</code> 的加速不会通过一般多项式时间归约传递</strong>，那需要 <code>2^(n^o(1))</code>。所以这个结果不蕴含一般 NP 问题有亚指数算法。要把加速搬到具体问题上，需要一个能控制变量数的归约。论文点名的正面例子是 Set Splitting，一个元素一个布尔变量，固定 k 时直接给出宇宙规模上的亚指数算法。</p>
+<h2>交叉点在哪</h2>
+<p>这一节我自己算了一遍，因为媒体上流传的版本五花八门，我对不上。</p>
+<p>比较对象是当前最好的 3-SAT 算法：随机 1.307031578^n（Jiang–Cai preprint），确定性 1.32793^n（Liu 2018）。新界的指数是 <code>n / √(ln n)</code>，对数取自然对数，忽略多项式因子，常数都按 1 算：</p>
 <pre><code class="language-python">import math
 
-def new_bound_exp(n):          # 2 的指数部分
+def new_exp(n):      # 2 的指数部分
     return n / math.sqrt(math.log(n))
 
-def old_bound_exp(n, base):    # 老算法 2 的指数部分
+def old_exp(n, base):
     return n * math.log2(base)
 
 for n in [10**3, 10**4, 10**6]:
-    print(n, new_bound_exp(n), old_bound_exp(n, 1.307031578))
-# 1000   380.5   386.3
-# 10000  3295.1  3862.9
-# 1000000 269040 386294
+    print(n, new_exp(n), old_exp(n, 1.307031578))
+# 1000     380.5     386.3
+# 10000    3295.1    3862.9
+# 1000000  269040    386294
 </code></pre>
-<p>更直观的是<strong>交叉点</strong>——新算法第一次跑赢现有最好算法的变量数：</p>
-<pre><code class="language-text">新界 vs 随机 1.307032^n          交叉点 n ≈ 814
-新界 vs 确定性 1.32793^n         交叉点 n ≈ 393
-完整界（含 log log n 因子）vs 1.307032^n   交叉点 n ≈ 4.8 × 10^78
+<p>交叉点，也就是新算法第一次跑赢现有最好算法的变量数：</p>
+<pre><code class="language-text">新界 vs 随机 1.307032^n                 n ≈ 814
+新界 vs 确定性 1.32793^n                n ≈ 393
+完整界（含 log log n 因子）vs 1.307032^n   n ≈ 4.8 × 10^78
 </code></pre>
-<p>也就是说：</p>
-<ul>
-<li>用最简化的界、忽略所有多项式因子，大约 800 个变量之后新算法才开始有理论优势——而在那个尺寸上双方都还是「跑不动」，比较的只是指数增长率；</li>
-<li>用论文完整的、含 <code>log log n</code> 因子的界，交叉点跑到 <code>10^78</code> 量级的变量数上，这个数字比可观测宇宙的原子数还大得多；</li>
-<li>Lean 里形式化的那个版本界更松，媒体算出来的交叉点是「n 有大约 2400 位十进制数」。</li>
-</ul>
-<p>结论：<strong>这不是一个能用的算法，这是一个能改写教科书的算法。</strong> 工程上唯一马上需要改的东西，是那些写着 "assuming ETH" 的论文的脚注。</p>
-<h2>9. 什么倒了，什么还站着</h2>
-<h3>9.1 倒了</h3>
-<ul>
-<li>ETH、SETH、Gap-ETH、NSETH、#ETH，以及它们的<strong>随机化版本</strong>；</li>
-<li>建立在这些假设上的<strong>全部条件下界</strong>。注意用语：这些定理在逻辑上并没有变成「假」，而是变成了<strong>空真</strong>（vacuously true）——前提不成立，蕴涵式自动为真。数学上还算成立，信息量为零。</li>
-</ul>
-<h3>9.2 还站着</h3>
+<p>三个读数。用最简化的界、忽略所有多项式因子，大约 814 个变量之后新算法才有理论优势，而在那个尺寸上双方都跑不动，比的只是指数增长率。用论文完整界，交叉点跑到 10 的 78 次方量级，比可观测宇宙的原子数大得多。Lean 里形式化那版的界更松，媒体算出来的交叉点是 n 有大约 2400 位十进制数。</p>
+<p>所以这不是一个能用的算法，是一个能改教科书的算法。工程上马上要改的，只是那些写着 assuming ETH 的论文脚注。</p>
+<h2>什么倒了，什么还站着</h2>
+<p>倒掉的是 ETH、SETH、Gap-ETH、NSETH、#ETH，以及它们的随机化版本，还有建立在这些假设上的全部条件下界。注意用语：那些定理在逻辑上没变成假，而是变成空真，前提不成立，蕴涵式自动为真。数学上还算成立，信息量为零。</p>
+<p>还站着的，有几件：</p>
 <table>
 <thead>
 <tr>
-<th>还活着的东西</th>
+<th>还活着</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>P ≠ NP</strong></td>
-<td>完全没被触及。论文明确说 <code>2^o(n)</code> 不传递</td>
+<td>P ≠ NP</td>
+<td>完全没被触及。<code>2^o(n)</code> 不传递</td>
 </tr>
 <tr>
-<td><strong>OVC（正交向量猜想）</strong></td>
-<td>LCS、正则表达式匹配等的下界可以从 OVC 重新推导，不必挂 SETH</td>
+<td>OVC（正交向量猜想）</td>
+<td>LCS、正则表达式匹配的下界可以从 OVC 重新推导，不必挂 SETH</td>
 </tr>
 <tr>
-<td><strong>一般 CNF-SAT 假设</strong></td>
-<td>「宽度随 n 增长的一般 CNF-SAT 没有 <code>2^((1-δ)n)</code> 算法」这条<strong>未被推翻</strong>，因为新算法只对<strong>固定宽度</strong> k 成立。Fréchet 距离、图直径近似等结果可挂它</td>
+<td>一般 CNF-SAT 假设</td>
+<td>「宽度随 n 增长的一般 CNF-SAT 没有 <code>2^((1-δ)n)</code> 算法」没被推翻。新算法只对固定宽度 k 成立</td>
 </tr>
 <tr>
-<td><strong>证明系统的指数下界</strong></td>
-<td>例如 regular resolution 的无条件下界，跟 ETH 无关，不受影响</td>
+<td>证明系统的指数下界</td>
+<td>例如 regular resolution 的无条件下界，跟 ETH 无关</td>
 </tr>
 <tr>
-<td><strong>密码学</strong></td>
+<td>密码学</td>
 <td>攻击密码学需要多项式时间算法，这里没有。Williams 让人检查过，暂时没有现成密码系统被波及</td>
 </tr>
 <tr>
-<td><strong>「弱 ETH」</strong></td>
-<td><code>2^(n^(1-ε))</code> 这种弱化版本仍可能成立，很多人会改用这个（见下节）</td>
+<td>弱 ETH</td>
+<td><code>2^(n^(1-ε))</code> 这种弱化版本仍可能成立，很多人会改用这个</td>
 </tr>
 <tr>
-<td><strong>参数化近似的部分下界</strong></td>
-<td>依赖 k-Orthogonal Vectors 那类的仍可保留</td>
+<td>部分参数化下界</td>
+<td>挂在 k-Orthogonal Vectors 那类的还能留</td>
 </tr>
 </tbody>
 </table>
-<h3>9.3 反向收获：一些「无条件结论」掉出来了</h3>
-<p>这是我觉得最漂亮的部分。Ryan Williams 2013 年有个著名条件结果：</p>
-<blockquote>
-<p><strong>如果 ETH 是假的（即 3-SAT 有 <code>2^o(n)</code> 算法），那么 ENP ⊄ SIZE(O(n))</strong>（存在 NP 可解、但没有线性大小电路的语言）。</p>
-</blockquote>
-<p>这个「如果」本来是个假设。现在前半句成了定理，于是后半句<strong>无条件成立</strong>——论文给出 <code>ENP ⊄ SIZE(O(n))</code>，定量版本是存在语言 <code>L ∈ ENP</code> 与常数 c&gt;0，使无穷多个 n 上电路门数 <code>C_L(n) &gt; c·√(n log n)</code>。</p>
-<p>顺带还掉出来一批具体算法：</p>
-<ul>
-<li><strong>图上的精确计数</strong>：独立集个数、固定 q 的 q-着色方案数，<code>2^o(v)</code> 时间；完美匹配数 <code>2^o(v+e)</code>；</li>
-<li><strong>Max-k-SAT 近似</strong>：对任意 ε&gt;0，以 <code>1 - 2^(-Ω(n))</code> 的概率找到满足至少 <code>OPT - εm</code> 个子句的赋值，时间 <code>poly(n,m) · 2^(O(n(log log n)²/√log n))</code>；</li>
-<li><strong>Set Splitting</strong>（每个集合大小 ≤ k）：因为存在「一个元素一个布尔变量」的保变量数归约，固定 k 时新算法直接给出<strong>宇宙规模上的亚指数算法</strong>——这是论文点名的「加速可以搬过去」的正面例子；</li>
-<li><strong>常数局部布尔映射的反演</strong>：<code>2^o(n)</code> 内可精确计数、可求原像、可均匀采样——这直接排除了 Goldreich 那类候选单向函数的 <code>2^Ω(n)</code> 反演硬度（注意：<strong>不排除</strong>多项式时间单向性，所以密码学仍安好）。</li>
-</ul>
-<h2>10. 后 ETH 时代怎么活</h2>
-<p>理论计算机科学界这两天的实际反应，比「震惊」复杂得多。cstheory 上 10 月 27 日最热的问题就叫 <strong>《How to salvage arguments that assume ETH》</strong>（如何拯救假定 ETH 的论证），作者的观察很到位：</p>
-<blockquote>
-<p>如果这些声称成立，一大批算法不可能性结果就变成「空真」。但这些论文的概念信息大多还在：对目标问题拿到实质更快的算法，就蕴含 3-SAT 的改进算法。</p>
-</blockquote>
-<p>Michael Lampis 的回答给了个很实用的路线——把 ETH 换成一个更弱、但仍足够用的假设，比如：</p>
-<pre><code class="language-text">Weak ETH:  3-SAT 不能在 2^(n^(1-ε)) 时间内求解（对某个 ε&gt;0）
-</code></pre>
-<p>然后按「依赖程度」分类自己的结果：</p>
-<ul>
-<li><strong>还能活</strong>：FPT 最优性里那些「大函数」的结果。比如证明某问题不能 <code>2^o(k²)</code>，归约从 N 变量 3-SAT 出发令 <code>k = Θ(√N)</code>，换成 Weak ETH 后只是把界弱化成 <code>2^(k^(1-ε))</code> 之类，仍然有话可说；</li>
-<li><strong>基本报废</strong>：这档程序里最有意思的部分——区分「略超指数 <code>k^Θ(k)</code>」与「指数」的那类精细结果，因为 Weak ETH 不够细，挡不住指数上的对数级改进；</li>
-<li><strong>存疑</strong>：基于 k-Clique 的 XP 最优性结果，暂时看不到如何在 Weak ETH 下重建。Lampis 提到 k-支配集这类可以挂到 <strong>k-Orthogonal Vectors 假设</strong>上的结果「暂时看着还行」，因为 k-OV 假设本身仍然幸存；</li>
-<li><strong>要重做</strong>：树宽参数下「连常数都紧」的最优性，原本是 SETH 的地盘，需要换新的假设体系。</li>
-</ul>
-<p>对我们这些<strong>不做复杂性理论</strong>的人，实际启示只有三条：</p>
-<ol>
-<li><strong>「条件下界」的记账方式要改。</strong> 以后读论文看到 "assuming ETH"，得先看它能不能挂到 OVC 或 CNF-SAT 假设上，挂不上的就当成「历史文物」看待。</li>
-<li><strong>下界是相对的，而且比想象中脆。</strong> 这次事件最锋利的教训不是「AI 赢了」，而是「一个被 27 年经验支撑、被几百篇论文引用的假设，可能只差一个没被想到的算法」。Knuth 当年说「也许 P=NP，只是那个多项式的次数很大」被当成怪论，现在这条曲线的钟摆好像回摆了一点。</li>
-<li><strong>形式化的价值被推高了。</strong> 10 天之内从自然语言证明到 Lean 形式化，这在验证层面是巨大加速。但同时也要清楚它的边界：Lean 检查的是「语句到语句」的推导，不是「语句是否表达了你想说的东西」。</li>
-</ol>
-<h2>11. 时间线速查</h2>
-<pre><code class="language-text">1999  Impagliazzo &amp; Paturi 提出 ETH
-2001  稀疏化引理（IPZ）发表，ETH ⇔ 所有 k-SAT 无亚指数算法；SETH 提出
-2010s 细粒度复杂性繁荣：编辑距离、LCS、OV、k-SUM 等大量 SETH 条件下界
-2013  Ryan Williams：ETH 假 ⟹ ENP ⊄ SIZE(O(n))（条件结果）
-2021  Chan &amp; Williams：确定性精确计数 2^(n-Ω(n/k))
-2016  Williams 推翻 MA-SETH（注意：不是 SETH 本体）
-2026-10-16  AI 模型产出 ETH 推翻证明
-2026-10-17  Lean 形式化完成
-2026-10-25  论文第 3 版；AGMAI 声明反对「内部专家先看」的发布方式
-2026-10-26  OpenAI 公告，论文与 Lean 文件公开；Impagliazzo / Paturi / Williams 组织独立验证
-后续    社区消化、Weak ETH 之类替代假设的重建；依赖 ETH 的论文逐一重新标注
-</code></pre>
-<h2>12. 我的几点判断</h2>
-<p>写完上面这些，说说我自己的看法（会随时间被推翻，欢迎回来打脸）：</p>
-<p><strong>第一，这件事在「AI 做数学」这条线上，比 ETH 本身更重要。</strong> ETH 是块好招牌——它足够有名、足够老、足够被相信，所以它的倒塌自带传播力。真正值得记的是<strong>流程</strong>：模型 10 月 16 日给出证明，17 日 Lean 通过，26 日连同形式化文件一起公开，同时把验证工作交给原假设提出者。这套「形式化 + 外部 shepherd + 公开原始产物」的发布流程，可能会成为以后 AI 数学结果的默认姿态。AGMAI 那条反对意见也要认真读：先给小圈子看，会制造信息不对称。</p>
-<p><strong>第二，别急着把 ETH 从教科书里删掉。</strong> 一个被推翻的假设仍然有教学价值：它示范了「条件假设」这套方法论怎么把一个无法企及的下界问题，转化成可操作的推理链。以后教科书的写法大概是「ETH 曾经这样用，它于 2026 年被推翻，现在我们用 X 代替」。</p>
-<p><strong>第三，对做算法工程的人来说，唯一需要改的是引用习惯。</strong> 我不研究复杂性理论，但我的领域里（检测、压缩、检索）也有不少「理论上界」的引用。以后看到 "assuming ETH/SETH" 的时候，多问一句：这条结论有没有别的假设支撑？如果有，换成它；如果没有，就把结论降级成「历史共识」。</p>
-<p>最后留个坐标：论文在 <a href="https://github.com/openai/math/tree/main/preprints/The-Exponential-Time-Hypothesis-is-False-October-25-2026">github.com/openai/math</a>，Lean 文件在同目录的 <code>build/</code> 下。自己读一遍比看任何二手解读都强——尤其是第 2 节的技术概述，写得比大部分论文都清楚。</p>
+<p>另有一批无条件结论掉出来了，这是我觉得整件事里最有意思的部分。</p>
+<p>Ryan Williams 2013 年有个条件结果：如果 ETH 是假的，那么 ENP 不包含在 SIZE(O(n)) 里，也就是存在一个 NP 可解、但没有线性大小电路的语言。前半句现在成了定理，所以后半句无条件成立。论文给出 <code>ENP ⊄ SIZE(O(n))</code>，定量版本是存在语言 <code>L ∈ ENP</code> 与常数 c&gt;0，使无穷多个 n 上电路门数 <code>C_L(n) &gt; c·√(n log n)</code>。</p>
+<p>顺带掉出来的具体算法还有几个。图上精确计数：独立集个数、固定 q 的 q-着色方案数 <code>2^o(v)</code> 时间，完美匹配数 <code>2^o(v+e)</code>。Max-k-SAT 近似：对任意 ε&gt;0，以 <code>1-2^(-Ω(n))</code> 的概率找到满足至少 <code>OPT-εm</code> 个子句的赋值。常数局部布尔映射的反演：<code>2^o(n)</code> 内可精确计数、求原像、均匀采样，这直接排除了 Goldreich 那类候选单向函数的 <code>2^Ω(n)</code> 反演硬度，但不排除多项式时间单向性，所以密码学仍安好。</p>
+<h2>后 ETH 时代怎么活</h2>
+<p>理论计算机科学界的实际反应比「震惊」复杂得多。cstheory 上 10 月 27 日最热的问题就叫《How to salvage arguments that assume ETH》，作者的观察很到位：如果这些声称成立，一大批不可能性结果变成空真，但论文的概念信息大多还在，对目标问题拿到更快的算法，就等于 3-SAT 的改进算法。</p>
+<p>Michael Lampis 的回答给了条实用路线，把 ETH 换成更弱但仍够用的假设，比如「3-SAT 不能在 <code>2^(n^(1-ε))</code> 时间内求解」。然后按依赖程度分类自己的结果。</p>
+<p>FPT 最优性里那些大函数的结果还能活。比如证明某问题不能 <code>2^o(k²)</code>，归约从 N 变量 3-SAT 出发令 <code>k = Θ(√N)</code>，换成弱 ETH 只是把界弱化成 <code>2^(k^(1-ε))</code> 之类，仍然有话可说。</p>
+<p>基本报废的是这档程序里最有意思的部分，也就是区分「略超指数 <code>k^Θ(k)</code>」和「指数」的精细结果。弱 ETH 不够细，挡不住指数上的对数级改进。</p>
+<p>存疑的是基于 k-Clique 的 XP 最优性结果，暂时看不到怎么在弱 ETH 下重建。Lampis 提到 k-支配集这类可以挂到 k-Orthogonal Vectors 假设上的结果「暂时看着还行」，因为 k-OV 假设本身还活着。</p>
+<p>要重做的是树宽参数下连常数都紧的最优性，那本来是 SETH 的地盘，得换一套假设体系。</p>
+<h2>我需要修正的三个判断</h2>
+<p>写完上面这些，说说我自己此前想错的地方。</p>
+<p>第一个，我以为 ETH 这种「大家都相信但没人证明」的假设会活得更久。它的支持度有两个来源：算法改进的斜率在衰减，以及它生出了一整个子领域。这两条在 27 年里被反复验证，看起来像经验规律。结果真正的原因可能只是没人想到那个多项式替换的技巧。经验规律的保质期比想象中短。</p>
+<p>第二个，我以为条件性下界是安全的研究方式，因为它不赌真假，只赌依赖关系。这次事故说明它赌的是另一件事：赌那个前提假设不会在某天被一个具体构造推翻。「条件」二字给了心理上的安全感，实际上只是把风险挪到了别处。</p>
+<p>第三个，我原以为这类结果会先出现在社区 preprint 里，由某个博士生贴出来。这次是 AI 先给出自然语言证明，一天后 Lean 通过，然后连同形式化文件一起公开，验证工作交给原假设的提出者。这个流程本身比 ETH 倒掉更值得记。</p>
+<p>对不做复杂性理论的人，我认为实际影响只有一条：以后看到 assuming ETH，多问一句这条结论有没有别的假设撑着。有就换，没有就把结论降级成历史共识。我自己那几篇讲检测和压缩的文章里也有不少这类引用，回头得挨个查。</p>
+<p>论文和 Lean 文件在 <a href="https://github.com/openai/math/tree/main/preprints/The-Exponential-Time-Hypothesis-is-False-October-25-2026">github.com/openai/math</a>，第 2 节的技术概述写得比大部分论文都清楚，自己读一遍比看任何二手解读都强。</p>
 <h2>参考</h2>
 <ol>
-<li>OpenAI, <em>Working with academic communities to build scientific understanding</em>, 2026-10-26.</li>
-<li>OpenAI, <em>THE EXPONENTIAL TIME HYPOTHESIS IS FALSE</em>, preprint, 2026-10-17 / revised 2026-10-25.</li>
-<li>R. Impagliazzo, R. Paturi, <em>Which Problems Have Strongly Exponential Complexity?</em>, JCSS 2001.</li>
-<li>R. Impagliazzo, R. Paturi, F. Zane, <em>Which Problems Have Strongly Exponential Complexity?</em> (sparsification), 2001.</li>
-<li>R. Williams, <em>Alternations of Nondeterministic Classes and Circuit Lower Bounds</em>（ETH 假 ⟹ ENP 无线性电路），2013.</li>
-<li>Hacker News 讨论：<em>The Exponential Time Hypothesis Is False [pdf]</em>，778 points / 282 comments.</li>
-<li>cstheory.stackexchange #57311, <em>How to salvage arguments that assume ETH</em>（Hermann Gruber 提问，Michael Lampis 回答）。</li>
-<li>Scott Aaronson, <em>Shtetl-Optimized</em>, 2026-10-26 博文及评论区。</li>
-<li>科技日报 / 澎湃新闻等中文报道，2026-10-27（注意：部分报道把 ETH 与以太坊混淆，慎引）。</li>
+<li>OpenAI, Working with academic communities to build scientific understanding, 2026-10-26.</li>
+<li>OpenAI, THE EXPONENTIAL TIME HYPOTHESIS IS FALSE, 2026-10-17 / revised 2026-10-25.</li>
+<li>R. Impagliazzo, R. Paturi, Which Problems Have Strongly Exponential Complexity?, JCSS 2001.</li>
+<li>R. Impagliazzo, R. Paturi, F. Zane, 稀疏化引理, 2001.</li>
+<li>R. Williams, Alternations of Nondeterministic Classes and Circuit Lower Bounds, 2013.</li>
+<li>Hacker News 讨论帖，778 points / 282 comments.</li>
+<li>cstheory.stackexchange #57311, How to salvage arguments that assume ETH（Hermann Gruber 提问，Michael Lampis 回答）.</li>
+<li>Scott Aaronson, Shtetl-Optimized, 2026-10-26.</li>
+<li>中文媒体报道若干，2026-10-27（部分把 ETH 与以太坊混淆，慎引）。</li>
 </ol>
       </div>
       <div class="art-foot">

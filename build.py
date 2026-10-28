@@ -749,7 +749,7 @@ def load_posts():
         words = len(re.findall(r"[\u4e00-\u9fff]", body)) + len(re.findall(r"[A-Za-z]+", body))
         posts.append({
             "slug": slug,
-            "mtime": os.path.getmtime(os.path.join(d, fn)),
+            "order": int(meta.get("order", "0").strip() or 0),
             "title": meta.get("title", slug).strip('"'),
             "date": meta.get("date", "").strip('"'),
             "summary": meta.get("summary", "").strip('"'),
@@ -759,7 +759,7 @@ def load_posts():
             "html": body_html,
             "words": words,
         })
-    posts.sort(key=lambda p: (p["date"], p["mtime"]), reverse=True)
+    posts.sort(key=lambda p: (p["date"], p["order"]), reverse=True)
     return posts
 
 
