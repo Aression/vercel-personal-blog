@@ -749,15 +749,17 @@ def load_posts():
         words = len(re.findall(r"[\u4e00-\u9fff]", body)) + len(re.findall(r"[A-Za-z]+", body))
         posts.append({
             "slug": slug,
+            "mtime": os.path.getmtime(os.path.join(d, fn)),
             "title": meta.get("title", slug).strip('"'),
             "date": meta.get("date", "").strip('"'),
             "summary": meta.get("summary", "").strip('"'),
             "tags": tags,
-            "minutes": max(1, round(len(body) / 900)),
+            "minutes": max(1, round(len(re.findall(r"[\u4e00-\u9fff]", body)) / 380
+                                    + len(re.findall(r"[A-Za-z]+", body)) / 200)),
             "html": body_html,
             "words": words,
         })
-    posts.sort(key=lambda p: p["date"], reverse=True)
+    posts.sort(key=lambda p: (p["date"], p["mtime"]), reverse=True)
     return posts
 
 

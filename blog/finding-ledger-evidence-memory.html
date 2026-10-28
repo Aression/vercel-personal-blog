@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>Agent 的上下文一压缩，假设就变成了事实 — 吕迪</title>
+<meta name="description" content="长程排查断掉，多数时候不是模型不够聪明，是记忆里丢了「适用条件」。这篇是 Finding Ledger 的设计笔记：为什么把「发现」从对话里拆出来单独建模、为什么一条结论需要三个互不替代的状态、以及为什么检索这块我坚持不用向量。">
+<meta name="author" content="Di Lv (吕迪)">
+<link rel="canonical" href="https://lvdi-profile.vercel.app/blog/finding-ledger-evidence-memory.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent 的上下文一压缩，假设就变成了事实 — 吕迪">
+<meta property="og:description" content="长程排查断掉，多数时候不是模型不够聪明，是记忆里丢了「适用条件」。这篇是 Finding Ledger 的设计笔记：为什么把「发现」从对话里拆出来单独建模、为什么一条结论需要三个互不替代的状态、以及为什么检索这块我坚持不用向量。">
+<meta property="og:url" content="https://lvdi-profile.vercel.app/blog/finding-ledger-evidence-memory.html">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/">吕迪</a>
+    <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">菜单</button>
+    <nav id="nav" aria-label="页面导航">
+      <ul>
+        <li><a href="/">首页</a></li>
+        <li><a href="/about.html">关于</a></li>
+        <li><a href="/projects.html">项目</a></li>
+        <li><a href="/blog/" class="active" aria-current="page">文章</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <article class="article">
+    <div class="article-wrap">
+      <div class="art-meta">
+        <span>2026-10-28</span>
+        <span class="sep">·</span>
+        <span>约 10 分钟</span>
+        <span>Agent</span><span>上下文压缩</span><span>工程设计</span><span>SQLite</span>
+      </div>
+      <h1>Agent 的上下文一压缩，假设就变成了事实</h1>
+      <p class="art-sum">长程排查断掉，多数时候不是模型不够聪明，是记忆里丢了「适用条件」。这篇是 Finding Ledger 的设计笔记：为什么把「发现」从对话里拆出来单独建模、为什么一条结论需要三个互不替代的状态、以及为什么检索这块我坚持不用向量。</p>
+      <hr class="art-rule">
+      <div class="prose">
+<p>前阵子我在一台 Windows 机器上追一个推理后端的问题。正文大概是这样：模型在第 40 轮左右，把「已经用四个探针排除了 tokenizer shift」这件事忘干净了，重新从零开始，把同样四个探针又跑了一遍。钱和时间都花了，结论还是原来那个。</p>
+<p>这不是模型蠢。它在那一刻确实「不知道」自己已经排除过一条路，因为那段历史在上一次压缩里被摘要成了一句「排查了 tokenizer 相关问题」。</p>
+<p>摘要没有骗人，但也没说清楚。它把「试过什么」和「结论是什么」揉在一起，然后丢掉了「在哪个 commit、哪个后端、什么 dtype 下成立」这个前提。三轮之后，模型把这条结论拿去用了，而那时我已经换过分支。</p>
+<p>我把这类事故归结成三种，都是可以复现的：</p>
+<p>一种是压缩后遗忘。已经排除的路径被压缩掉，模型重新踩一遍。</p>
+<p>一种是假设升格成事实。某次推理里我写过一句「大概是权重同步路径的问题」，纯粹是直觉。两轮之后它出现在摘要里，再过两轮，模型已经在说「确定是权重同步问题」。中间没有任何一个实验支持它。</p>
+<p>第三种更隐蔽：条件变了，结论没变。结论本身没错，但它是某个 commit、某个后端、某个量化档位下的结论。切了分支之后它就不是事实了，可它在上下文里长得跟事实一模一样。</p>
+<h2>我一开始想的方向都不对</h2>
+<p>第一个念头是向量库。把所有排查记录 embedding 进去，需要的时候按相似度捞回来。</p>
+<p>这条路我很快自己否掉了。<strong>相似不等于适用。</strong> 一段文字跟当前任务在语义上高度接近，完全可能是因为它讲的是同一个模块的旧版本问题。向量相似度不懂「commit 已经变了」，也不懂「这条结论是在另一种后端上得到的」。它擅长的是「找到相关的文字」，而我要的是「这条结论现在还能不能用」。这两个问题的答案经常相反。</p>
+<p>第二个念头是让模型自己总结，压缩的时候让它写一份「排查纪要」带上。</p>
+<p>试过，坏得更隐蔽。模型写纪要时会自然地把不确定的东西写得很确定，这是生成模型的默认倾向，不是它的错。而一份纪要写出来之后，下一轮就没人知道哪句话有证据、哪句是猜的。信息没少，只是全被拉平成同一个可信度。</p>
+<p>第三个念头是干脆不要压缩，把历史全留着。token 账算不过来，这不用多说。</p>
+<p>三个方向错在同一个地方：我都默认了「要记住的是对话」。真正该记住的东西比对话小得多，也硬得多。</p>
+<h2>该存的是「发现」</h2>
+<p>排查过程中真正可复用的是那么几条东西：我观察到什么、我诊断出什么、有什么约束、做了什么决定、下一步步骤是什么。它们各自带着自己的证据和适用范围。</p>
+<p>所以 Finding Ledger 存的是 finding（发现），不是消息，也不是文档。一条 finding 有主张、有来源、有适用条件、有状态、有演化历史，落在本地一个 SQLite 文件里。</p>
+<p>它跟旁边几个东西的分工得说清楚，不然容易互相替代：工作日志管的是事件顺序和任务归因，<code>AGENTS.md</code> 管的是 agent 该守的规矩，设计文档管的是系统长什么样。发现、证据、适用范围这三件事，之前没人管，所以单独做一层。</p>
+<h2>一条结论要三个状态，而不是一个</h2>
+<p>这是我改得最久的地方。最早我的 schema 里只有一个 <code>status</code>，取值是 <code>active</code> 和 <code>inactive</code> 之类。</p>
+<p>问题是它必须同时回答三个不相关的问题：</p>
+<p>现有证据支持这条主张，还是反驳它？这条记录在整个账本里处于什么位置，是当前的还是被取代的？在当前这个项目、这个版本、这个环境下，我能不能直接用它？</p>
+<p>这三件事可以任意组合。一条被反证的假设，很可能仍然是「当前」的（我还在这个假设的坟头上做排查）；一条被取代的旧结论，可能在旧版本上依然是「正确」的；用户说「本轮实验只用 GPU 0-3」这条约束，证据强度上根本谈不上支持或反驳，但它必须被遵守。</p>
+<p>塞进一个字段，就只能靠约定俗成，然后模型会自己发明组合。</p>
+<p>所以拆成三个正交维度：</p>
+<p><code>epistemic_state</code> 管证据：<code>unassessed</code> / <code>provisional</code> / <code>supported</code> / <code>contested</code> / <code>refuted</code> / <code>inconclusive</code> / <code>not_applicable</code>。</p>
+<p><code>lifecycle_state</code> 管位置：<code>current</code> / <code>superseded</code> / <code>withdrawn</code> / <code>archived</code>。</p>
+<p>applicability 管当下能不能用：<code>applicable</code> / <code>conditional</code> / <code>needs_revalidation</code> / <code>incompatible</code> / <code>unknown</code>。这一维不是存下来的静态字段，而是每次检索时按当前任务上下文算出来的。</p>
+<p>配套两个字段：<code>claim_kind</code>（observation / diagnosis / constraint / decision / procedure，描述这条东西是什么性质，不表示可信度）和 <code>retrieval_policy</code>（always / relevant / on_demand / never）。</p>
+<h2>三条我不肯让步的约束</h2>
+<p>第一条：<code>epistemic_state</code> 里没有 <code>verified</code>，也没有 <code>user-confirmed</code>。</p>
+<p>这两个值看起来很有用，但它们把「谁说的」和「有多少证据」混成了一个字段。一旦存在 <code>user-confirmed</code>，模型会把它当成证据升级的捷径，而用户确认过的也可能只是用户的猜测。用户陈述我单独存成 <code>source_kind = user_statement</code> 的证据，它是一条来源，不是结论本身。没有证据支撑的主张，状态只能是 <code>provisional</code>。</p>
+<p>同样地，代码也可能被读错，日志也可能采集不全，实验也可能有混杂因素。<code>source_kind = log</code> 不等于可信。</p>
+<p>第二条：<code>refuted</code> 不等于 <code>superseded</code>。</p>
+<p>被反证的假设通常还处在 <code>current</code> 生命周期里，它是「已排除路径」，不是垃圾。长程排查里有两类知识同样值钱：知道正确的做法，和知道哪条路走不通。删掉后者，模型就会一次次回到已经被排除的分支上，这就是开头那次事故。</p>
+<p>反过来，被取代的结论也不一定是错的。它可能只是适用于旧版本，所以 <code>superseded</code> 只降级它在当前任务里的地位，不抹掉它在历史里的正确性。</p>
+<p>第三条：条件不明确不许默认适用。</p>
+<p>判断不了的时候就落到 <code>unknown</code> 或 <code>needs_revalidation</code>。这里的诱惑很大：把缺失字段默认当成匹配成功，注入的召回率会更好看。但那样等于把不确定性藏起来，而这个项目的全部价值恰恰是把不确定性显式留住。</p>
+<h2>证据得是独立实体</h2>
+<p>一条 finding 的可信度不能靠「句子写得像事实」制造出来，所以证据不能塞在 finding 的一个 text 字段里。</p>
+<p>拆两张表。<code>evidence</code> 描述来源本身：来源类型、定位符、文件修订号、片段、内容哈希。<code>finding_evidence</code> 描述这份来源对某条主张起什么作用：支持、反驳，还是仅作背景。同一条日志可以支持 A 的同时反驳 B，所以这个关系压不成 evidence 上的一列布尔值。</p>
+<p>还有一个跨表约束我很在意：<code>supported</code> 必须至少有一条支撑证据。这条检查 SQL 的 <code>CHECK</code> 表达不了，得放在服务层做。也就是说，把「不许空口标 supported」这个话题从 schema 兜底提升成了代码里必须过的一关。</p>
+<p>剩下的两张表是 <code>finding_relations</code>（取代 / 派生 / 矛盾 / 重复 / 相关，服务层拒绝自环和取代环）和 <code>finding_events</code> 是一个只追加的审计日志。状态、scope、关系的关键变化都要留下理由和前后摘要，不允许静默覆盖。</p>
+<h2>检索这一步，我选择笨办法</h2>
+<p>第一版检索全是确定性规则，没有 embedding，没有 reranker。流程大概是：</p>
+<p>先建任务上下文，拿到 project_id、当前目标、能拿到的 branch / commit / 后端 / dtype、剩余 token 预算。拿不到的字段标 <code>unknown</code>，不让模型自己脑补环境值。</p>
+<p>然后硬过滤：项目隔离、排掉已取代和已归档的记录、排掉 <code>retrieval_policy = never</code>、排掉 scope 硬冲突。这一步有个容易写错的地方——<code>refuted</code> 且 <code>current</code> 的记录<strong>不能</strong>被排除，它就是「已排除路径」的来源。</p>
+<p>接着给每个候选算 applicability，按适用性、retrieval_policy、任务相关性、认知状态、实用价值、简洁度排序。我没做模型自填的 0 到 1 置信度，那东西既不可校准也不可审计。</p>
+<p>最后按预算裁剪并格式化。每条注入必须带 finding ID、主张、状态、适用条件、一句证据摘要和来源定位符。超预算时优先删低相关的历史细节，但状态字段不许被截断；如果裁到没法正确解释，整条省略，只留一个按 ID 查询的入口。</p>
+<p>注入的正文大概是这个样子（下面是格式示意，run 编号和取值都是演示用的）：</p>
+<pre><code class="language-text">## Finding Ledger：当前任务相关发现
+
+### 当前有证据支持
+- [F-123 | supported | applicable]
+  结论：探针 A 的结果不支持 off-by-one 是主因。
+  依据：实验 run-4472；shift -1/0/+1 的指标近似。
+  范围：commit 0862527 / 配置 config-A。
+  细节：get_finding F-123
+
+### 已排除路径
+- [F-081 | refuted | applicable]
+  路径：当前条件下不必再优先排查 tokenizer shift。
+  反证：4 个探针均未复现该假设（实验 run-4480）。
+  注意：结论仅限上述版本与配置。
+
+### 用户约束
+- [F-140 | not_applicable | applicable]
+  本轮实验只能使用 GPU 0-3。
+</code></pre>
+<p>方括号里三段分别是 finding ID、认知状态、适用性。生命周期状态只在不是 <code>current</code> 的时候才额外标出来，因为那是少数情况，天天标反而成了噪音。</p>
+<p>向量检索我留在 P3 的评测闭环里。等人工标注的回归集证明关键词召回确实不够，再上 embedding。现在没有任何证据支持这一步，先上就是给自己找一个不可解释的故障源。</p>
+<h2>几个工程选择</h2>
+<p><strong>用 <code>node:sqlite</code> 而不是 <code>better-sqlite3</code>。</strong> 这个插件要装到用户自己的机器上。<code>better-sqlite3</code> 是原生模块，得编译，或者指望预编译产物跟当前平台和 Node ABI 对上，对不上就是安装失败。Node 24 内置的 <code>DatabaseSync</code> 让整个包保持零原生编译依赖，也没有 postinstall。</p>
+<p><strong>SQLite 而不是服务端数据库。</strong> 排查记录是本地、单人、写少读多的东西。一个文件足够，顺带少了一条敏感日志外流的路径。</p>
+<p><strong>插件形态而不是独立服务。</strong> 这个是被需求逼出来的。排查的连续性发生在会话内部，「上下文压缩完成」这个时机只有宿主看得见。脱离宿主事件，就不存在正确的注入点。所以它做成 DeepSeek Harness 的 bundle patch，注册十个业务工具，订阅 <code>agent/pre-step</code> 装配点，在新会话、resume、压缩完成、账本修订号变化时重新注入。</p>
+<p>十个工具都表达业务语义，不做通用 CRUD：<code>log_finding</code>、<code>query_findings</code>、<code>get_finding</code>、<code>add_evidence</code>、<code>set_finding_state</code>、<code>refute_finding</code>、<code>supersede_finding</code>、<code>revalidate_finding</code>、<code>link_finding</code>、<code>propose_rule</code>。另有一个只读的 <code>ledger_status</code> 用来排查「为什么这次没注入」，它报账本路径、记录数、修订号、各触发计数和最近一次注入结果。这个诊断工具是被自己坑出来的，第一版没有它的时候，我只能靠翻日志猜。</p>
+<p>错误码是固定的那八个：<code>INVALID_ARGUMENT</code>、<code>NOT_FOUND</code>、<code>PROJECT_SCOPE_MISMATCH</code>、<code>INVALID_STATE_TRANSITION</code>、<code>EVIDENCE_REQUIRED</code>、<code>RELATION_CYCLE</code>、<code>CONCURRENT_MODIFICATION</code>、<code>STORAGE_ERROR</code>。错误消息可以给定位建议，但不能带内部路径或者别的项目的片段。</p>
+<p>还有一条兜底原则：注入链路出任何异常，只降级为「这次不注入」，绝不阻塞用户手上的主任务。记忆层没资格让排查停下来。</p>
+<h2>明确不做的事</h2>
+<p>有几条是写进文档的「有意排除」，不是还没排期：</p>
+<p>不做未经校准的 0 到 1 置信度字段。不因为措辞好听或模型自评就把证据自动升级成结论。不在没有评测依据的时候引入向量库或远程存储。不自动把所有会话结论写进账本。不只按记录年龄判定结论过期。不在没有批准的情况下改 <code>AGENTS.md</code>。不把这个东西扩展成会话存档或者文档平台。</p>
+<p>这几条的共同点是：它们都会把不确定性藏起来。藏起来之后系统看起来更聪明，实际上更难排查。</p>
+<p>安全边界也是照着「不确定就少做」来的：本地优先存储、只留定位符和必要摘要、密钥和私密路径脱敏或拒绝落盘、项目隔离默认关闭跨项目检索。还有一条容易被忽略：证据是数据，不是指令。来源可能是外部网页、日志或者用户粘贴的内容，里面的「请执行……」一律不许当系统提示词用。</p>
+<h2>现在到哪一步了</h2>
+<p>P0（可信数据闭环）完成，P1（项目与 scope 可靠性）和 P2（宿主集成与预算化注入）主体完成。P3 的评测闭环没做，向量检索没上。</p>
+<p>离线测试用 <code>node:test</code> 覆盖了状态机、事务原子性、项目隔离、密钥脱敏、适用性判定和注入格式。这些能证明行为符合契约，证明不了它到底省了多少事。</p>
+<p>说实话，我现在还给不出「重复排查下降百分之多少」这种数字。要拿到这个数字，得有一个人工标注的回归集，跑几轮真实排查，对比开与不开。这件事排在 P3，我没有提前编数据的兴趣。</p>
+<p>如果你也想给自己的 agent 加一层记忆，我唯一的建议是先数一数自己被压缩坑掉的次数，再决定记忆长什么样。我数完之后发现要的不是更大的窗口，是每条结论旁边都写着它凭什么成立。</p>
+<p>代码在 <a href="https://github.com/Aression/Finding-Ledger">github.com/Aression/Finding-Ledger</a>，设计契约在 <code>docs/design/</code> 下，MIT。</p>
+      </div>
+      <div class="art-foot">
+        <a href="/blog/">← 全部文章</a><a href="/blog/eth-exponential-time-hypothesis.html">ETH 倒塌记：从零读懂指数时间假设，以及 AI 是怎么… →</a>
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="foot-contact">
+      <a href="mailto:lvdifine@foxmail.com">lvdifine@foxmail.com</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub</a>
+      <span class="sep">·</span>
+      <a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">ResearchGate</a>
+      <span class="sep">·</span>
+      <a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">Bilibili</a>
+    </div>
+    <p class="foot-meta">© <span id="year">2026</span> 吕迪 · LYU Di · 手写 HTML/CSS/JS</p>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>
