@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>组件样例 — 吕迪</title>
+<meta name="description" content="这个站点支持的所有排版组件与语法速查。写文章时直接照抄，构建器会把 ::: 容器转成 HTML。">
+<meta name="author" content="Di Lv (吕迪)">
+<link rel="canonical" href="https://lvdi-profile.vercel.app/components.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
+<link rel="alternate" type="application/atom+xml" title="吕迪 · 文章" href="/feed.xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="组件样例 — 吕迪">
+<meta property="og:description" content="这个站点支持的所有排版组件与语法速查。写文章时直接照抄，构建器会把 ::: 容器转成 HTML。">
+<meta property="og:url" content="https://lvdi-profile.vercel.app/components.html">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="吕迪 · LYU Di">
+<meta name="twitter:card" content="summary">
+<meta name="robots" content="noindex, follow">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/vendor/katex.min.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/">吕迪</a>
+    <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">菜单</button>
+    <nav id="nav" aria-label="页面导航">
+      <ul>
+        <li><a href="/">首页</a></li>
+        <li><a href="/about.html">关于</a></li>
+        <li><a href="/projects.html">项目</a></li>
+        <li><a href="/blog/">文章</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <article class="article">
+    <div class="art-layout">
+<aside class="toc-side" aria-label="目录"><nav class="toc"><p class="toc-h">本页目录</p><ul><li><a class="h2" href="#提示框">提示框</a></li><li><a class="h2" href="#引用与出处">引用与出处</a></li><li><a class="h2" href="#折叠">折叠</a></li><li><a class="h2" href="#标签页">标签页</a></li><li><a class="h2" href="#步骤">步骤</a></li><li><a class="h2" href="#指标卡">指标卡</a></li><li><a class="h2" href="#条形图">条形图</a></li><li><a class="h2" href="#键值表">键值表</a></li><li><a class="h2" href="#对照栏">对照栏</a></li><li><a class="h2" href="#图与图注">图与图注</a></li><li><a class="h2" href="#可排序表格">可排序表格</a></li><li><a class="h2" href="#侧注">侧注</a></li><li><a class="h2" href="#代码块">代码块</a></li><li><a class="h2" href="#数学公式">数学公式</a></li><li><a class="h2" href="#脚注">脚注</a></li><li><a class="h2" href="#组件嵌套">组件嵌套</a></li><li><a class="h2" href="#写在最后">写在最后</a></li></ul></nav></aside>
+      <div class="art-main">
+        <div class="article-head">
+          <h1>组件样例</h1>
+          <p class="art-sum">这个站点支持的所有排版组件与语法速查。写文章时直接照抄，构建器会把 ::: 容器转成 HTML。</p>
+        </div>
+<details class="toc-inline"><summary>本页目录（17 节）</summary><div class="toc-box"><nav class="toc"><ul><li><a class="h2" href="#提示框">提示框</a></li><li><a class="h2" href="#引用与出处">引用与出处</a></li><li><a class="h2" href="#折叠">折叠</a></li><li><a class="h2" href="#标签页">标签页</a></li><li><a class="h2" href="#步骤">步骤</a></li><li><a class="h2" href="#指标卡">指标卡</a></li><li><a class="h2" href="#条形图">条形图</a></li><li><a class="h2" href="#键值表">键值表</a></li><li><a class="h2" href="#对照栏">对照栏</a></li><li><a class="h2" href="#图与图注">图与图注</a></li><li><a class="h2" href="#可排序表格">可排序表格</a></li><li><a class="h2" href="#侧注">侧注</a></li><li><a class="h2" href="#代码块">代码块</a></li><li><a class="h2" href="#数学公式">数学公式</a></li><li><a class="h2" href="#脚注">脚注</a></li><li><a class="h2" href="#组件嵌套">组件嵌套</a></li><li><a class="h2" href="#写在最后">写在最后</a></li></ul></nav></div></details>
+        <hr class="art-rule">
+        <div class="prose">
+<p>写长文时反复要用的那几块排版，都做成了组件。下面每一节都是「实际效果 + 源码」，抄过去就能用。</p>
+<p>组件由 <code>build.py</code> 的 <code>:::</code> 容器语法生成，样式在 <code>assets/site.css</code>，交互在 <code>assets/site.js</code>。全部是纯 CSS/JS，没有框架、没有外部请求。</p>
+<h2 id="提示框"><a class="anchor" href="#提示框" aria-hidden="true" tabindex="-1">#</a>提示框</h2>
+<p>四种语义色，加 <code>:::note</code> <code>:::tip</code> <code>:::warn</code> <code>:::insight</code> 都行，后面跟的标题会覆盖默认文案。</p>
+<div class="box box-note">
+<p class="box-h">设计取舍</p>
+<div class="box-b">
+<p>默认标题可以省略。这个框适合放「为什么这么做」这类背景说明。</p>
+</div>
+</div>
+<div class="box box-tip">
+<p class="box-h">要点</p>
+<div class="box-b">
+<p>跑构建前先 <code>pip install markdown</code>，公式还需要 <code>node</code> + <code>npm i katex</code>，缺了只会降级不会中断。</p>
+</div>
+</div>
+<div class="box box-warn">
+<p class="box-h">别把结论当事实</p>
+<div class="box-b">
+<p>压缩摘要把假设写成陈述句，是这个项目最初的事故来源。反证据要当一等公民对待。</p>
+</div>
+</div>
+<div class="box box-insight">
+<p class="box-h">洞见</p>
+<div class="box-b">
+<p>组件的边界就是 Markdown 的边界：脚注、目录、公式在容器里都照常工作，因为它们最后是同一趟渲染。</p>
+</div>
+</div>
+<p>源码：</p>
+<div class="code-block"><div class="code-bar"><span class="code-lang">text</span><button class="code-copy" type="button" aria-label="复制代码">复制</button></div><pre><code>:::note 设计取舍
+默认标题可以省略。
+:::</code></pre></div>
+<h2 id="引用与出处"><a class="anchor" href="#引用与出处" aria-hidden="true" tabindex="-1">#</a>引用与出处</h2>
+<div class="quote">
+<p>权重迟早会被能对权重做推理的模型直接改写，而不是被 Adam 这类小型符号优化器间接推动。</p>
+<p class="quote-src">— Rikiya Takehi, Sparks of Weight-Space Programming</p>
+</div>
+<p>源码：<code>:::quote 出处</code> 加内容，闭合 <code>:::</code>。</p>
+<h2 id="折叠"><a class="anchor" href="#折叠" aria-hidden="true" tabindex="-1">#</a>折叠</h2>
+<p>长推导、大段日志、可跳过的实现细节，收进 <code>:::details 标题</code> 里。</p>
+<details class="fold">
+<summary>展开看一个真实的失败模式</summary>
+<div class="fold-b">
+<p>第 40 轮把已经用 4 个探针排除过的路径又跑了一遍，因为第 12 轮那条发现被摘要成了一句「排查了 tokenizer 相关问题」。</p>
+<p>摘要没骗人，但丢掉了「在哪个 commit、什么 dtype 下成立」这个前提。</p>
+</div>
+</details>
+<h2 id="标签页"><a class="anchor" href="#标签页" aria-hidden="true" tabindex="-1">#</a>标签页</h2>
+<p>同一件事的多个视角、多种语言的同一段代码，用 <code>:::tabs</code> 套 <code>:::tab 名称</code>。键盘左右方向键可以切换。</p>
+<div class="tabs" data-tabs="1">
+<div class="tabs-bar"><button type="button" role="tab" aria-selected="true">认知状态</button><button type="button" role="tab" aria-selected="false" tabindex="-1">生命周期</button><button type="button" role="tab" aria-selected="false" tabindex="-1">适用性</button></div>
+<div class="tab-pane" role="tabpanel">
+<p>一条发现是 <code>supported</code> 就是有证据支持，<code>refuted</code> 是被证伪。这一维只回答「现在信不信」。</p>
+</div>
+<div class="tab-pane" hidden="hidden" role="tabpanel">
+<p><code>active</code> / <code>superseded</code> / <code>archived</code>，回答「还要不要继续用」。被新结论替代不代表原结论当时是错的。</p>
+</div>
+<div class="tab-pane" hidden="hidden" role="tabpanel">
+<p><code>applicable</code> / <code>stale</code> / <code>unknown</code>，回答「在当前 commit、后端、dtype 下还成不成立」。条件不明一律落到 <code>unknown</code>。</p>
+</div>
+</div>
+<p>三个状态互不替代，<code>refuted</code> 不等于 <code>superseded</code>——这是整个设计里最不肯让步的一条。</p>
+<h2 id="步骤"><a class="anchor" href="#步骤" aria-hidden="true" tabindex="-1">#</a>步骤</h2>
+<p>有先后顺序的流程用 <code>:::steps</code> 套 <code>:::step 标题</code>，自动编号并连线。</p>
+<div class="steps">
+<div class="step">
+<p class="step-t">收集</p>
+<div class="step-b">
+<p>把每次实验的探针、结果、适用范围写进账本，结论和依据分开存。</p>
+</div>
+</div>
+<div class="step">
+<p class="step-t">判定</p>
+<div class="step-b">
+<p>新证据进来只更新对应的发现，不重写整段摘要，避免历史被覆盖成一句糊话。</p>
+</div>
+</div>
+<div class="step">
+<p class="step-t">注入</p>
+<div class="step-b">
+<p>按当前 commit 与后端过滤，只把仍然 applicable 的发现塞回上下文，带 token 预算。</p>
+</div>
+</div>
+</div>
+<h2 id="指标卡"><a class="anchor" href="#指标卡" aria-hidden="true" tabindex="-1">#</a>指标卡</h2>
+<p>一组数字并排，用列表写「值 | 标签 | 备注」。以 <code>+</code> 开头标绿、<code>-</code> 开头标红。</p>
+<div class="metrics"><div class="metric"><p class="metric-v">58.39% → 64.98%</p><p class="metric-l">高风险病变召回</p><p class="metric-n">1338 张真实涂片</p></div><div class="metric"><p class="metric-v">42.70% → 55.83%</p><p class="metric-l">低误报敏感性</p><p class="metric-n">同上</p></div><div class="metric metric-up"><p class="metric-v">+9.4 万 QPS</p><p class="metric-l">myRPC 单机回环</p><p class="metric-n">JFR/JMC 实测</p></div><div class="metric"><p class="metric-v">0</p><p class="metric-l">向量检索用量</p><p class="metric-n">确定性规则就够了</p></div></div>
+
+<h2 id="条形图"><a class="anchor" href="#条形图" aria-hidden="true" tabindex="-1">#</a>条形图</h2>
+<p>纯 CSS 画的条形图，数值自动归一化，进入视口时才填充。</p>
+<div class="bars"><div class="bar-row"><span class="bar-l" title="全量扫">全量扫</span><span class="bar-t"><span class="bar-f" data-w="100.0"></span></span><span class="bar-v">41 ms</span></div><div class="bar-row"><span class="bar-l" title="向量 top-k">向量 top-k</span><span class="bar-t"><span class="bar-f" data-w="43.9"></span></span><span class="bar-v">18 ms</span></div><div class="bar-row"><span class="bar-l" title="规则 + 预算">规则 + 预算</span><span class="bar-t"><span class="bar-f" data-w="14.6"></span></span><span class="bar-v">6 ms</span></div></div>
+
+<h2 id="键值表"><a class="anchor" href="#键值表" aria-hidden="true" tabindex="-1">#</a>键值表</h2>
+<p>参数、约束、环境变量这类「名字 → 值」的东西。</p>
+<dl class="dl"><dt>显存预算</dt><dd>16 GB，iGPU 不计入</dd><dt>环境变量</dt><dd>`ROCBLAS_USE_HIPBLASLT=0`</dd><dt>持久化</dt><dd>本地 SQLite，`node:sqlite`</dd><dt>依赖</dt><dd>Node 24，零原生编译</dd></dl>
+
+<h2 id="对照栏"><a class="anchor" href="#对照栏" aria-hidden="true" tabindex="-1">#</a>对照栏</h2>
+<p>两种做法的并列比较，<code>:::compare</code> 套 <code>:::col 标题</code>。</p>
+<div class="compare">
+<div class="cmp-col">
+<p class="cmp-h">摘要式记忆</p>
+<ul>
+<li>把历史压成几句自然语言</li>
+<li>便宜、省 token</li>
+<li>丢失适用条件</li>
+<li>结论会过期，但过期了自己不知道</li>
+</ul>
+</div>
+<div class="cmp-col">
+<p class="cmp-h">证据式账本</p>
+<ul>
+<li>发现是独立实体，带三态标记</li>
+<li>每次注入前按条件过滤</li>
+<li>多说一点 token</li>
+<li>过期能被检测到</li>
+</ul>
+</div>
+</div>
+<h2 id="图与图注"><a class="anchor" href="#图与图注" aria-hidden="true" tabindex="-1">#</a>图与图注</h2>
+<p><code>:::figure 图注</code> 里可以放图片、表格、公式或任意块级内容，图注支持 <strong>加粗</strong> 前缀。</p>
+<figure class="fig">
+<div class="fig-b">
+<p>数据流是单向的：新证据只追加，不覆盖既有发现的成立条件。</p>
+</div>
+<figcaption>**图 1** · 账本的三层结构：证据实体 → 发现 → 注入预算。</figcaption>
+</figure>
+<h2 id="可排序表格"><a class="anchor" href="#可排序表格" aria-hidden="true" tabindex="-1">#</a>可排序表格</h2>
+<p><code>:::table 说明</code> 包住普通 Markdown 表格，点表头就按那一列排序，数字列按数值排、文字列按拼音排。</p>
+<div class="sortable">
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>召回</th>
+<th>延迟</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>YOLO-TCT 基线</td>
+<td>46.27</td>
+<td>12</td>
+<td>ICASSP 2025</td>
+</tr>
+<tr>
+<td>MPG-RSCD 半监督</td>
+<td>64.98</td>
+<td>15</td>
+<td>临床涂片 1338 张</td>
+</tr>
+<tr>
+<td>TSO-DETR</td>
+<td>51.30</td>
+<td>21</td>
+<td>IJCNN 2024</td>
+</tr>
+<tr>
+<td>人工复核</td>
+<td>88.00</td>
+<td>400</td>
+<td>不可规模化</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="table-note">点表头排序；数字列识别千分位与百分号。</p>
+
+<h2 id="侧注"><a class="anchor" href="#侧注" aria-hidden="true" tabindex="-1">#</a>侧注</h2>
+<p>边角补充信息，用虚线框和小字号，不打断正文节奏。</p>
+<div class="aside">
+<p class="aside-h">顺带一提</p>
+<p>这套组件最早是从 Distill 的论文版式里抄的骨架，但去掉了它那套需要 JS 注入的运行时，改成构建时静态输出。</p>
+</div>
+<h2 id="代码块"><a class="anchor" href="#代码块" aria-hidden="true" tabindex="-1">#</a>代码块</h2>
+<p>围栏后面可以跟语言名，再跟一个 <code>title=</code> 当文件名。构建时就完成语法高亮，页面不加载任何高亮库。</p>
+<div class="code-block"><div class="code-bar"><span class="code-title">ledger.py</span><span class="code-lang">python</span><button class="code-copy" type="button" aria-label="复制代码">复制</button></div><pre><code><span class="tok-kw">def</span> <span class="tok-fn">applicable</span>(finding, ctx):
+    <span class="tok-str">&quot;&quot;&quot;条件不明一律落到 unknown，不要静默匹配成功。&quot;&quot;&quot;</span>
+    <span class="tok-kw">if</span> <span class="tok-kw">not</span> finding.scope:
+        <span class="tok-kw">return</span> <span class="tok-str">&quot;unknown&quot;</span>
+    <span class="tok-kw">if</span> finding.scope.commit != ctx.commit:
+        <span class="tok-kw">return</span> <span class="tok-str">&quot;stale&quot;</span>
+    <span class="tok-kw">return</span> <span class="tok-str">&quot;applicable&quot;</span></code></pre></div>
+<div class="code-block"><div class="code-bar"><span class="code-title">构建与本地预览</span><span class="code-lang">bash</span><button class="code-copy" type="button" aria-label="复制代码">复制</button></div><pre><code><span class="tok-bi">cd</span> ~/lvdi-profile
+<span class="tok-bi">python3</span> build.py
+<span class="tok-bi">python3</span> -m http.server <span class="tok-num">8899</span></code></pre></div>
+<h2 id="数学公式"><a class="anchor" href="#数学公式" aria-hidden="true" tabindex="-1">#</a>数学公式</h2>
+<p>行间公式用 <code><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.1056em;"></span><span class="mord">...</span></span></span></span></span></code> 或 <code><span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.1056em;"></span><span class="mord">...</span></span></span></span></span></code>，行内用 <code><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.1056em;"></span><span class="mord">...</span></span></span></span></code> 或 <code><span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.1056em;"></span><span class="mord">...</span></span></span></span></code>。构建时用 KaTeX 渲染成静态 HTML，零 JS 依赖，打印和 RSS 都正常。</p>
+<p>指数时间假设断言的是最坏情况下的下界：</p>
+<p>$$
+\exists\, \varepsilon &gt; 0,\ \forall\ \text{algorithms}\ A:\ T_A(n) = \Omega!\left(2^{\varepsilon n}\right)
+$$</p>
+<p>行内的样子：<span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mord">/2</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span> 解出来是 <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">lo<span style="margin-right:0.0139em;">g</span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span>。</p>
+<h2 id="脚注"><a class="anchor" href="#脚注" aria-hidden="true" tabindex="-1">#</a>脚注</h2>
+<p>正文里 <code>[^1]</code> 标号，文末写定义，编号自动连续，即使跨组件也统一<sup id="fnref:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。</p>
+<h2 id="组件嵌套"><a class="anchor" href="#组件嵌套" aria-hidden="true" tabindex="-1">#</a>组件嵌套</h2>
+<p>组件可以互相嵌套，代码块和公式在容器内部也照常工作。</p>
+<details class="fold">
+<summary>一个嵌套例子</summary>
+<div class="fold-b">
+<div class="box box-tip">
+<p class="box-h">要点</p>
+<div class="box-b">
+<p>提示框里放代码：</p>
+<div class="code-block"><div class="code-bar"><span class="code-lang">javascript</span><button class="code-copy" type="button" aria-label="复制代码">复制</button></div><pre><code><span class="tok-kw">const</span> findings = ledger.<span class="tok-fn">filter</span>(f =&gt; f.<span class="tok-fn">applicable</span>(ctx));</code></pre></div>
+</div>
+</div>
+<p>外面再套一层折叠，依然正常展开与高亮。</p>
+</div>
+</details>
+<h2 id="写在最后"><a class="anchor" href="#写在最后" aria-hidden="true" tabindex="-1">#</a>写在最后</h2>
+<p>新增组件只需要两步：在 <code>build.py</code> 的 <code>render_container</code> 里加一个分支，在 <code>assets/site.css</code> 里加样式。要交互就再往 <code>assets/site.js</code> 里加一段——像 <code>tabs</code> 那样从 <code>data-</code> 属性挂上去，不依赖具体页面。</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:2-1">
+<p>这条脚注故意写在容器外面，验证编号不会因为组件嵌套而错乱。&#160;<a class="footnote-backref" href="#fnref:2-1" title="Jump back to footnote 1 in the text">↩</a></p>
+</li>
+</ol>
+</div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="foot-contact">
+      <a href="mailto:lvdifine@foxmail.com">lvdifine@foxmail.com</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub</a>
+      <span class="sep">·</span>
+      <a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">ResearchGate</a>
+      <span class="sep">·</span>
+      <a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">Bilibili</a>
+      <span class="sep">·</span>
+      <a href="/feed.xml">RSS</a>
+    </div>
+    <p class="foot-meta">© <span id="year">2026</span> 吕迪 · LYU Di · 手写 HTML/CSS/JS</p>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
-"""lvdi-profile 静态站点生成器。
+"""lvdi-profile 静态站点生成器（v2）
 
-源：content/posts/*.md（文章）+ 本文件内联的简历数据
+源：content/posts/*.md（文章）  content/pages/*.md（独立页）
 出：index.html / about.html / projects.html / blog/index.html / blog/<slug>.html
-    assets/site.css / assets/site.js
+    /<page>.html / feed.xml / sitemap.xml / robots.txt
+    assets/site.css 与 assets/site.js 是真源文件，不再由本脚本生成。
+
+数学：构建时用 KaTeX 渲染成静态 HTML（node + tools/tex2html.mjs），页面零 JS 依赖。
+      缺 node/katex 时降级为等宽字体原文，构建不中断。
 
 用法：python3 build.py
-产物是纯静态 HTML + 同源 CSS/JS，零第三方依赖。
 """
 
 import os
 import re
 import html
-import shutil
+import json
+import subprocess
+from datetime import datetime, timezone, timedelta
 
 try:
     import markdown as mdlib
+    from markdown.extensions import Extension
+    from markdown.preprocessors import Preprocessor
 except ImportError:
     raise SystemExit("需要 markdown 包：python3 -m pip install markdown")
 
@@ -41,364 +48,632 @@ NAV = [
     ("/blog/", "文章"),
 ]
 
-# ────────────────────────────── CSS ──────────────────────────────
-CSS = """
-:root{
-  --bg:#fff;--bg-soft:#f9f9f9;--card:#fff;--card-hi:#f9f9f9;
-  --border:#e6e6e6;--border-hi:#d0d0d0;
-  --fg:#111;--fg-soft:#3d3d3d;--muted:#5d5d5d;--dim:#8f8f8f;--ink:#0d0d0d;
-  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;
-  --wrap:1120px;--r:12px;--r-sm:8px;
-}
-*,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:88px}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
-  font-size:16px;line-height:1.72;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-a{color:var(--fg);text-decoration:none}
-a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--border-hi)}
-::selection{background:#eaeaea;color:var(--fg)}
-:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
+TZ = timezone(timedelta(hours=8))
 
-.wrap{max-width:var(--wrap);margin:0 auto;padding:0 32px}
-@media (max-width:640px){ .wrap{padding:0 20px} }
 
-/* ── nav ── */
-header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
-.nav-in{display:flex;align-items:center;justify-content:space-between;height:62px;gap:20px}
-.brand{font-size:15.5px;font-weight:600;color:var(--fg);letter-spacing:-.01em}
-.nav-in ul{display:flex;gap:2px;list-style:none;margin:0;padding:0}
-.nav-in ul a{display:block;padding:7px 12px;border-radius:var(--r-sm);font-size:14.5px;color:var(--muted);
-  transition:color .18s,background .18s}
-.nav-in ul a:hover{color:var(--fg);background:var(--bg-soft);text-decoration:none}
-.nav-in ul a.active{color:var(--fg);background:var(--bg-soft);font-weight:500}
-.nav-toggle{display:none;background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);
-  color:var(--fg);font-family:var(--sans);font-size:14px;padding:7px 13px;cursor:pointer}
-.nav-toggle:hover{background:var(--bg-soft)}
-@media (max-width:760px){
-  .nav-toggle{display:block}
-  #nav{position:absolute;top:62px;left:0;right:0;background:#fff;
-    border-bottom:1px solid var(--border);display:none}
-  #nav.open{display:block}
-  #nav ul{flex-direction:column;gap:0;padding:10px}
-  #nav ul a{padding:11px 12px}
+def esc(s):
+    return html.escape(str(s), quote=True)
+
+
+# ══════════════════════════ 代码高亮 ══════════════════════════
+LANG_ALIAS = {
+    "py": "python", "python3": "python",
+    "js": "javascript", "ts": "javascript", "typescript": "javascript",
+    "jsx": "javascript", "tsx": "javascript", "node": "javascript", "jsonc": "json",
+    "sh": "bash", "shell": "bash", "zsh": "bash", "console": "bash", "powershell": "bash", "ps1": "bash",
+    "yml": "yaml", "c++": "cpp", "cc": "cpp", "h": "cpp", "hpp": "cpp",
+    "rs": "rust", "golang": "go", "htm": "html", "xml": "html", "vue": "html", "svg": "html",
+    "plain": "text", "plaintext": "text", "": "text", "txt": "text", "log": "text", "diff": "text",
 }
 
-/* ── layout ── */
-main{padding:0}
-section{padding:60px 0;border-bottom:1px solid var(--border)}
-section:last-of-type{border-bottom:none}
-@media (max-width:640px){ section{padding:44px 0} }
-.sec-head{margin:0 0 26px}
-.sec-title{font-size:clamp(22px,2.2vw,28px);line-height:1.2;letter-spacing:-.02em;font-weight:600;color:var(--fg);margin:0}
-.sec-note{font-size:14.5px;color:var(--muted);margin:8px 0 0}
-.sec-more{margin:26px 0 0;font-size:14.5px}
-.sec-more a{color:var(--muted)}
-.sec-more a:hover{color:var(--fg)}
-
-/* ── page head（子页标题） ── */
-.page-head{padding:56px 0 34px;border-bottom:1px solid var(--border)}
-.page-head h1{font-size:clamp(30px,4vw,44px);line-height:1.12;letter-spacing:-.03em;margin:0 0 12px;font-weight:600}
-.page-head p{margin:0;color:var(--muted);font-size:16px;max-width:62ch}
-@media (max-width:640px){ .page-head{padding:40px 0 26px} }
-
-/* ── hero ── */
-.hero{padding:80px 0 56px}
-.hero h1{font-size:clamp(40px,5.4vw,64px);line-height:1.05;margin:0 0 12px;font-weight:600;letter-spacing:-.035em}
-.id-line{font-size:15px;color:var(--muted);margin:0 0 18px}
-.tagline{font-size:clamp(17px,1.6vw,20px);color:var(--fg-soft);margin:0 0 14px;line-height:1.5}
-.status{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);
-  background:var(--bg-soft);border:1px solid var(--border);border-radius:999px;padding:6px 15px;margin:0 0 26px}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--ink);flex:none}
-.links{display:flex;flex-wrap:wrap;gap:10px;list-style:none;margin:0;padding:0}
-.links a{display:inline-block;font-size:14px;color:var(--fg);border:1px solid var(--border-hi);
-  border-radius:999px;padding:8px 17px;transition:background .18s,color .18s,border-color .18s}
-.links a:hover{background:var(--ink);color:#fff;border-color:var(--ink);text-decoration:none}
-@media (max-width:640px){ .hero{padding:52px 0 40px} }
-
-/* ── 文本块 ── */
-.prose-sm{max-width:none}
-.prose-sm p{margin:0 0 16px;color:var(--fg-soft);font-size:16px}
-.prose-sm p:last-child{margin-bottom:0}
-.prose-sm strong{color:var(--fg);font-weight:600}
-.two-col{display:grid;grid-template-columns:1.5fr 1fr;gap:44px;align-items:start}
-@media (max-width:900px){ .two-col{grid-template-columns:1fr;gap:32px} }
-
-/* ── 教育 / 侧栏列表 ── */
-.side-list{border-left:2px solid var(--border-hi);padding-left:22px}
-.side-item{margin:0 0 20px}
-.side-item:last-child{margin-bottom:0}
-.side-t{font-weight:600;color:var(--fg);font-size:15px}
-.side-s{font-size:13.5px;color:var(--muted);margin-top:2px}
-.side-d{font-size:14px;color:var(--fg-soft);margin-top:6px}
-.side-d em{color:var(--fg);font-style:normal;font-weight:500}
-
-/* ── 卡片网格 ── */
-.card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-@media (max-width:900px){ .card-grid{grid-template-columns:1fr} }
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;
-  display:flex;flex-direction:column;gap:10px;transition:border-color .2s,background .2s}
-.card:hover{border-color:var(--border-hi);background:var(--card-hi)}
-.card h3{font-size:16.5px;line-height:1.45;margin:0;font-weight:600;letter-spacing:-.01em}
-.card h3 a{color:var(--fg)}
-.card h3 a:hover{text-decoration:underline;text-underline-offset:3px}
-.card ul{margin:0;padding-left:0;list-style:none}
-.card ul li{position:relative;padding-left:16px;font-size:14.8px;color:var(--fg-soft);margin-bottom:6px;line-height:1.7}
-.card ul li:last-child{margin-bottom:0}
-.card ul li::before{content:'';position:absolute;left:0;top:.68em;width:4px;height:4px;border-radius:50%;background:var(--dim)}
-.card-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.card-role{font-size:12.5px;color:var(--muted);background:#f2f2f2;border-radius:6px;padding:3px 10px;white-space:nowrap}
-.stack{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:6px}
-.stack span{font-size:12px;color:var(--muted);background:var(--bg-soft);border:1px solid var(--border);
-  border-radius:6px;padding:2px 8px}
-
-.card-links{display:flex;flex-wrap:wrap;gap:14px;margin-top:2px}
-.card-links a{font-size:13px;color:var(--muted)}
-.card-links a:hover{color:var(--fg)}
-.grp + .grp{border-top:1px solid var(--border)}
-
-/* ── 论文紧凑列表 ── */
-.pub-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
-.pub-item{padding:18px 0;border-bottom:1px solid var(--border)}
-.pub-meta-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13px;color:var(--muted);margin:0 0 6px}
-.pub-meta-line .venue{color:var(--fg);font-weight:500}
-.pub-meta-line .role{color:var(--dim)}
-.pub-t{font-size:15.5px;line-height:1.5;color:var(--fg);margin:0;font-weight:500}
-.pub-t a{color:var(--fg)}
-.pub-t a:hover{text-decoration:underline;text-underline-offset:3px}
-.pub-authors{font-size:13.5px;color:var(--dim);margin:6px 0 0}
-
-/* ── 荣誉 ── */
-.honor-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);
-  border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.honor{background:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.honor-t{font-size:15px;color:var(--fg);font-weight:500}
-.honor-t small{display:block;font-size:12.5px;color:var(--dim);font-weight:400;margin-top:2px}
-.honor-y{font-size:13.5px;color:var(--muted);white-space:nowrap}
-@media (max-width:760px){ .honor-grid{grid-template-columns:1fr} }
-
-/* ── 技能 ── */
-.skill-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 44px}
-.skill-h{font-size:14px;color:var(--muted);font-weight:500;margin:0 0 10px;letter-spacing:.01em}
-.skill-list{display:flex;flex-wrap:wrap;gap:7px}
-.skill-list span{font-size:13.5px;color:var(--fg-soft);background:var(--bg-soft);border:1px solid var(--border);
-  border-radius:6px;padding:4px 11px}
-@media (max-width:760px){ .skill-grid{grid-template-columns:1fr} }
-
-/* ── 文章列表 ── */
-.post-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
-.post-item{padding:22px 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:112px 1fr;gap:22px}
-.post-date{font-size:13.5px;color:var(--dim);font-variant-numeric:tabular-nums;padding-top:3px}
-.post-h{font-size:19px;line-height:1.42;margin:0 0 8px;font-weight:600;letter-spacing:-.015em}
-.post-h a{color:var(--fg)}
-.post-h a:hover{text-decoration:underline;text-underline-offset:3px}
-.post-sum{margin:0 0 10px;font-size:14.8px;color:var(--muted);line-height:1.7}
-.post-tags{display:flex;flex-wrap:wrap;gap:8px;font-size:12.5px;color:var(--dim)}
-.post-tags span{background:var(--bg-soft);border:1px solid var(--border);border-radius:6px;padding:2px 9px}
-@media (max-width:640px){ .post-item{grid-template-columns:1fr;gap:6px} .post-date{padding-top:0} }
-
-/* ── 分页器 ── */
-.pager{display:flex;align-items:center;gap:6px;margin:34px 0 0;flex-wrap:wrap}
-.pager[hidden]{display:none}
-.pager button{font-family:var(--sans);font-size:14px;color:var(--muted);background:#fff;
-  border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 13px;cursor:pointer;
-  transition:background .18s,color .18s,border-color .18s}
-.pager button:hover:not(:disabled){background:var(--bg-soft);color:var(--fg);border-color:var(--border-hi)}
-.pager button[aria-current="page"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pager button:disabled{opacity:.42;cursor:default}
-.pager .pager-info{margin-left:auto;font-size:13.5px;color:var(--dim)}
-
-/* ── 文章页 ── */
-.article-wrap{max-width:760px;margin:0 auto;padding:0 32px}
-@media (max-width:640px){ .article-wrap{padding:0 20px} }
-.article{padding:56px 0 64px}
-.art-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px;font-size:12.5px;color:var(--muted)}
-.art-meta span{background:#f2f2f2;border-radius:6px;padding:3px 10px}
-.art-meta .sep{background:none;padding:0;color:var(--dim)}
-.article h1{font-size:clamp(28px,3.8vw,40px);line-height:1.2;letter-spacing:-.025em;margin:0 0 16px;font-weight:600}
-.art-sum{margin:0;color:var(--muted);font-size:15.5px;line-height:1.72}
-.art-rule{border:none;border-top:1px solid var(--border);margin:28px 0 30px}
-.prose{font-size:16.5px;line-height:1.86;color:var(--fg-soft)}
-.prose h2{font-size:clamp(21px,2.2vw,25px);line-height:1.32;letter-spacing:-.015em;color:var(--fg);
-  margin:50px 0 14px;font-weight:600}
-.prose h2:first-child{margin-top:0}
-.prose h3{font-size:18px;line-height:1.4;color:var(--fg);margin:32px 0 10px;font-weight:600}
-.prose p{margin:0 0 17px}
-.prose strong{color:var(--fg);font-weight:600}
-.prose em{font-style:italic;color:var(--fg)}
-.prose a{color:var(--fg);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--border-hi)}
-.prose a:hover{text-decoration-color:var(--fg)}
-.prose ul,.prose ol{margin:0 0 17px;padding-left:22px}
-.prose li{margin:0 0 8px}
-.prose li::marker{color:var(--dim)}
-.prose blockquote{margin:0 0 22px;padding:14px 19px;background:var(--bg-soft);border-left:2px solid var(--border-hi);
-  border-radius:0 var(--r-sm) var(--r-sm) 0;color:var(--muted);font-size:15.5px}
-.prose blockquote p{margin:0}
-.prose code{font-family:var(--mono);font-size:13.8px;background:#f4f4f4;border:1px solid var(--border);
-  border-radius:5px;padding:1px 5px;color:#1f1f1f;overflow-wrap:anywhere}
-.prose pre{background:#fafafa;border:1px solid var(--border);border-radius:var(--r-sm);
-  padding:15px 17px;overflow-x:auto;margin:0 0 22px}
-.prose pre code{background:none;border:none;border-radius:0;padding:0;font-size:13.2px;
-  line-height:1.62;color:#242424;white-space:pre;overflow-wrap:normal}
-.prose table{display:block;width:100%;overflow-x:auto;border-collapse:collapse;margin:0 0 24px;font-size:14.8px}
-.prose th,.prose td{border:1px solid var(--border);padding:9px 13px;text-align:left;vertical-align:top}
-.prose th{background:var(--bg-soft);color:var(--fg);font-weight:600;white-space:nowrap}
-.prose td code{font-size:12.8px}
-.prose hr{border:none;border-top:1px solid var(--border);margin:34px 0}
-.art-foot{margin-top:52px;padding-top:20px;border-top:1px solid var(--border);
-  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:14px}
-.art-foot a{color:var(--muted)}
-.art-foot a:hover{color:var(--fg)}
-
-/* ── footer（联系方式在此） ── */
-footer{border-top:1px solid var(--border);padding:30px 0;margin-top:0}
-.foot-in{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
-.foot-contact{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:14px}
-.foot-contact a{color:var(--muted)}
-.foot-contact a:hover{color:var(--fg)}
-.foot-contact .sep{color:var(--border-hi)}
-.foot-meta{margin:0;font-size:13.5px;color:var(--dim)}
-@media (max-width:640px){ .foot-in{flex-direction:column;align-items:flex-start;gap:12px} }
-
-/* ── reveal ── */
-.reveal{opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s ease}
-.reveal.in{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  .reveal{opacity:1;transform:none;transition:none}
-  *{transition:none!important}
+HL_LANGS = {
+    "python": {
+        "kw": "and as assert async await break class continue def del elif else except finally for "
+              "from global if import in is lambda nonlocal not or pass raise return try while with yield match case",
+        "bi": "print len range enumerate zip map filter sum min max sorted reversed list dict set tuple frozenset "
+              "str int float bool bytes bytearray open isinstance issubclass getattr setattr hasattr delattr type "
+              "super vars dir round abs any all next iter format repr hash id object Exception ValueError "
+              "TypeError KeyError RuntimeError self cls",
+        "lc": ["#"], "bc": [], "strs": ['"""', "'''", '"', "'"],
+    },
+    "javascript": {
+        "kw": "async await break case catch class const continue debugger default delete do else export extends "
+              "finally for from function get if import in instanceof let new of return set static super switch "
+              "this throw try typeof var void while yield enum implements interface type declare namespace readonly public private",
+        "bi": "console window document JSON Math Object Array String Number Boolean Promise Map Set WeakMap WeakSet "
+              "Symbol Date RegExp Error parseInt parseFloat isNaN require module exports process fetch setTimeout "
+              "setInterval clearTimeout clearInterval queueMicrotask structuredClone BigInt",
+        "lc": ["//"], "bc": [("/*", "*/")], "strs": ['"', "'", "`"],
+    },
+    "bash": {
+        "kw": "if then else elif fi for while do done case esac function return in select until time coproc "
+              "local export readonly declare unset shift source alias eval exec exit trap set break continue",
+        "bi": "echo printf cd pwd ls cp mv rm mkdir rmdir touch cat head tail grep sed awk sort uniq wc find xargs "
+              "curl wget git npm npx node python3 pip docker sudo chmod chown export tee kill ps top df du "
+              "ssh scp tar zip unzip make cmake systemctl journalctl sleep true false test",
+        "lc": ["#"], "bc": [], "strs": ['"', "'"],
+    },
+    "json": {
+        "kw": "true false null", "bi": "",
+        "lc": [], "bc": [], "strs": ['"'],
+    },
+    "yaml": {
+        "kw": "true false null yes no on off", "bi": "",
+        "lc": ["#"], "bc": [], "strs": ['"', "'"],
+    },
+    "sql": {
+        "kw": "select from where group by order having limit offset insert into values update set delete create "
+              "table drop alter add index view join inner left right outer full on as and or not null is in "
+              "between like exists union all distinct case when then else end primary key foreign references "
+              "default unique with recursive explain analyze begin commit rollback transaction",
+        "bi": "count sum avg min max coalesce cast substring length now date current_timestamp row_number "
+              "over partition rank dense_rank",
+        "lc": ["--"], "bc": [("/*", "*/")], "strs": ["'", '"'],
+    },
+    "java": {
+        "kw": "abstract assert boolean break byte case catch char class const continue default do double else enum "
+              "extends final finally float for goto if implements import instanceof int interface long native new "
+              "package private protected public return short static strictfp super switch synchronized this throw "
+              "throws transient try void volatile while var record sealed permits",
+        "bi": "String Integer Long Double Boolean Character Object System List Map Set ArrayList HashMap HashSet "
+              "Optional Stream Arrays Collections Math Thread Runnable Exception RuntimeException",
+        "lc": ["//"], "bc": [("/*", "*/")], "strs": ['"', "'"],
+    },
+    "cpp": {
+        "kw": "alignas alignof auto bool break case catch char class const constexpr continue decltype default "
+              "delete do double else enum explicit export extern false float for friend goto if inline int long "
+              "mutable namespace new noexcept nullptr operator private protected public register return short "
+              "signed sizeof static static_cast struct switch template this throw true try typedef typename union "
+              "unsigned using virtual void volatile while include define ifdef ifndef endif pragma",
+        "bi": "std printf malloc free size_t uint8_t uint32_t int64_t string vector map unordered_map set unique_ptr "
+              "shared_ptr move forward make_unique make_shared",
+        "lc": ["//"], "bc": [("/*", "*/")], "strs": ['"', "'"],
+    },
+    "go": {
+        "kw": "break case chan const continue default defer else fallthrough for func go goto if import interface "
+              "map package range return select struct switch type var true false nil iota",
+        "bi": "make new len cap append copy delete panic recover print println error string int int64 float64 "
+              "byte rune bool any context",
+        "lc": ["//"], "bc": [("/*", "*/")], "strs": ['"', "'", "`"],
+    },
+    "rust": {
+        "kw": "as async await break const continue crate dyn else enum extern false fn for if impl in let loop "
+              "match mod move mut pub ref return self Self static struct super trait true type unsafe use where while",
+        "bi": "String Vec Option Result Box Rc Arc HashMap HashSet Iterator Some None Ok Err println format "
+              "vec todo unimplemented unreachable assert",
+        "lc": ["//"], "bc": [("/*", "*/")], "strs": ['"', "'"],
+    },
+    "text": {"kw": "", "bi": "", "lc": [], "bc": [], "strs": []},
 }
-/* ── 无障碍跳转 ── */
-.skip{position:absolute;left:-9999px;top:0;z-index:100;font-size:14px;color:#fff;background:var(--ink);
-  padding:9px 16px;border-radius:0 0 var(--r-sm) 0}
-.skip:focus{left:0}
-@media print{
-  header.nav,.skip,.pager{display:none!important}
-  body{font-size:11.5pt}
-  .wrap,.article-wrap{max-width:100%;padding:0}
-  a{color:#000}
+
+
+def _tok(cls, text):
+    return f'<span class="tok-{cls}">{esc(text)}</span>'
+
+
+def _highlight_generic(code, spec):
+    kw = set(spec["kw"].split())
+    bi = set(spec["bi"].split())
+    lcs = spec.get("lc") or []
+    bcs = spec.get("bc") or []
+    strs = sorted(spec.get("strs") or [], key=len, reverse=True)
+    lit = {"true", "false", "null", "None", "True", "False", "undefined", "nil"}
+    out, i, n = [], 0, len(code)
+    while i < n:
+        ch = code[i]
+        hit = False
+        for a, b in bcs:
+            if code.startswith(a, i):
+                j = code.find(b, i + len(a))
+                j = n if j < 0 else j + len(b)
+                out.append(_tok("com", code[i:j])); i = j; hit = True; break
+        if hit:
+            continue
+        for p in lcs:
+            if code.startswith(p, i):
+                j = code.find("\n", i)
+                j = n if j < 0 else j
+                out.append(_tok("com", code[i:j])); i = j; hit = True; break
+        if hit:
+            continue
+        for q in strs:
+            if code.startswith(q, i):
+                if len(q) == 3:
+                    j = code.find(q, i + 3)
+                    j = n if j < 0 else j + 3
+                else:
+                    j = i + 1
+                    while j < n:
+                        if code[j] == "\\":
+                            j += 2; continue
+                        if code[j] == q:
+                            j += 1; break
+                        if code[j] == "\n":
+                            break
+                        j += 1
+                    j = min(j, n)
+                out.append(_tok("str", code[i:j])); i = j; hit = True; break
+        if hit:
+            continue
+        if ch.isdigit() and (i == 0 or not (code[i - 1].isalnum() or code[i - 1] in "_.")):
+            m = re.match(r"[0-9][0-9a-zA-Z_.]*", code[i:])
+            out.append(_tok("num", m.group(0))); i += m.end(); continue
+        if ch.isalpha() or ch in "_$":
+            m = re.match(r"[A-Za-z_$][A-Za-z0-9_$]*", code[i:])
+            if not m:
+                out.append(esc(ch)); i += 1; continue
+            w = m.group(0); j = i + m.end()
+            if w in kw:
+                out.append(_tok("kw", w))
+            elif w in lit:
+                out.append(_tok("num", w))
+            elif w in bi:
+                out.append(_tok("bi", w))
+            elif j < n and code[j] in "(":
+                out.append(_tok("fn", w))
+            else:
+                out.append(esc(w))
+            i = j; continue
+        out.append(esc(ch)); i += 1
+    return "".join(out)
+
+
+def _highlight_html(code):
+    s = esc(code)
+    s = re.sub(r'(&lt;/?)([a-zA-Z][\w:-]*)', lambda m: m.group(1) + f'<span class="tok-kw">{m.group(2)}</span>', s)
+    s = re.sub(r'(&lt;!?/?[a-zA-Z][\w:-]*)((?:\s+[\w:.-]+(?:=)?)*)', lambda m: m.group(1) + m.group(2), s)
+    s = re.sub(r'([\w:.-]+)=(&quot;.*?&quot;|&#x27;.*?&#x27;)',
+               lambda m: f'<span class="tok-attr">{m.group(1)}</span>=<span class="tok-str">{m.group(2)}</span>', s)
+    s = re.sub(r'&lt;!--.*?--&gt;', lambda m: f'<span class="tok-com">{m.group(0)}</span>', s, flags=re.S)
+    return s
+
+
+def _highlight_css(code):
+    s = esc(code)
+    s = re.sub(r'(/\*.*?\*/)', lambda m: f'<span class="tok-com">{m.group(0)}</span>', s, flags=re.S)
+    s = re.sub(r'(?m)^(\s*)([.#a-zA-Z][^\n{]*?)(\s*\{)',
+               lambda m: m.group(1) + f'<span class="tok-fn">{m.group(2)}</span>' + m.group(3), s)
+    s = re.sub(r'([\w-]+)(\s*:\s*)([^;\n}]+)',
+               lambda m: f'<span class="tok-attr">{m.group(1)}</span>{m.group(2)}<span class="tok-str">{m.group(3)}</span>', s)
+    return s
+
+
+def highlight(code, lang):
+    key = (lang or "").strip().lower().lstrip(".")
+    key = LANG_ALIAS.get(key, key)
+    if key == "html":
+        return _highlight_html(code)
+    if key == "css":
+        return _highlight_css(code)
+    spec = HL_LANGS.get(key)
+    if not spec or not (spec["kw"] or spec["bi"] or spec["strs"]):
+        return esc(code)
+    return _highlight_generic(code, spec)
+
+
+# ══════════════════════════ 占位符仓库 ══════════════════════════
+STASH = {}          # key -> html
+MATH_JOBS = []      # [(key, tex, display)]
+_uid = [0]
+
+
+def _stash(payload, prefix="BLK"):
+    _uid[0] += 1
+    key = f"@@{prefix}{_uid[0]}@@"
+    STASH[key] = payload
+    return key
+
+
+def finalize(out):
+    """把占位符换回真实 HTML；独立成段的先剥掉外层 <p>。"""
+    out = re.sub(r'<p>\s*(@@[A-Z]+\d+@@)\s*</p>',
+                 lambda m: STASH.get(m.group(1), m.group(1)), out)
+    out = re.sub(r'@@[A-Z]+\d+@@',
+                 lambda m: STASH.get(m.group(0), m.group(0)), out)
+    return out
+
+
+# ══════════════════════════ 围栏代码块 ══════════════════════════
+FENCE_OPEN = re.compile(r'^(\s*)(`{3,}|~{3,})[ \t]*([^\s`]*)[ \t]*(.*)$')
+TITLE_KV = re.compile(r'(?:^|\s)title=["\']?([^"\']+)["\']?')
+
+
+def _fence_html(code, info):
+    """```python title=demo.py  /  ```python demo.py  → 带语言标签和复制按钮的代码块"""
+    info = (info or "").strip()
+    lang = "text"
+    title = ""
+    if info:
+        parts = info.split(None, 1)
+        lang = parts[0] if parts else "text"
+        rest = parts[1].strip() if len(parts) > 1 else ""
+        if rest:
+            m = TITLE_KV.search(rest)
+            title = (m.group(1) if m else rest).strip()
+    shown = LANG_ALIAS.get(lang.lower(), lang.lower())
+    body = highlight(code, lang)
+    bar = [f'<div class="code-bar">']
+    if title:
+        bar.append(f'<span class="code-title">{esc(title)}</span>')
+    bar.append(f'<span class="code-lang">{esc(shown)}</span>')
+    bar.append('<button class="code-copy" type="button" aria-label="复制代码">复制</button></div>')
+    return (f'<div class="code-block">{"".join(bar)}'
+            f'<pre><code>{body}</code></pre></div>')
+
+
+class CodeFence(Preprocessor):
+    """自己实现围栏解析：支持 `title=`，并在构建时完成语法高亮。"""
+
+    def run(self, lines):
+        out, i, n = [], 0, len(lines)
+        while i < n:
+            m = FENCE_OPEN.match(lines[i])
+            if not m:
+                out.append(lines[i]); i += 1; continue
+            fence = m.group(2)
+            info = (m.group(3) or "")
+            rest = (m.group(4) or "")
+            if rest:
+                info = (info + " " + rest).strip()
+            body, j = [], i + 1
+            while j < n and not lines[j].strip().startswith(fence):
+                body.append(lines[j]); j += 1
+            code = "\n".join(body)
+            key = _stash(_fence_html(code, info))
+            out.extend(["", key, ""])
+            i = j + 1
+        return out
+
+
+# ══════════════════════════ 数学：KaTeX 构建时预渲染 ══════════════════════════
+MATH_PATTERNS = [
+    (re.compile(r'\$\$(.+?)\$\$', re.S), True),
+    (re.compile(r'\\\[(.+?)\\\]', re.S), True),
+    (re.compile(r'(?<![\\$])\\\((.+?)\\\)', re.S), False),
+    (re.compile(r'(?<![\\$\d])\$(?!\s)([^$\n]+?)(?<!\s)\$(?![\d$])'), False),
+]
+FENCE_ANY = re.compile(r'^\s*(`{3,}|~{3,})')
+
+
+def protect_math_line(line):
+    """行内/行间公式 → 占位符。围栏代码由调用方跳过。"""
+    for rx, display in MATH_PATTERNS:
+        def rep(m):
+            tex = m.group(1).strip()
+            if not tex:
+                return m.group(0)
+            _uid[0] += 1
+            key = f"@@MATH{_uid[0]}@@"
+            MATH_JOBS.append((key, tex, display))
+            STASH[key] = f'<code class="math-err">{esc(tex)}</code>'   # 先放降级内容
+            return key
+        line = rx.sub(rep, line)
+    return line
+
+
+class MathGuard(Preprocessor):
+    """在代码块之后运行：围栏已变成占位符，不会误伤代码里的 $。"""
+
+    def run(self, lines):
+        return [protect_math_line(l) for l in lines]
+
+
+def render_math_batch():
+    """一次 node 调用渲染全部公式；失败则保留降级内容。"""
+    if not MATH_JOBS:
+        return 0, 0
+    payload = {"items": [{"id": k, "tex": t, "display": d} for k, t, d in MATH_JOBS]}
+    script = os.path.join(ROOT, "tools", "tex2html.mjs")
+    ok = fail = 0
+    data = {}
+    try:
+        proc = subprocess.run(["node", script], input=json.dumps(payload),
+                              capture_output=True, text=True, timeout=180)
+        if proc.returncode == 0 and proc.stdout.strip():
+            data = json.loads(proc.stdout)
+        else:
+            print(f"  ! KaTeX 渲染失败（node 退出码 {proc.returncode}）：{proc.stderr.strip()[:200]}")
+    except FileNotFoundError:
+        print("  ! 未找到 node，公式降级为等宽原文（装 node + npm i katex 后重建即可）")
+    except Exception as e:
+        print(f"  ! KaTeX 渲染异常：{e}")
+    for key, tex, display in MATH_JOBS:
+        v = data.get(key)
+        if isinstance(v, str) and v.startswith("<"):
+            STASH[key] = v
+            ok += 1
+        else:
+            fail += 1
+            if isinstance(v, dict) and v.get("error"):
+                print(f"  ! 公式语法错误 {tex[:40]!r}: {v['error'][:120]}")
+    return ok, fail
+
+
+# ══════════════════════════ 组件容器 ::: ══════════════════════════
+OPEN_RE = re.compile(r'^:::([a-zA-Z][\w-]*)[ \t]*(.*)$')
+CLOSE_RE = re.compile(r'^:::[ \t]*$')
+
+CALLOUTS = {
+    "note": ("box-note", "说明"),
+    "tip": ("box-tip", "要点"),
+    "warn": ("box-warn", "注意"),
+    "insight": ("box-insight", "洞见"),
 }
-"""
 
-# ────────────────────────────── JS ──────────────────────────────
-JS = """
-(function () {
-  'use strict';
-  var doc = document;
 
-  /* 年份 */
-  var y = doc.getElementById('year');
-  if (y) y.textContent = String(new Date().getFullYear());
+class Node:
+    __slots__ = ("kind", "text", "name", "title", "kids")
 
-  /* 移动端导航 */
-  var t = doc.getElementById('navToggle'), n = doc.getElementById('nav');
-  if (t && n) {
-    t.addEventListener('click', function () {
-      var open = n.classList.toggle('open');
-      t.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    n.addEventListener('click', function (e) {
-      if (e.target.tagName === 'A') {
-        n.classList.remove('open');
-        t.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }
+    def __init__(self, kind, text="", name="", title="", kids=None):
+        self.kind = kind
+        self.text = text
+        self.name = name
+        self.title = title
+        self.kids = kids or []
 
-  /* 滚动渐显 */
-  var revealEls = doc.querySelectorAll('.reveal');
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce || !('IntersectionObserver' in window)) {
-    Array.prototype.forEach.call(revealEls, function (el) { el.classList.add('in'); });
-  } else {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    Array.prototype.forEach.call(revealEls, function (el) { io.observe(el); });
-  }
 
-  /* 列表分页：容器 [data-paginate]，子项 [data-page-item]，页码区 [data-pager] */
-  Array.prototype.forEach.call(doc.querySelectorAll('[data-paginate]'), function (box) {
-    var per = parseInt(box.getAttribute('data-page-size') || '5', 10);
-    var items = Array.prototype.slice.call(box.querySelectorAll('[data-page-item]'));
-    var pager = doc.querySelector(box.getAttribute('data-pager-target') || '[data-pager]');
-    if (items.length <= per) {
-      if (pager) pager.hidden = true;
-      return;
-    }
-    if (!pager) return;
-    var pages = Math.ceil(items.length / per);
-    var cur = 1;
+def parse_containers(lines, i=0):
+    nodes = []
+    while i < len(lines):
+        line = lines[i]
+        if CLOSE_RE.match(line):
+            return nodes, i + 1
+        m = OPEN_RE.match(line)
+        if m:
+            kids, i = parse_containers(lines, i + 1)
+            nodes.append(Node("box", name=m.group(1).lower(), title=(m.group(2) or "").strip(), kids=kids))
+        else:
+            nodes.append(Node("text", text=line))
+            i += 1
+    return nodes, i
 
-    function go(p) {
-      cur = Math.min(Math.max(p, 1), pages);
-      items.forEach(function (el, i) {
-        el.style.display = (Math.floor(i / per) + 1 === cur) ? '' : 'none';
-      });
-      pager.innerHTML = '';
-      var prev = doc.createElement('button');
-      prev.type = 'button'; prev.textContent = '上一页'; prev.disabled = cur === 1;
-      prev.addEventListener('click', function () { go(cur - 1); });
-      pager.appendChild(prev);
-      for (var i = 1; i <= pages; i++) {
-        (function (i) {
-          var b = doc.createElement('button');
-          b.type = 'button'; b.textContent = String(i);
-          if (i === cur) b.setAttribute('aria-current', 'page');
-          b.addEventListener('click', function () { go(i); });
-          pager.appendChild(b);
-        })(i);
-      }
-      var next = doc.createElement('button');
-      next.type = 'button'; next.textContent = '下一页'; next.disabled = cur === pages;
-      next.addEventListener('click', function () { go(cur + 1); });
-      pager.appendChild(next);
-      var info = doc.createElement('span');
-      info.className = 'pager-info';
-      info.textContent = '第 ' + cur + ' / ' + pages + ' 页 · 共 ' + items.length + ' 条';
-      pager.appendChild(info);
-      pager.hidden = false;
-    }
-    go(1);
-  });
 
-  /* 复制邮箱 */
-  var copyBtn = doc.getElementById('copyMail');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function () {
-      var mail = copyBtn.getAttribute('data-mail') || '';
-      var done = function () {
-        var old = copyBtn.textContent;
-        copyBtn.textContent = '已复制 ✓';
-        setTimeout(function () { copyBtn.textContent = old; }, 1600);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(mail).then(done, done);
-      } else {
-        var ta = doc.createElement('textarea');
-        ta.value = mail; doc.body.appendChild(ta); ta.select();
-        try { doc.execCommand('copy'); } catch (e) {}
-        doc.body.removeChild(ta); done();
-      }
-    });
-  }
-})();
-"""
+def _text_of(node):
+    return "\n".join(n.text for n in node.kids if n.kind == "text").strip("\n")
 
-# ────────────────────────────── 模板 ──────────────────────────────
+
+def _pairs(text):
+    """把「- a | b | c」列表解析成三元组，用于 metrics / bars / dl。"""
+    rows = []
+    for line in text.split("\n"):
+        s = line.strip()
+        if not s:
+            continue
+        if s[0] in "-*+" and (len(s) == 1 or s[1] == " "):
+            s = s[1:].strip()
+        elif re.match(r'^\d+[.)]\s', s):
+            s = re.sub(r'^\d+[.)]\s*', "", s)
+        else:
+            continue
+        cells = [c.strip() for c in s.split("|")]
+        if cells and any(cells):
+            rows.append(cells)
+    return rows
+
+
+def _metrics_md(node):
+    rows = _pairs(_text_of(node))
+    if not rows:
+        return '<div class="metrics"></div>'
+    cells = []
+    for r in rows:
+        val = r[0] if len(r) > 0 else ""
+        label = r[1] if len(r) > 1 else ""
+        note = r[2] if len(r) > 2 else ""
+        cls = "metric"
+        if val.startswith("+"):
+            cls += " metric-up"
+        elif val.startswith("-"):
+            cls += " metric-down"
+        note_html = f'<p class="metric-n">{esc(note)}</p>' if note else ""
+        cells.append(f'<div class="{cls}"><p class="metric-v">{esc(val)}</p>'
+                     f'<p class="metric-l">{esc(label)}</p>{note_html}</div>')
+    return f'<div class="metrics">{"".join(cells)}</div>'
+
+
+def _bars_md(node):
+    rows = _pairs(_text_of(node))
+    if not rows:
+        return '<div class="bars"></div>'
+    nums = []
+    for r in rows:
+        nums.append([float(x) for x in re.findall(r'-?\d+(?:\.\d+)?', r[1] if len(r) > 1 else "0")] or [0.0])
+    top = max([n[0] for n in nums] + [1.0])
+    lo = min([0.0] + [n[0] for n in nums])
+    span = max(top - lo, 1e-9)
+    out = []
+    for r, num in zip(rows, nums):
+        label = r[0] if r else ""
+        shown = r[1] if len(r) > 1 else ""
+        note = f' <span class="bar-n">{esc(r[2])}</span>' if len(r) > 2 else ""
+        w = (num[0] - lo) / span * 100
+        out.append(f'<div class="bar-row"><span class="bar-l" title="{esc(label)}">{esc(label)}</span>'
+                   f'<span class="bar-t"><span class="bar-f" data-w="{max(w, 1.5):.1f}"></span></span>'
+                   f'<span class="bar-v">{esc(shown)}{note}</span></div>')
+    return f'<div class="bars">{"".join(out)}</div>'
+
+
+def _dl_md(node):
+    rows = _pairs(_text_of(node))
+    out = []
+    for r in rows:
+        k = r[0] if r else ""
+        v = " | ".join(r[1:]) if len(r) > 1 else ""
+        out.append(f'<dt>{esc(k)}</dt><dd>{esc(v)}</dd>')
+    return f'<dl class="dl">{"".join(out)}</dl>'
+
+
+def render_nodes(nodes):
+    """把容器树渲染成「markdown 源 + HTML 混合」文本，再交 md_in_html 统一解析。
+
+    容器输出前后补空行：块级 HTML 必须与相邻的 markdown 段落隔开，
+    否则 md_in_html 会把它当行内 HTML 塞进 <p>。
+    """
+    parts = []
+    for n in nodes:
+        if n.kind == "text":
+            parts.append(n.text)
+        else:
+            parts.append("\n" + render_container(n) + "\n")
+    return "\n".join(parts)
+
+
+def render_container(n):
+    name, title, kids = n.name, n.title, n.kids
+    inner = render_nodes(kids)
+    if name in CALLOUTS:
+        cls, label = CALLOUTS[name]
+        head = title or label
+        return (f'<div class="box {cls}" markdown="1">\n<p class="box-h">{esc(head)}</p>\n'
+                f'<div class="box-b" markdown="1">\n{inner}\n</div>\n</div>')
+    if name == "quote":
+        src = f'\n<p class="quote-src">— {esc(title)}</p>' if title else ""
+        return f'<div class="quote" markdown="1">\n{inner}{src}\n</div>'
+    if name == "details":
+        head = title or "展开"
+        return (f'<details class="fold" markdown="1">\n<summary>{esc(head)}</summary>\n'
+                f'<div class="fold-b" markdown="1">\n{inner}\n</div>\n</details>')
+    if name == "aside":
+        head = f'\n<p class="aside-h">{esc(title)}</p>' if title else ""
+        return f'<div class="aside" markdown="1">{head}\n{inner}\n</div>'
+    if name == "figure":
+        src = f'\n<figcaption>{title}</figcaption>' if title else ""
+        return (f'<figure class="fig" markdown="1">\n<div class="fig-b" markdown="1">\n{inner}\n</div>'
+                f'{src}\n</figure>')
+    if name == "tabs":
+        tabs = [k for k in kids if k.kind == "box" and k.name == "tab"]
+        if not tabs:
+            return inner
+        bar = "".join(
+            f'<button type="button" role="tab" aria-selected="{"true" if i == 0 else "false"}"'
+            f'{" tabindex=\"-1\"" if i else ""}>{esc(t.title or f"标签 {i + 1}")}</button>'
+            for i, t in enumerate(tabs))
+        panes = "\n\n".join(
+            f'<div class="tab-pane" role="tabpanel" markdown="1"{" hidden" if i else ""}>\n'
+            f'{render_nodes(t.kids)}\n</div>'
+            for i, t in enumerate(tabs))
+        return (f'<div class="tabs" data-tabs="1" markdown="1">\n\n'
+                f'<div class="tabs-bar" markdown="0">{bar}</div>\n\n'
+                f'{panes}\n\n</div>')
+    if name == "steps":
+        steps = [k for k in kids if k.kind == "box" and k.name == "step"]
+        if not steps:
+            return inner
+        items = "\n\n".join(
+            f'<div class="step" markdown="1">\n<p class="step-t">{esc(s.title or f"第 {i + 1} 步")}</p>\n\n'
+            f'<div class="step-b" markdown="1">\n{render_nodes(s.kids)}\n</div>\n\n</div>'
+            for i, s in enumerate(steps))
+        return f'<div class="steps" markdown="1">\n\n{items}\n\n</div>'
+    if name == "compare":
+        cols = [k for k in kids if k.kind == "box" and k.name == "col"]
+        if not cols:
+            return inner
+        items = "\n\n".join(
+            f'<div class="cmp-col" markdown="1">\n<p class="cmp-h">{esc(c.title or f"栏 {i + 1}")}</p>\n\n'
+            f'{render_nodes(c.kids)}\n</div>'
+            for i, c in enumerate(cols))
+        return f'<div class="compare" markdown="1">\n\n{items}\n\n</div>'
+    if name == "metrics":
+        return _metrics_md(n)
+    if name == "bars":
+        return _bars_md(n)
+    if name == "dl":
+        return _dl_md(n)
+    if name == "table":
+        note = f'\n<p class="table-note">{esc(title)}</p>' if title else ""
+        return f'<div class="sortable" markdown="1">\n{inner}\n</div>{note}'
+    if name == "tab":
+        return (f'<div class="tab-pane" role="tabpanel" markdown="1">\n{inner}\n</div>')
+    if name == "step":
+        return (f'<div class="step" markdown="1">\n<p class="step-t">{esc(title)}</p>\n{inner}\n</div>')
+    if name == "col":
+        return f'<div class="cmp-col" markdown="1">\n{inner}\n</div>'
+    # 未知容器：原样保留内容，并提示
+    print(f"  ! 未知组件 :::{name}（已按普通内容输出）")
+    return inner
+
+
+class Containers(Preprocessor):
+    def run(self, lines):
+        nodes, _ = parse_containers(list(lines))
+        return render_nodes(nodes).split("\n")
+
+
+# ══════════════════════════ markdown 组装 ══════════════════════════
+def slugify_zh(value, name=None):
+    s = re.sub(r'[^\w\u4e00-\u9fff]+', '-', value.strip().lower()).strip('-')
+    return s or "sec"
+
+
+class SiteExt(Extension):
+    """把三个预处理器按顺序挂进 markdown 管线。
+
+    执行顺序（优先级从高到低）：围栏代码 → 数学 → 组件容器。
+    代码先变占位符，后面的 $ 与 ::: 就不会误伤代码内容。
+    """
+
+    def extendMarkdown(self, md):
+        md.preprocessors.register(CodeFence(md), "lv_fence", 50)
+        md.preprocessors.register(MathGuard(md), "lv_math", 45)
+        md.preprocessors.register(Containers(md), "lv_containers", 40)
+
+
+MD_EXTS = ["tables", "sane_lists", "footnotes", "toc", "md_in_html", "attr_list", "def_list"]
+
+
+def make_md():
+    md = mdlib.Markdown(extensions=MD_EXTS + [SiteExt()],
+                        extension_configs={
+                            "toc": {"toc_depth": "2-3", "slugify": slugify_zh, "anchorlink": False},
+                            "footnotes": {"BACKLINK_TEXT": "↩", "SUPERSCRIPT_TEXT": "{}",
+                                          "UNIQUE_IDS": True},
+                        })
+    return md
+
+
+HEAD_RE = re.compile(r'<h([23]) id="([^"]+)">(.*?)</h\1>', re.S)
+
+
+def add_anchors(out):
+    def rep(m):
+        lvl, hid, body = m.group(1), m.group(2), m.group(3)
+        return (f'<h{lvl} id="{hid}"><a class="anchor" href="#{hid}" aria-hidden="true" tabindex="-1">#</a>'
+                f'{body}</h{lvl}>')
+    return HEAD_RE.sub(rep, out)
+
+
+def render_markdown(src):
+    """返回 (html 带占位符, toc_tokens)。占位符由 finalize() 统一替换。"""
+    md = make_md()
+    out = md.convert(src)
+    toc = getattr(md, "toc_tokens", []) or []
+    return add_anchors(out), toc
+
+
+def toc_html(tokens, inline=False):
+    items = []
+
+    def walk(nodes, depth):
+        for t in nodes:
+            lvl = t.get("level", 2)
+            items.append(f'<li><a class="h{lvl}" href="#{t["id"]}">{t["name"]}</a></li>')
+            if t.get("children"):
+                walk(t["children"], depth + 1)
+
+    walk(tokens, 0)
+    if not items:
+        return ""
+    head = "" if inline else '<p class="toc-h">本页目录</p>'
+    return f'{head}<ul>{"".join(items)}</ul>'
+
+
+# ══════════════════════════ 模板 ══════════════════════════
 FAVICON = (
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
     "%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' "
     "font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' "
     "fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E"
 )
-
-
-def esc(s):
-    return html.escape(s, quote=True)
 
 
 def nav_html(active):
@@ -431,32 +706,54 @@ def footer_html():
       <a href="{SITE['researchgate']}" target="_blank" rel="noopener">ResearchGate</a>
       <span class="sep">·</span>
       <a href="{SITE['bilibili']}" target="_blank" rel="noopener">Bilibili</a>
+      <span class="sep">·</span>
+      <a href="/feed.xml">RSS</a>
     </div>
     <p class="foot-meta">© <span id="year">2026</span> {SITE['name']} · {SITE['name_en']} · 手写 HTML/CSS/JS</p>
   </div>
 </footer>"""
 
 
-def page(title, desc, path, body, active, og_type="website"):
+def page(title, desc, path, body, active, og_type="website", og_image=None,
+         extra_head="", noindex=False):
     canonical = SITE["base"] + path
+    head = [
+        '<meta charset="UTF-8">',
+        '<meta name="viewport" content="width=device-width, initial-scale=1">',
+        '<meta name="theme-color" content="#ffffff">',
+        f'<title>{title}</title>',
+        f'<meta name="description" content="{esc(desc)}">',
+        '<meta name="author" content="Di Lv (吕迪)">',
+        f'<link rel="canonical" href="{canonical}">',
+        f'<link rel="icon" href="{FAVICON}">',
+        '<link rel="alternate" type="application/atom+xml" title="吕迪 · 文章" href="/feed.xml">',
+        f'<meta property="og:type" content="{og_type}">',
+        f'<meta property="og:title" content="{esc(title)}">',
+        f'<meta property="og:description" content="{esc(desc)}">',
+        f'<meta property="og:url" content="{canonical}">',
+        '<meta property="og:locale" content="zh_CN">',
+        f'<meta property="og:site_name" content="{SITE["name"]} · {SITE["name_en"]}">',
+    ]
+    if og_image:
+        head += [
+            f'<meta property="og:image" content="{og_image}">',
+            '<meta property="og:image:width" content="1200">',
+            '<meta property="og:image:height" content="630">',
+            f'<meta property="og:image:alt" content="{esc(title)}">',
+            '<meta name="twitter:card" content="summary_large_image">',
+            f'<meta name="twitter:image" content="{og_image}">',
+        ]
+    else:
+        head.append('<meta name="twitter:card" content="summary">')
+    if noindex:
+        head.append('<meta name="robots" content="noindex, follow">')
+    head.append('<link rel="stylesheet" href="/assets/site.css">')
+    if extra_head:
+        head.append(extra_head)
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ffffff">
-<title>{title}</title>
-<meta name="description" content="{esc(desc)}">
-<meta name="author" content="Di Lv (吕迪)">
-<link rel="canonical" href="{canonical}">
-<link rel="icon" href="{FAVICON}">
-<meta property="og:type" content="{og_type}">
-<meta property="og:title" content="{esc(title)}">
-<meta property="og:description" content="{esc(desc)}">
-<meta property="og:url" content="{canonical}">
-<meta property="og:locale" content="zh_CN">
-<meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="/assets/site.css">
+{chr(10).join(head)}
 </head>
 <body>
 <a class="skip" href="#main">跳到主要内容</a>
@@ -474,7 +771,7 @@ def page(title, desc, path, body, active, og_type="website"):
 """
 
 
-# ────────────────────────────── 数据 ──────────────────────────────
+# ══════════════════════════ 数据 ══════════════════════════
 PROJECT_GROUPS = [
     (
         "Agent / LLM Infra",
@@ -676,9 +973,9 @@ PUBS = [
 
 PATENTS = [
     {"venue": "发明专利", "year": "已授权", "role": "CN116740455A",
-     "title": "图像分类宽度学习系统及其训练方法和图像分类方法", "url": "", "authors": ""},
+     "title": "图像分类宽度学习系统及其训练方法和图像分类方法"},
     {"venue": "发明专利", "year": "已受理", "role": "CN119007194A",
-     "title": "多层次硬极化特征融合的 TCT 涂片自动检测系统", "url": "", "authors": ""},
+     "title": "多层次硬极化特征融合的 TCT 涂片自动检测系统"},
 ]
 
 HONORS = [
@@ -699,17 +996,16 @@ SKILLS = [
 ]
 EDU = [
     ("重庆大学（985）", "计算机技术 · 硕士 | 2023.09 – 2026.06", "GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。"),
-    ("重庆大学（985）", "计算机科学与技术 · 本科 | 2019.09 – 2021.06".replace("2021", "2023"), "GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。"),
+    ("重庆大学（985）", "计算机科学与技术 · 本科 | 2019.09 – 2023.06", "GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。"),
     ("生物感知与智能信息处理", "重庆市重点实验室 · 成员", ""),
 ]
 
 
 def card_link(p):
-    """卡片底部的外链：GitHub 仓库用 GitHub 标签，其他站点用「访问」。"""
     if not p.get("url"):
         return ""
     label = "GitHub ↗" if "github.com" in p["url"] else "访问 ↗"
-    return (f'<div class="card-links"><a href="{p["url"]}" target="_blank" rel="noopener">{label}</a></div>')
+    return f'<div class="card-links"><a href="{p["url"]}" target="_blank" rel="noopener">{label}</a></div>'
 
 
 def edu_items(limit=None):
@@ -724,43 +1020,67 @@ def edu_items(limit=None):
     return "".join(out)
 
 
-# ────────────────────────────── 文章 ──────────────────────────────
+# ══════════════════════════ 文章装载 ══════════════════════════
+def parse_front_matter(raw):
+    m = re.match(r"^---\r?\n(.*?)\r?\n---\r?\n?(.*)$", raw, re.S)
+    if not m:
+        return {}, raw
+    meta = {}
+    for line in m.group(1).split("\n"):
+        k, _, v = line.partition(":")
+        meta[k.strip()] = v.strip()
+    return meta, m.group(2)
+
+
+def list_md(folder):
+    d = os.path.join(ROOT, folder)
+    if not os.path.isdir(d):
+        return []
+    return sorted(f for f in os.listdir(d) if f.endswith(".md") and not f.startswith("_"))
+
+
+def count_minutes(body):
+    zh = len(re.findall(r"[\u4e00-\u9fff]", body))
+    en = len(re.findall(r"[A-Za-z]+", body))
+    return max(1, round(zh / 380 + en / 200))
+
+
+def parse_tags(raw):
+    return [t.strip().strip('"').strip("'") for t in raw.strip().strip("[]").split(",") if t.strip()]
+
+
 def load_posts():
     posts = []
-    d = os.path.join(ROOT, "content", "posts")
-    if not os.path.isdir(d):
-        return posts
-    for fn in sorted(os.listdir(d)):
-        if not fn.endswith(".md"):
-            continue
-        raw = open(os.path.join(d, fn), encoding="utf-8").read()
-        m = re.match(r"^---\n(.*?)\n---\n(.*)$", raw, re.S)
-        if not m:
-            continue
-        fm, body = m.group(1), m.group(2)
-        meta = {}
-        for line in fm.split("\n"):
-            k, _, v = line.partition(":")
-            meta[k.strip()] = v.strip()
+    for fn in list_md(os.path.join("content", "posts")):
+        raw = open(os.path.join(ROOT, "content", "posts", fn), encoding="utf-8").read()
+        meta, body = parse_front_matter(raw)
         slug = fn[:-3]
-        tags = [t.strip().strip('"') for t in meta.get("tags", "[]").strip("[]").split(",") if t.strip()]
-        mdc = mdlib.Markdown(extensions=["tables", "fenced_code", "sane_lists"])
-        body_html = mdc.convert(body)
-        words = len(re.findall(r"[\u4e00-\u9fff]", body)) + len(re.findall(r"[A-Za-z]+", body))
         posts.append({
             "slug": slug,
-            "order": int(meta.get("order", "0").strip() or 0),
+            "order": int((meta.get("order", "0") or "0").strip() or 0),
             "title": meta.get("title", slug).strip('"'),
             "date": meta.get("date", "").strip('"'),
             "summary": meta.get("summary", "").strip('"'),
-            "tags": tags,
-            "minutes": max(1, round(len(re.findall(r"[\u4e00-\u9fff]", body)) / 380
-                                    + len(re.findall(r"[A-Za-z]+", body)) / 200)),
-            "html": body_html,
-            "words": words,
+            "tags": parse_tags(meta.get("tags", "[]")),
+            "minutes": count_minutes(body),
+            "body": body,
         })
     posts.sort(key=lambda p: (p["date"], p["order"]), reverse=True)
     return posts
+
+
+def load_pages():
+    pages = []
+    for fn in list_md(os.path.join("content", "pages")):
+        raw = open(os.path.join(ROOT, "content", "pages", fn), encoding="utf-8").read()
+        meta, body = parse_front_matter(raw)
+        pages.append({
+            "slug": meta.get("slug", fn[:-3]).strip('"'),
+            "title": meta.get("title", fn[:-3]).strip('"'),
+            "desc": meta.get("desc", "").strip('"'),
+            "body": body,
+        })
+    return pages
 
 
 def post_card(post):
@@ -775,7 +1095,7 @@ def post_card(post):
       </li>"""
 
 
-# ────────────────────────────── 页面 ──────────────────────────────
+# ══════════════════════════ 页面 ══════════════════════════
 def build_home(posts):
     proj_cards = []
     for p in PROJECT_GROUPS[0][2][:3]:
@@ -851,7 +1171,8 @@ def build_home(posts):
     </div>
   </section>
 """
-    return page(f"{SITE['name']} · {SITE['name_en']} — {SITE['tagline']}", SITE["desc"], "/", body, "/")
+    og = SITE["base"] + "/assets/og/home.png" if os.path.exists(os.path.join(ROOT, "assets", "og", "home.png")) else None
+    return page(f"{SITE['name']} · {SITE['name_en']} — {SITE['tagline']}", SITE["desc"], "/", body, "/", og_image=og)
 
 
 def build_about(posts):
@@ -954,7 +1275,8 @@ def build_about(posts):
     </div>
   </section>
 """
-    return page(f"关于 — {SITE['name']}", "吕迪（LYU Di）的简介、教育经历、正在做的方向、论文与专利、技能栈与荣誉。",
+    return page(f"关于 — {SITE['name']}",
+                "吕迪（LYU Di）的简介、教育经历、正在做的方向、论文与专利、技能栈与荣誉。",
                 "/about.html", body, "/about.html")
 
 
@@ -995,7 +1317,8 @@ def build_projects(posts):
 
 {chr(10).join(blocks)}
 """
-    return page(f"项目 — {SITE['name']}", "吕迪的项目：Agent / LLM Infra（证据化发现账本、AGI 进展看板、本地推理栈、Agentic RL 知识库）、CV 算法、后端 RPC 与自动化小工具。",
+    return page(f"项目 — {SITE['name']}",
+                "吕迪的项目：Agent / LLM Infra（证据化发现账本、AGI 进展看板、本地推理栈、Agentic RL 知识库）、CV 算法、后端 RPC 与自动化小工具。",
                 "/projects.html", body, "/projects.html")
 
 
@@ -1006,7 +1329,8 @@ def build_blog_index(posts):
         listing = f"""      <ul class="post-list" data-paginate data-page-size="5" data-pager-target="#pager-posts">
 {cards}
       </ul>
-      <nav class="pager" id="pager-posts" data-pager aria-label="文章分页" hidden></nav>"""
+      <nav class="pager" id="pager-posts" data-pager aria-label="文章分页" hidden></nav>
+      <p class="sec-more"><a href="/feed.xml">订阅 RSS →</a></p>"""
     else:
         count_note = "还没写"
         listing = '      <p class="sec-note">还没写，先空着。</p>'
@@ -1023,8 +1347,36 @@ def build_blog_index(posts):
     </div>
   </section>
 """
-    return page(f"文章 — {SITE['name']}", "吕迪的技术长文与笔记：复杂性理论、Agentic RL、AI Infra、系统与工具链。",
+    return page(f"文章 — {SITE['name']}",
+                "吕迪的技术长文与笔记：复杂性理论、Agentic RL、AI Infra、系统与工具链。",
                 "/blog/", body, "/blog/")
+
+
+KATEX_CSS = '<link rel="stylesheet" href="/assets/vendor/katex.min.css">'
+
+
+def doc_layout(inner_head, inner_body, toc_tokens):
+    """文章与独立页共用的两栏骨架：左侧目录（有目录时才占位）。"""
+    toc = toc_html(toc_tokens or [])
+    if toc:
+        side = f'<aside class="toc-side" aria-label="目录"><nav class="toc">{toc}</nav></aside>'
+        inline = (f'<details class="toc-inline"><summary>本页目录（{len(toc_tokens)} 节）</summary>'
+                  f'<div class="toc-box"><nav class="toc">{toc_html(toc_tokens, inline=True)}</nav>'
+                  f'</div></details>')
+        layout = "art-layout"
+    else:
+        side, inline, layout = "", "", "art-layout no-toc"
+    return f"""    <div class="{layout}">
+{side}
+      <div class="art-main">
+{inner_head}
+{inline}
+        <hr class="art-rule">
+        <div class="prose">
+{inner_body}
+        </div>
+      </div>
+    </div>"""
 
 
 def build_post(post, posts):
@@ -1039,29 +1391,77 @@ def build_post(post, posts):
     if older:
         nav_links.append(f'<a href="/blog/{older["slug"]}.html">{esc(older["title"][:28])}… →</a>')
     tags = "".join(f"<span>{esc(t)}</span>" for t in post["tags"])
-    body = f"""  <article class="article">
-    <div class="article-wrap">
-      <div class="art-meta">
-        <span>{esc(post['date'])}</span>
-        <span class="sep">·</span>
-        <span>约 {post['minutes']} 分钟</span>
-        {tags}
-      </div>
-      <h1>{esc(post['title'])}</h1>
-      <p class="art-sum">{esc(post['summary'])}</p>
-      <hr class="art-rule">
-      <div class="prose">
-{post['html']}
-      </div>
-      <div class="art-foot">
-        {"".join(nav_links)}
-      </div>
-    </div>
-  </article>
+    head = f"""        <div class="article-head">
+          <div class="art-meta">
+            <span>{esc(post['date'])}</span>
+            <span class="sep">·</span>
+            <span>约 {post['minutes']} 分钟</span>
+            {tags}
+          </div>
+          <h1>{esc(post['title'])}</h1>
+          <p class="art-sum">{esc(post['summary'])}</p>
+        </div>"""
+    foot = f"""
+        <div class="art-foot">
+          {"".join(nav_links)}
+        </div>"""
+    body = (f'  <div class="progress" aria-hidden="true"></div>\n'
+            f'  <article class="article">\n'
+            + doc_layout(head, post["html"], post.get("toc"))
+            + foot + "\n  </article>\n")
+    og_png = os.path.join(ROOT, "assets", "og", f"{post['slug']}.png")
+    og_image = f"{SITE['base']}/assets/og/{post['slug']}.png" if os.path.exists(og_png) else None
+    extra = KATEX_CSS if post.get("has_math") else ""
+    return page(f"{post['title']} — {SITE['name']}", post["summary"][:150],
+                f"/blog/{post['slug']}.html", body, "/blog/", og_type="article",
+                og_image=og_image, extra_head=extra)
+
+
+def build_doc_page(pg):
+    head = f"""        <div class="article-head">
+          <h1>{esc(pg['title'])}</h1>
+          <p class="art-sum">{esc(pg['desc'])}</p>
+        </div>"""
+    body = ('  <article class="article">\n'
+            + doc_layout(head, pg["html"], pg.get("toc"))
+            + "\n  </article>\n")
+    extra = KATEX_CSS if pg.get("has_math") else ""
+    return page(f"{pg['title']} — {SITE['name']}", pg["desc"], f"/{pg['slug']}.html",
+                body, "", noindex=True, extra_head=extra)
+
+
+# ══════════════════════════ feed / sitemap ══════════════════════════
+def iso_date(d):
+    try:
+        return datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=TZ).isoformat()
+    except Exception:
+        return datetime.now(TZ).isoformat()
+
+
+def build_feed(posts):
+    entries = []
+    for p in posts:
+        url = f"{SITE['base']}/blog/{p['slug']}.html"
+        entries.append(f"""  <entry>
+    <title>{esc(p['title'])}</title>
+    <link href="{url}"/>
+    <id>{url}</id>
+    <updated>{iso_date(p['date'])}</updated>
+    <summary>{esc(p['summary'])}</summary>
+  </entry>""")
+    updated = iso_date(posts[0]["date"]) if posts else datetime.now(TZ).isoformat()
+    return f"""<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{SITE['name']} · {SITE['name_en']} 的文章</title>
+  <subtitle>{SITE['desc']}</subtitle>
+  <link href="{SITE['base']}/feed.xml" rel="self"/>
+  <link href="{SITE['base']}/blog/"/>
+  <updated>{updated}</updated>
+  <id>{SITE['base']}/feed.xml</id>
+  <author><name>{SITE['name_en']}</name><email>{SITE['email']}</email></author>
+{chr(10).join(entries)}
+</feed>
 """
-    desc = post["summary"][:150]
-    return page(f"{post['title']} — {SITE['name']}", desc,
-                f"/blog/{post['slug']}.html", body, "/blog/", og_type="article")
 
 
 def build_sitemap(posts):
@@ -1076,32 +1476,52 @@ def build_robots():
     return f"User-agent: *\nAllow: /\n\nSitemap: {SITE['base']}/sitemap.xml\n"
 
 
-# ────────────────────────────── 主流程 ──────────────────────────────
+# ══════════════════════════ 主流程 ══════════════════════════
+def render_all(items):
+    """第一阶段：渲染出带占位符的 HTML + 目录；数学占位符稍后统一填充。"""
+    for it in items:
+        src = it["body"]
+        it["html"], it["toc"] = render_markdown(src)
+        it["has_math"] = bool(re.search(r'@@MATH\d+@@', it["html"]))
+
+
 def main():
     posts = load_posts()
+    pages = load_pages()
+
+    render_all(posts)
+    render_all(pages)
+
+    ok, fail = render_math_batch()
+    if MATH_JOBS:
+        print(f"  数学公式：{ok} 条已用 KaTeX 静态渲染" + (f"，{fail} 条降级" if fail else ""))
+
+    for it in posts + pages:
+        it["html"] = finalize(it["html"])
+
     os.makedirs(os.path.join(ROOT, "assets"), exist_ok=True)
     os.makedirs(os.path.join(ROOT, "blog"), exist_ok=True)
-
-    open(os.path.join(ROOT, "assets", "site.css"), "w", encoding="utf-8").write(CSS.lstrip())
-    open(os.path.join(ROOT, "assets", "site.js"), "w", encoding="utf-8").write(JS.lstrip())
 
     files = {
         "index.html": build_home(posts),
         "about.html": build_about(posts),
         "projects.html": build_projects(posts),
         os.path.join("blog", "index.html"): build_blog_index(posts),
+        "feed.xml": build_feed(posts),
         "sitemap.xml": build_sitemap(posts),
         "robots.txt": build_robots(),
     }
     for post in posts:
         files[os.path.join("blog", f"{post['slug']}.html")] = build_post(post, posts)
+    for pg in pages:
+        files[f"{pg['slug']}.html"] = build_doc_page(pg)
 
     for rel, content in files.items():
         path = os.path.join(ROOT, rel)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        os.makedirs(os.path.dirname(path) or ROOT, exist_ok=True)
         open(path, "w", encoding="utf-8").write(content)
         print(f"  wrote {rel:52s} {len(content):>7,d} chars")
-    print(f"\n{len(files)} pages + assets/site.css ({len(CSS):,d}) + assets/site.js ({len(JS):,d}) · {len(posts)} post(s)")
+    print(f"\n{len(files)} 个产物 · {len(posts)} 篇文章 · {len(pages)} 个独立页")
 
 
 if __name__ == "__main__":
