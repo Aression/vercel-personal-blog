@@ -12,20 +12,20 @@
     <link href="https://lvdi-profile.vercel.app/blog/weight-space-programming-rsi.html"/>
     <id>https://lvdi-profile.vercel.app/blog/weight-space-programming-rsi.html</id>
     <updated>2026-11-03T00:00:00+08:00</updated>
-    <summary>2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。我把它当成一个命题来检验：翻完八个实验、两套对照表和一笔算力账之后，这条路径改造的是改进算子的成本，不是 RSI 的可能性边界。</summary>
+    <summary>2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。这篇按三个连续问题读它的八个实验：实验究竟证明了什么、距离递归自我改进还缺什么、这项工作实际改变了什么。</summary>
   </entry>
   <entry>
     <title>Agent 的上下文一压缩，假设就变成了事实</title>
     <link href="https://lvdi-profile.vercel.app/blog/finding-ledger-evidence-memory.html"/>
     <id>https://lvdi-profile.vercel.app/blog/finding-ledger-evidence-memory.html</id>
     <updated>2026-10-28T00:00:00+08:00</updated>
-    <summary>长程排查断掉，多数时候不是模型不够聪明，是记忆里丢了「适用条件」。这篇是 Finding Ledger 的设计笔记：为什么把「发现」从对话里拆出来单独建模、为什么一条结论需要三个互不替代的状态、以及为什么检索这块我坚持不用向量。</summary>
+    <summary>一次第 40 轮的重复排查暴露了三类失效，它们指向同一个建模错误：把对话当成要记住的东西。这篇按因果链讲 Finding Ledger 的设计，为什么存「发现」、为什么一条结论要同时回答三个不相关的问题、以及为什么检索拒绝用向量。</summary>
   </entry>
   <entry>
-    <title>ETH 被证伪之后，哪些下界还站得住</title>
+    <title>ETH 被推翻后，哪些下界还站得住</title>
     <link href="https://lvdi-profile.vercel.app/blog/eth-exponential-time-hypothesis.html"/>
     <id>https://lvdi-profile.vercel.app/blog/eth-exponential-time-hypothesis.html</id>
     <updated>2026-10-28T00:00:00+08:00</updated>
-    <summary>2026 年 10 月 26 日，OpenAI 说内部模型证伪了指数时间假设。它是过去 27 年里几百篇「某算法不可能更快」论文的地基。这篇从 3-SAT 讲起，说清它到底断言了什么、算法做了什么，以及现在哪些结论真的倒了。</summary>
+    <summary>把这次事件拆成三个问题来看：被推翻的确切是哪个命题，哪些结论以它为唯一前提，以及新算法自己能走多远。前两问决定要不要改手上的引用，第三问决定它是不是一个能用的算法。</summary>
   </entry>
 </feed>

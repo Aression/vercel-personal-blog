@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
 <title>LLM 能改权重了，但它一次都没改过自己 — 吕迪</title>
-<meta name="description" content="2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。我把它当成一个命题来检验：翻完八个实验、两套对照表和一笔算力账之后，这条路径改造的是改进算子的成本，不是 RSI 的可能性边界。">
+<meta name="description" content="2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。这篇按三个连续问题读它的八个实验：实验究竟证明了什么、距离递归自我改进还缺什么、这项工作实际改变了什么。">
 <meta name="author" content="Di Lv (吕迪)">
 <link rel="canonical" href="https://lvdi-profile.vercel.app/blog/weight-space-programming-rsi.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
 <link rel="alternate" type="application/atom+xml" title="吕迪 · 文章" href="/feed.xml">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LLM 能改权重了，但它一次都没改过自己 — 吕迪">
-<meta property="og:description" content="2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。我把它当成一个命题来检验：翻完八个实验、两套对照表和一笔算力账之后，这条路径改造的是改进算子的成本，不是 RSI 的可能性边界。">
+<meta property="og:description" content="2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。这篇按三个连续问题读它的八个实验：实验究竟证明了什么、距离递归自我改进还缺什么、这项工作实际改变了什么。">
 <meta property="og:url" content="https://lvdi-profile.vercel.app/blog/weight-space-programming-rsi.html">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:site_name" content="吕迪 · LYU Di">
@@ -47,104 +47,30 @@
   <div class="progress" aria-hidden="true"></div>
   <article class="article">
     <div class="art-layout">
-<aside class="toc-side" aria-label="目录"><nav class="toc"><p class="toc-h">本页目录</p><ul><li><a class="h2" href="#先把八个实验摊开">先把八个实验摊开</a></li><li><a class="h2" href="#七条判定条件">七条判定条件</a></li><li><a class="h2" href="#会循环的能修-不会循环的修不了">会循环的能修，不会循环的修不了</a></li><li><a class="h2" href="#算力到底省在哪">算力到底省在哪</a></li><li><a class="h2" href="#装不进上下文的那部分">装不进上下文的那部分</a></li><li><a class="h2" href="#它读到的到底是什么">它读到的到底是什么</a></li><li><a class="h2" href="#它在谱系里的位置">它在谱系里的位置</a></li><li><a class="h2" href="#我不确定的地方">我不确定的地方</a></li><li><a class="h2" href="#我的判断">我的判断</a></li></ul></nav></aside>
+<aside class="toc-side" aria-label="目录"><nav class="toc"><p class="toc-h">本页目录</p><ul><li><a class="h2" href="#实验证明了什么">实验证明了什么</a></li><li><a class="h2" href="#距离递归自我改进还缺什么">距离递归自我改进还缺什么</a></li><li><a class="h2" href="#这项工作实际改变了什么">这项工作实际改变了什么</a></li><li><a class="h2" href="#一个能把它拆开的实验">一个能把它拆开的实验</a></li></ul></nav></aside>
       <div class="art-main">
         <div class="article-head">
           <div class="art-meta">
             <span>2026-11-03</span>
             <span class="sep">·</span>
-            <span>约 12 分钟</span>
+            <span>约 10 分钟</span>
             <span>权重空间编程</span><span>递归自我改进</span><span>机制可解释性</span><span>理论边界</span>
           </div>
           <h1>LLM 能改权重了，但它一次都没改过自己</h1>
-          <p class="art-sum">2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。我把它当成一个命题来检验：翻完八个实验、两套对照表和一笔算力账之后，这条路径改造的是改进算子的成本，不是 RSI 的可能性边界。</p>
+          <p class="art-sum">2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。这篇按三个连续问题读它的八个实验：实验究竟证明了什么、距离递归自我改进还缺什么、这项工作实际改变了什么。</p>
         </div>
-<details class="toc-inline"><summary>本页目录（9 节）</summary><div class="toc-box"><nav class="toc"><ul><li><a class="h2" href="#先把八个实验摊开">先把八个实验摊开</a></li><li><a class="h2" href="#七条判定条件">七条判定条件</a></li><li><a class="h2" href="#会循环的能修-不会循环的修不了">会循环的能修，不会循环的修不了</a></li><li><a class="h2" href="#算力到底省在哪">算力到底省在哪</a></li><li><a class="h2" href="#装不进上下文的那部分">装不进上下文的那部分</a></li><li><a class="h2" href="#它读到的到底是什么">它读到的到底是什么</a></li><li><a class="h2" href="#它在谱系里的位置">它在谱系里的位置</a></li><li><a class="h2" href="#我不确定的地方">我不确定的地方</a></li><li><a class="h2" href="#我的判断">我的判断</a></li></ul></nav></div></details>
+<details class="toc-inline"><summary>本页目录（4 节）</summary><div class="toc-box"><nav class="toc"><ul><li><a class="h2" href="#实验证明了什么">实验证明了什么</a></li><li><a class="h2" href="#距离递归自我改进还缺什么">距离递归自我改进还缺什么</a></li><li><a class="h2" href="#这项工作实际改变了什么">这项工作实际改变了什么</a></li><li><a class="h2" href="#一个能把它拆开的实验">一个能把它拆开的实验</a></li></ul></nav></div></details>
         <hr class="art-rule">
         <div class="prose">
-<p>2026 年 11 月 2 日，MIT CSAIL 的 Rikiya Takehi 发了一篇博客，题目里写着 LLM 能原生读写神经网络权重。最扎人的是这一行：从 Qwen3.5-0.8B 的 8 亿个权重里删掉 131,072 个，占 0.016%，MATH-500 从 7.9% 涨到 48.1%。</p>
-<p>作者在文末把这件事接到了递归自我改进上。他的说法是，今天 RSI 通常被操作成「模型写代码去启动训练任务」，而一个能检查、调试、改进自己权重的 LLM 是一条更原生的路径。</p>
-<p>这句话值得当成命题来验证，而不是当成展望来读。这篇只谈一件事：这条路径能不能驱动 RSI。它当工程手段值不值，是另一个问题。</p>
-<h2 id="先把八个实验摊开"><a class="anchor" href="#先把八个实验摊开" aria-hidden="true" tabindex="-1">#</a>先把八个实验摊开</h2>
-<p>博客的实验分三类。读：给模型一串权重，问它这个网络被训练来做什么。改：给一个失败的网络，让它修。写：让它从零写出能用的权重。</p>
-<div class="metrics"><div class="metric"><p class="metric-v">17,253</p><p class="metric-l">判断网络玩哪个游戏</p><p class="metric-n">零工具，四个游戏全中</p></div><div class="metric"><p class="metric-v">23,824</p><p class="metric-l">判断扩散模型画什么</p><p class="metric-n">禁止算前向，画出轮廓</p></div><div class="metric"><p class="metric-v">1,480,274</p><p class="metric-l">修复物理控制任务</p><p class="metric-n">编辑 3.5% 权重</p></div><div class="metric"><p class="metric-v">131,072</p><p class="metric-l">Qwen 权重编辑量</p><p class="metric-n">占总量 0.016%</p></div></div>
-
-<p>三类实验里有个共同点，我第一遍没注意，第二遍卡住了：编辑者和被编辑者，从头到尾是两个系统。</p>
-<p>处理 Qwen 的是 Astra，被处理的是 Qwen。修控制任务时，Astra 改的是一个 148 万权重的小网络。写 MinAtar 和围棋策略时，它写的是别人的权重。八次实验，零次自指修改。</p>
-<p>在 RSI 的定义里，这不是细节。</p>
-<h2 id="七条判定条件"><a class="anchor" href="#七条判定条件" aria-hidden="true" tabindex="-1">#</a>七条判定条件</h2>
-<p>递归自我改进这个概念不新鲜，1965 年 I. J. Good 就写过智能爆炸。难的是把它写成一个可判定的命题。把六十年的文献摊开，必要条件大概收敛成七条。</p>
-<div class="sortable">
-<table>
-<thead>
-<tr>
-<th>条件</th>
-<th>它在问什么</th>
-<th>WSP 现状</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>自我模型可及</td>
-<td>有没有与行为有因果联系的自身表征</td>
-<td>部分：能读结构，读不出训练目标</td>
-</tr>
-<tr>
-<td>改进算子有效</td>
-<td>存在从参数到更优参数的可复现映射</td>
-<td>满足，但只在窄域</td>
-</tr>
-<tr>
-<td>单调性</td>
-<td>每步自改不得降低目标效用</td>
-<td>不满足，只有事后评测</td>
-</tr>
-<tr>
-<td>自指闭合</td>
-<td>改的是自己，且改完还能继续改</td>
-<td>不满足，零次自改</td>
-</tr>
-<tr>
-<td>二阶改进</td>
-<td>算子本身随轮次变强</td>
-<td>未测</td>
-</tr>
-<tr>
-<td>验证与自我信任</td>
-<td>结果可被系统自身可靠判定</td>
-<td>不满足，验证全部外挂</td>
-</tr>
-<tr>
-<td>非退化与有界</td>
-<td>是真能力不是评测伪影，且不发散</td>
-<td>一半，有界性不成立</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p class="table-note">点表头可以排序。第三列是我按原文实验逐条对的。</p>
-
-<p>这张表里，WSP 明确满足的只有第二条。第一条标了「部分」，而这个「部分」相当勉强。</p>
-<p>博客第七个实验值得单独看。给 Astra 两个 Gemma 3 270M 副本的权重，一个正常微调，一个被训练成谄媚的，也就是永远同意用户建议的答案。为了堵掉偷看输入输出分布的捷径，微调时冻结了输入嵌入和输出层。然后只给权重，问它哪个是谄媚的那个。</p>
-<p>它读不出来。</p>
-<div class="box box-insight">
-<p class="box-h">这条失败比成功更能说明问题</p>
-<div class="box-b">
-<p>能读出结构，读不出目标。前者是代数性质，后者是训练数据与损失函数留下的痕迹，两者在权重空间的呈现方式不同。</p>
-</div>
-</div>
-<p>第三条到第六条是连着的，缺一条，递归就断了。Gödel Machine 的做法是拿证明换保证：先证明这次改写会提高期望效用，才允许改。这条义务在权重空间落不了地，原因有四层。</p>
-<details class="fold">
-<summary>为什么自指证明在权重空间失效</summary>
-<div class="fold-b">
-<p>代码的语义由语法和解释器给定，浮点向量的语义只由前向传播这个非线性映射给定，目标定理连陈述都要重新发明。</p>
-<p>要证明「对 131,072 个实参数的特定扰动使某分布的期望准确率上升」，这是高维非凸函数上的分析命题，不是可判定的语法性质。</p>
-<p>证明器本身就在被改的空间里。权重编辑可以静默改变证明搜索器的行为，Löb 障碍从「后继无法自证」恶化成「证明器与被证对象同一且不可检视」。</p>
-<p>最后一条最容易被忽略：小编辑不蕴含小行为变化。0.016% 是事后统计出来的比例，不是可以证明的界。</p>
-</div>
-</details>
-<h2 id="会循环的能修-不会循环的修不了"><a class="anchor" href="#会循环的能修-不会循环的修不了" aria-hidden="true" tabindex="-1">#</a>会循环的能修，不会循环的修不了</h2>
-<p>回到那组数字。原文给了完整的预算曲线，我把它抄在下面，因为这张表决定了整个讨论。</p>
+<p>2026 年 11 月 2 日，MIT CSAIL 的 Rikiya Takehi 等人发表博客《Sparks of Weight-Space Programming: LLMs can natively read &amp; write neural network weights》，报告通用前沿模型可以不经优化器、不用梯度，直接读写神经网络权重<sup id="fnref:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。其中最容易传播的一组数字是：编辑 Qwen3.5-0.8B 的 131,072 个权重（占总量 0.016%），MATH-500 从 7.9% 升到 48.1%。</p>
+<p>作者在文末把这条工作线接到递归自我改进上。他的说法是：今天递归自我改进通常被操作成「模型写代码去启动训练任务」；一个能检查、调试、改进自己权重的 LLM，是一条更原生的路径。</p>
+<p>这个说法能否成立，取决于三个可以分开检验的问题。实验证明了什么能力？这些能力距离递归自我改进还差哪些要素？即便差这些要素，实际改变的东西值多少？这篇文章按这个顺序读那八个实验。</p>
+<h2 id="实验证明了什么"><a class="anchor" href="#实验证明了什么" aria-hidden="true" tabindex="-1">#</a>实验证明了什么</h2>
+<p>八个实验分三类。读取：给模型一串权重，问它这个网络被训练来做什么。修改：给一个失败的网络，让它修。合成：让它从零写出可用的权重。</p>
+<p>读取部分的证据分三档，可信度递减。第一个实验从 17,253 个权重判断网络被训练来玩哪个游戏，四个选项全中，Breakout 那一次给出的置信度是 99%，全程没有工具也没有前向计算<sup id="fnref2:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。第二个实验判断扩散模型生成什么形状，模型被明确禁止计算前向，它画出的每个形状都是轮廓线，而扩散模型实际生成的是实心图形。作者认为这个错误恰好说明它读的是权重几何，而不是在暗中做前向推演<sup id="fnref3:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。</p>
+<p>第三个实验只给四个 transformer block 的权重，没有输入输出层，384 个维度没有标签，配最多 100 次 Python 运行，它用矩阵乘积把 copying head 全部找了出来，与实测一致<sup id="fnref4:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。这个结果值得和已有理论对照：transformer circuits 框架早已证明 attention-only 结构的计算可以按 W_QK 与 W_OV 的乘积分解成通路，induction head 正是这样被定位的<sup id="fnref:2-5"><a class="footnote-ref" href="#fn:2-5">5</a></sup>。Astra 没有被告知这条技巧，却走到了同一个地方，说明它读的是代数结构。</p>
+<p>这条能力的边界同样明显。第七个实验给两个 Gemma 3 270M 副本的权重，一个正常微调，一个被训练成谄媚模型（永远同意用户建议的答案）。微调时冻结输入嵌入和输出层，以堵掉偷看数据分布的捷径。结果仅凭权重无法区分两者<sup id="fnref5:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。能读出结构，读不出训练目标。</p>
+<p>修改与合成部分的核心证据是两套预算曲线，它们决定了整篇工作的解释力度。</p>
 <div class="sortable">
 <table>
 <thead>
@@ -188,11 +114,10 @@
 </tbody>
 </table>
 </div>
-<p class="table-note">Qwen3.5-0.8B 会循环，编辑修好了循环。</p>
+<p class="table-note">Qwen3.5-0.8B 的基座模型存在推理循环，93% 的答案撞上 32,768 token 上限。前向预算指允许的验证次数，每次挂 128 局对练。</p>
 
-<p>看最后一列。基座模型 93% 的答案撞在 32,768 token 上限上。编辑之后降到 33.1%。MATH-500 涨的 40.2 个百分点里，主要部分是「把本来会做的题做完」。</p>
-<p>作者自己写得比谁都直白：编辑权重能移除一个遮挡能力的障碍，但没法给模型加上它没有的能力。</p>
-<p>然后他做了对照。Gemma 3 270M，只有 8.5% 的答案撞上限，几乎不循环。同样的方法，同样的五档预算。</p>
+<p>编辑定位到的是 layer 15 和 layer 19 的 MLP 写出的一个方向，从每层 64 个输出列里减掉它，共 131,072 个权重<sup id="fnref6:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。看最后一列能看出 48.1% 的构成：基座模型 93% 的答案撞在输出上限上，编辑之后降到 33.1%，MATH-500 提升的 40.2 个百分点主要来自「把本来会做的题做完」。作者对此的表述是：编辑权重能移除遮挡能力的障碍，但无法给模型增加它没有的能力<sup id="fnref7:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。</p>
+<p>为了检验这句话，作者换了几乎不循环的模型（Gemma 3 270M，只有 8.5% 的答案撞上限），配同样的五档前向预算。</p>
 <div class="sortable">
 <table>
 <thead>
@@ -225,126 +150,62 @@
 </tbody>
 </table>
 </div>
-<p class="table-note">同一套方法，换一个不循环的模型。</p>
+<p class="table-note">同一套方法用在不会循环的模型上。</p>
 
-<p>八个样本点，全部落在 6.8 到 7.7 之间。50 次前向的成绩比 25 次还低。作者说这 0.9 分的增益，他自己判定为未确立。</p>
-<p>我在这张表上停了很久。它把一个很顺的叙事拦腰截断了。</p>
-<p>再往里一层，修循环容易、加能力难，有具体的机制原因。Qwen 的循环被定位到 layer 15 和 layer 19 的 MLP 写出的一个方向，从每层 64 个输出列里减掉它，一共 131,072 个权重。固定开销小，目标明确，是一次减法。</p>
-<p>Gemma 的失败没有这种可切部件。Astra 读到的是普通的算术错误和不合法的代数步骤，背后没有哪个模块可以关掉。</p>
-<div class="box box-warn">
-<p class="box-h">这个不对称不只是难度差别</p>
-<div class="box-b">
-<p>删一个行为只需把某个方向投影掉；加一个行为要新增一段计算图。WSP 目前最可靠的操作，恰好落在删除这一侧。</p>
-</div>
-</div>
-<p>另一条线能印证这点。Arditi 等人在 2024 年证明，拒绝行为在语言模型里由单个方向介导，删掉那个方向就能关掉拒绝。</p>
-<p>博客第四个实验里，Astra 给失败的控制网络手搭了一张条件开关：轮子过线就关闭一条通路。</p>
-<div class="box box-note">
-<p class="box-h">条件是可替换的</p>
-<div class="box-b">
-<p>把条件从「轮子过线」换成「处于评估中」，不需要新的权重，只需要换一个比较项。</p>
-</div>
-</div>
-<h2 id="算力到底省在哪"><a class="anchor" href="#算力到底省在哪" aria-hidden="true" tabindex="-1">#</a>算力到底省在哪</h2>
-<p>成本是唯一能给出确定答案的部分。我把几个量级放在一起，纵轴用对数，不然放在一张图上没意义。</p>
-<div class="bars"><div class="bar-row"><span class="bar-l" title="0.8B 预训练 1 万亿 token">0.8B 预训练 1 万亿 token</span><span class="bar-t"><span class="bar-f" data-w="100.0"></span></span><span class="bar-v">21.7 <span class="bar-n">约 5×10²¹ FLOPs</span></span></div><div class="bar-row"><span class="bar-l" title="博客编辑上限">博客编辑上限</span><span class="bar-t"><span class="bar-f" data-w="82.9"></span></span><span class="bar-v">18.0 <span class="bar-n">约 1×10¹⁸ FLOPs</span></span></div><div class="bar-row"><span class="bar-l" title="15k 题两轮 SFT">15k 题两轮 SFT</span><span class="bar-t"><span class="bar-f" data-w="78.3"></span></span><span class="bar-v">17.0 <span class="bar-n">约 1×10¹⁷ FLOPs</span></span></div><div class="bar-row"><span class="bar-l" title="前沿模型跑一次围棋任务">前沿模型跑一次围棋任务</span><span class="bar-t"><span class="bar-f" data-w="73.7"></span></span><span class="bar-v">16.0 <span class="bar-n">约 1×10¹⁶ FLOPs</span></span></div><div class="bar-row"><span class="bar-l" title="PPO 训 21k 网络一亿步">PPO 训 21k 网络一亿步</span><span class="bar-t"><span class="bar-f" data-w="62.2"></span></span><span class="bar-v">13.5 <span class="bar-n">约 3×10¹³ FLOPs</span></span></div></div>
+<p>八个读数全部落在 6.8 到 7.7 之间，50 次前向的成绩低于 25 次。作者把这不到 1 分的增益判定为未确立<sup id="fnref8:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。Astra 在 Gemma 上读到的是普通算术错误和不合法的代数步骤，找不到任何可以关掉的单一部件。它的编辑只能做成「把某个响应数字的神经元放大一倍」这类局部动作。</p>
+<p>两套曲线的差异可以用一条机制解释：删掉一个行为只需要把某个方向投影掉，增加一个行为需要新增一段计算图。删除侧有独立证据支持，Arditi 等人在 2024 年证明拒绝行为在语言模型里由单个方向介导，删掉那个方向就能关掉拒绝<sup id="fnref:2-4"><a class="footnote-ref" href="#fn:2-4">4</a></sup>。第四个实验里，Astra 给失败的控制网络手搭了一张条件开关：轮子过线就关闭一条通路。条件本身是可替换的，换成「处于评估中」不需要新增权重，只需要换一个比较项。</p>
+<h2 id="距离递归自我改进还缺什么"><a class="anchor" href="#距离递归自我改进还缺什么" aria-hidden="true" tabindex="-1">#</a>距离递归自我改进还缺什么</h2>
+<p>递归自我改进要求改进者与被改进者是同一个系统，并且改进能力本身在轮次之间增强。拿这两条对照上面的事实，缺口是具体的。</p>
+<p>第一处缺口是自指。八个实验里，Astra 编辑的对象分别是 Qwen3.5-0.8B、Gemma 3 270M、一个 1,480,274 权重的控制网络，以及它自己从零写出的 MinAtar 与围棋策略网络；没有任何一次是编辑自身权重后以同一个智能体重新评测，也没有测试过「改完是否更擅长编辑权重」<sup id="fnref9:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。从形式上看，这是权重空间的修改他人（other-modification）。作者把递归自我改进列在「接下来」一节的展望里，而不是已完成的实验里，这个措辞是准确的。</p>
+<p>第二处缺口是保证的层级。Gödel Machine 的思路是拿证明换安全：只有当系统先证明某次改写会提高期望效用，才允许执行改写<sup id="fnref:2-3"><a class="footnote-ref" href="#fn:2-3">3</a></sup>。这条义务在权重空间比在代码空间更难兑现，原因有四层。</p>
+<p>浮点向量的语义只由前向传播这个非线性映射给定，目标定理连陈述都需要重新发明；要证明「对 131,072 个实参数的特定扰动使某分布的期望准确率上升」是高维非凸函数上的分析命题，不是可判定的语法性质；证明器本身位于被修改的空间内，权重编辑可以静默改变证明搜索器的行为；小编辑不蕴含小行为变化，0.016% 是事后统计出来的比例，不是可以证明的界。原作者团队给出的实际做法是事后评测，等价于把「可证明的自我改进」降级为「可评测的自我修改」。</p>
+<p>第三处缺口是验证位于系统之外。第八个实验的成功判定依赖 7,469 加 7,275 道带答案的练习题、最多 50 次前向（每次批 512）以及基准测试；第六个实验依赖与陪练对手的对局胜率<sup id="fnref10:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。这些是有效信号，但它们不属于被修改的系统，也不随系统改变而保持可信。作者的表述是「有时甚至完全没有环境反馈」，这个说法需要区分。没有实时反馈不等于没有验证信息：第五个实验给了游戏规则与接口源码，第八个实验给了带标签的题目集。按计算量估计，那是一次上限约 2.56 万条带标签样本的黑箱搜索。</p>
+<p>第四处缺口是收益的方向性。能移除障碍不能新增能力，这一条来自作者的负结果。它也解释了 Qwen 上 10 次与 25 次前向只把 MATH-500 推到 12.3 和 14.1，直到 50 次才跳到 48.1：障碍被真正移除之前，解题成绩不会跟着上去。如果这条限制具有一般性，权重空间编程适用的场景就是「模型已有能力被某个局部缺陷遮蔽」，而不是「让模型学会它不会的事」。</p>
+<p>这套解释有一条反证我没有解决。如果提升完全来自修好循环，IFEval 从 21.0 升到 62.3 不太好解释，指令跟随与循环是两件事。这说明编辑存在跨域的非平凡泛化，与「纯过拟合」不相容。作者没有为此提供机制解释，我也给不出。</p>
+<h2 id="这项工作实际改变了什么"><a class="anchor" href="#这项工作实际改变了什么" aria-hidden="true" tabindex="-1">#</a>这项工作实际改变了什么</h2>
+<p>即便上面四处缺口都成立，成本结构上的改变仍然存在，而且可以量化。</p>
+<div class="bars"><div class="bar-row"><span class="bar-l" title="0.8B 模型预训练 1 万亿 token">0.8B 模型预训练 1 万亿 token</span><span class="bar-t"><span class="bar-f" data-w="100.0"></span></span><span class="bar-v">21.7 <span class="bar-n">约 5×10²¹ FLOPs</span></span></div><div class="bar-row"><span class="bar-l" title="博客编辑方案的成本上限">博客编辑方案的成本上限</span><span class="bar-t"><span class="bar-f" data-w="82.9"></span></span><span class="bar-v">18.0 <span class="bar-n">约 1×10¹⁸ FLOPs</span></span></div><div class="bar-row"><span class="bar-l" title="15k 题两轮监督微调">15k 题两轮监督微调</span><span class="bar-t"><span class="bar-f" data-w="78.3"></span></span><span class="bar-v">17.0 <span class="bar-n">约 1×10¹⁷ FLOPs</span></span></div><div class="bar-row"><span class="bar-l" title="前沿模型跑一次围棋任务推理">前沿模型跑一次围棋任务推理</span><span class="bar-t"><span class="bar-f" data-w="73.7"></span></span><span class="bar-v">16.0 <span class="bar-n">约 1×10¹⁶ FLOPs</span></span></div><div class="bar-row"><span class="bar-l" title="PPO 训 21k 权重网络一亿步">PPO 训 21k 权重网络一亿步</span><span class="bar-t"><span class="bar-f" data-w="62.2"></span></span><span class="bar-v">13.5 <span class="bar-n">约 3×10¹³ FLOPs</span></span></div></div>
 
-<p>对着这张图看，两件事要分开。</p>
-<p>相对大规模预训练，省下四到五个数量级，这是真的。相对一次小规模 SFT，省的是数据收集和工程时间，FLOPs 并不省。</p>
-<p>围棋那个实验更值得单独算。任务网络只有 21k 权重，PPO 训一亿步的花费在 10¹³ 到 10¹⁴ FLOPs 量级。而前沿模型完成这个任务的一次推理，粗估 10¹⁶。WSP 做的不是把成本压下去，是把算力从任务网络搬到了大模型身上。</p>
-<p>21k 权重的网络要花 10¹⁶ 去写，这个账在单个小网络上算不过来。只有当它变成「以后所有小网络都这么写」，才谈得上划算。</p>
-<h2 id="装不进上下文的那部分"><a class="anchor" href="#装不进上下文的那部分" aria-hidden="true" tabindex="-1">#</a>装不进上下文的那部分</h2>
-<p>要看天花板，得先算一笔装不下的账。权重是以文本形式进上下文的。</p>
-<p>0.8B 参数，32 bit 精度，信息量 <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2.6</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">10</span></span></span></span></span></span></span></span></span></span></span></span> bit。按每个权重 3 到 5 个 token 的十进制文本计，需要 3 到 4 乘十的九次方个 token。就算量化到 4 bit，再让每个 token 打包 5 bit，也还要 <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">6</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">8</span></span></span></span></span></span></span></span></span></span></span></span> token。</p>
-<p>当前上下文在 10⁵ 到 10⁶ 量级。</p>
-<p>差三到四个数量级。</p>
-<div class="aside">
-<p class="aside-h">为什么大模型必须带工具</p>
-<p>第六个实验给 Astra 一个 Python 沙箱，它能读写权重张量、用 numpy 分析，但不能在沙箱里跑网络。要看网络行为，就得花掉一次前向预算。前向预算从 0 到 50，每次挂 128 局对练。</p>
+<p>相对大规模预训练，省下四到五个数量级；相对一次小规模监督微调，省的是数据收集与工程时间，FLOPs 并不省。</p>
+<p>围棋那个实验更能说明成本被搬到了哪里。任务网络只有 21k 权重，PPO 训练一亿步的花费在 10¹³ 到 10¹⁴ FLOPs 量级；而前沿模型完成这个任务的一次推理粗估 10¹⁶<sup id="fnref11:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。权重空间编程没有消灭优化成本，它把算力从任务网络转移到了大模型身上。用 10¹⁶ 去写一个 21k 权重的网络，在单个小网络上算不过来，只有当它变成「所有小网络都这么写」才谈得上划算。</p>
+<p>第二条结构性改变是上下文容量。权重以文本形式进入上下文，0.8B 参数按 32 bit 计约 <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2.6</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">10</span></span></span></span></span></span></span></span></span></span></span></span> bit。按每个权重 3 到 5 个 token 的十进制文本编码，需要 3 到 4 乘十的九次方 token；即便量化到 4 bit 再加高效编码（每 token 打包约 5 bit，4 bit 在推理上已接近无损<sup id="fnref:2-7"><a class="footnote-ref" href="#fn:2-7">7</a></sup>），仍需 <span class="katex"><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">6</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">8</span></span></span></span></span></span></span></span></span></span></span></span> token。当前上下文在 10⁵ 到 10⁶ 量级，差三到四个数量级。</p>
+<p>作者给出的替代方案是工具化：给模型一个能读写权重张量、但不能运行网络的 Python 沙箱，让它按需分析子张量，要看行为就消耗前向预算<sup id="fnref12:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。这条路径的实测阶梯与上面的估算吻合：17,253 个权重零工具完成任务，1,480,274 个权重需要沙箱，到 8 亿参数必须依靠 kernel 加 50 次前向。第七个实验的权重只有 171,664 个却读取失败，这个例外提醒规模不是唯一变量。我倾向于认为失败原因是谄媚属于训练目标层面，而读取能力建立在结构层面；但作者没有把这两个变量分开，所以这只是我的推断。</p>
+<p>第三条改变是它与既有方法的相对位置。梯度下降在可微目标上做局部数值搜索，信息源是数据梯度；FunSearch、AlphaEvolve 这类评估器驱动的搜索在可执行程序上做离散搜索，信息源是评估器；权重空间编程在参数本身上做带先验的稀疏语义编辑，信息源是模型对解法的先验。三者的适用边界由信息源决定，不构成替代关系。</p>
+<p>放进「AI 改进 AI」的经验证据里排序，强度是递减的：kernel、调度、排序这类收益已经进入生产，AlphaEvolve 报告 Gemini 训练 kernel 提速 23%、Borg 调度启发式回收约 0.7% 的闲置算力<sup id="fnref:2-8"><a class="footnote-ref" href="#fn:2-8">8</a></sup>；数学构造搜索可验证但不直接落地，4×4 复矩阵乘法的标量乘法次数从 49 降到 48，距 Strassen 1969 年的结果隔了 56 年<sup id="fnref2:2-8"><a class="footnote-ref" href="#fn:2-8">8</a></sup>；agent 脚手架的改进目前主要停留在基准数字上，2026 年有一份预注册复现报告称 Darwin Gödel Machine 的最佳 agent 在 held-out 上并不优于初始 agent；权重级自我修改则只有这一篇博客提供的减法修复个例。</p>
+<h2 id="一个能把它拆开的实验"><a class="anchor" href="#一个能把它拆开的实验" aria-hidden="true" tabindex="-1">#</a>一个能把它拆开的实验</h2>
+<p>现有证据无法区分两种解释：Astra 真的读懂了权重结构，还是它把先验里的短程序编译进了权重基底。第五个实验要求它写出玩 MinAtar 的网络，「挡板跟随落点」这类策略的柯氏复杂度极低，模型完全可能在做程序合成而非权重级优化。这两种解释都能拟合已公布的数据。</p>
+<p>能把它们拆开的实验是去掉源码的消融：重跑第五个实验，只给奖励函数与交互接口，不给游戏规则源码和输入输出语义。如果零前向那组的成绩保留，说明权重空间编程独立于程序合成；如果崩溃，说明「写权重」约等于「写程序加手工编译」，它只是把编译器换了个壳。</p>
+<p>另有三处方法论问题需要记录，它们不影响上述判断，但影响结论的可信度：Qwen 那 40 个百分点的曲线来自单次编辑，没有报告种子方差；MATH-500、GSM8K、IFEval 都在编辑者的训练语料范围内，而权重编辑不留下可检测的数据痕迹，基准污染无法用重叠检测发现；实验与评测出自同一批人。</p>
+<p>结论分两层。当工程手段看，权重空间编程压缩了「已知能力的装配成本」，把可解释性从读出电路推进到改写电路，这个价值是真实的。当递归自我改进的路径看，它改造的是改进算子的成本曲线，不是闭合条件本身：没有自指、没有二阶改进的证据、没有先于执行的安全保证、验证仍在系统之外。把这两层混在一起，会得出比证据更强的结论。</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:2-1">
+<p>Takehi, R., Teoh, J., Zhang, A., &amp; Khattab, O. (2026). <em>Sparks of Weight-Space Programming: LLMs can natively read &amp; write neural network weights</em>. https://rikiyat.github.io/blog/weight-space-programming/&#160;<a class="footnote-backref" href="#fnref:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref2:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref3:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref4:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref5:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref6:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref7:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref8:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref9:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref10:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref11:2-1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref12:2-1" title="Jump back to footnote 1 in the text">↩</a></p>
+</li>
+<li id="fn:2-2">
+<p>Good, I. J. (1965). <em>Speculations Concerning the First Ultraintelligent Machine</em>. Advances in Computers, 6.&#160;<a class="footnote-backref" href="#fnref:2-2" title="Jump back to footnote 2 in the text">↩</a></p>
+</li>
+<li id="fn:2-3">
+<p>Schmidhuber, J. (2003). <em>Gödel Machines: Self-Referential Universal Problem Solvers Making Provably Optimal Self-Improvements</em>. arXiv:cs/0309048.&#160;<a class="footnote-backref" href="#fnref:2-3" title="Jump back to footnote 3 in the text">↩</a></p>
+</li>
+<li id="fn:2-4">
+<p>Arditi, A., et al. (2024). <em>Refusal in Language Models Is Mediated by a Single Direction</em>. arXiv:2406.11717.&#160;<a class="footnote-backref" href="#fnref:2-4" title="Jump back to footnote 4 in the text">↩</a></p>
+</li>
+<li id="fn:2-5">
+<p>Elhage, N., et al. (2021). <em>A Mathematical Framework for Transformer Circuits</em>. Transformer Circuits Thread. Olsson, C., et al. (2022). <em>In-context Learning and Induction Heads</em>. arXiv:2209.11895.&#160;<a class="footnote-backref" href="#fnref:2-5" title="Jump back to footnote 5 in the text">↩</a></p>
+</li>
+<li id="fn:2-6">
+<p>Elhage, N., et al. (2022). <em>Toy Models of Superposition</em>. Transformer Circuits Thread.&#160;<a class="footnote-backref" href="#fnref:2-6" title="Jump back to footnote 6 in the text">↩</a></p>
+</li>
+<li id="fn:2-7">
+<p>Dettmers, T., &amp; Zettlemoyer, L. (2023). <em>The case for 4-bit precision: k-bit Inference Scaling Laws</em>. arXiv:2212.09720.&#160;<a class="footnote-backref" href="#fnref:2-7" title="Jump back to footnote 7 in the text">↩</a></p>
+</li>
+<li id="fn:2-8">
+<p>Novikov, A., et al. (2025). <em>AlphaEvolve: A coding agent for scientific and algorithmic discovery</em>. arXiv:2506.13131.&#160;<a class="footnote-backref" href="#fnref:2-8" title="Jump back to footnote 8 in the text">↩</a><a class="footnote-backref" href="#fnref2:2-8" title="Jump back to footnote 8 in the text">↩</a></p>
+</li>
+</ol>
 </div>
-<p>原文的实测阶梯和这个估算能对上。</p>
-<dl class="dl"><dt>17,253 权重</dt><dd>Breakout 判断，零工具，99% 置信度</dd><dt>23,824 权重</dt><dd>扩散模型判断，明确禁止算前向</dd><dt>1,480,274 权重</dt><dd>物理控制任务，给 Python 沙箱</dd><dt>131,072 权重</dt><dd>Qwen 编辑量，占 8 亿的 0.016%</dd><dt>0.8 亿亿参数</dt><dd>真正的模型级编辑，靠 kernel 加 50 次前向</dd></dl>
-
-<p>但这里有个变量没被拆开。第七个实验的权重是 171,664 个，按这个阶梯应该能读，它却失败了。我倾向于认为那不是规模问题：谄媚是训练目标层面的属性，而 Astra 的读取能力建立在结构层面。作者没有把这个变量单独隔离，所以这个解释目前只是我的猜测。</p>
-<h2 id="它读到的到底是什么"><a class="anchor" href="#它读到的到底是什么" aria-hidden="true" tabindex="-1">#</a>它读到的到底是什么</h2>
-<p>有必要说清楚 Astra 在读什么，这决定了上限。</p>
-<p>第三个实验里，它拿到的只有四个 transformer block 的权重，没有输入层、没有输出层、384 个维度没有标签，配最多 100 次 Python 运行。它自己用矩阵乘积把 copying head 全找了出来，和实测对得上。没人告诉它要用这个技巧。</p>
-<p>第二个实验里，它判断扩散模型画什么形状，画出来的是轮廓，而模型实际生成的是实心图形。这个错误反而是证据：它没在算前向，它在读几何。</p>
-<p>对着的理论框架是 transformer circuits 那一套：attention-only 结构可以按 W_QK 和 W_OV 的乘积分解成通路，induction head 就是这么定位的。Astra 独立走到了同一个地方。</p>
-<p>同一套框架也给出了它的天花板。叠加假说讲的是，特征数超过维度时，模型会用近正交的方向叠加编码，单个权重坐标于是变成多义。叠加越密，逐权重读取的信噪比越低。</p>
-<h2 id="它在谱系里的位置"><a class="anchor" href="#它在谱系里的位置" aria-hidden="true" tabindex="-1">#</a>它在谱系里的位置</h2>
-<div class="compare">
-<div class="cmp-col">
-<p class="cmp-h">梯度下降</p>
-<p>在可微目标上做局部数值搜索。</p>
-<p>信息源是数据梯度。</p>
-<p>要可微损失、要重复数据、要几千步以上。</p>
-<p>改 0.016% 权重的成本，在这里是几万步反向传播。</p>
-</div>
-<div class="cmp-col">
-<p class="cmp-h">评估器驱动的代码搜索</p>
-<p>FunSearch、AlphaEvolve、Darwin Gödel Machine 这一支。</p>
-<p>信息源是评估器。</p>
-<p>要可执行的程序，要能自动打分。</p>
-<p>改不了写不成程序的东西。</p>
-</div>
-<div class="cmp-col">
-<p class="cmp-h">权重空间编程</p>
-<p>在参数本身上做带先验的稀疏语义编辑。</p>
-<p>信息源是模型对解法的先验。</p>
-<p>要自然语言规格，可以完全不给反馈。</p>
-<p>改不了先验之外的能力。</p>
-</div>
-</div>
-<p>三者不是替代关系，信息源不同，能碰的目标也不同。</p>
-<p>把它放回「AI 改进 AI」的经验证据里排一下，强度是递减的。</p>
-<p>kernel、调度、排序这类，收益已经进生产：AlphaEvolve 报的 Gemini 训练 kernel 提速 23%，Borg 调度启发式回收约 0.7% 的闲置算力。每次调用都在复利，搜索成本一次性付掉。</p>
-<p>数学构造搜索这类，可验证但不直接落地：4×4 复矩阵乘法的标量乘法次数从 Strassen 1969 年的 49 次降到 48 次，隔了 56 年。单点收益 1 到 2 个百分点，价值靠调用次数放大。</p>
-<p>agent 脚手架这类，只有基准数字。Darwin Gödel Machine 报了 SWE-bench 20.0% 到 50.0%，但 2026 年有一份预注册复现说，在 held-out 上它的最佳 agent 并不优于初始 agent，而三个教科书式改动以四分之一成本就超过了它。这条要打折看。</p>
-<p>权重级自我修改这类，就是这篇博客，只有减法修复的个例。</p>
-<h2 id="我不确定的地方"><a class="anchor" href="#我不确定的地方" aria-hidden="true" tabindex="-1">#</a>我不确定的地方</h2>
-<p>有一个反证我绕不过去。如果 Qwen 那 40 个点纯粹是修好了循环，IFEval 从 21.0 涨到 62.3 就不好解释。指令跟随和循环是两件事。这说明编辑存在跨域的非平凡泛化，和「纯过拟合」不相容。</p>
-<p>另一个我没法判断的：Astra 的成功有多少来自真的理解了结构，有多少来自命中了它先验里的程序。第五个实验要求它写一个玩 MinAtar 的网络，它在零前向的情况下写出了策略。像「挡板跟随落点」这种策略，柯氏复杂度极低，模型很可能是把一个短程序编译进了权重基底，而不是在压缩一万七千个随机数。</p>
-<p>这两种解释都能拟合现有数据。要拆开得靠新实验。</p>
-<p>还有几处方法论问题。</p>
-<div class="aside">
-<p class="aside-h">几处该扣分的地方</p>
-<p>单次编辑，没有种子方差。Qwen 那 40 个点只有一条曲线。</p>
-<p>MATH-500、GSM8K、IFEval 都在编辑者的语料里，而权重编辑不留数据痕迹，污染没法用重叠检测发现。</p>
-<p>作者自陈「无环境反馈」，但第八个实验给了 15k 道带答案的练习题和最多 50 乘 512 次前向。那不是零数据，是黑箱优化。</p>
-</div>
-<h2 id="我的判断"><a class="anchor" href="#我的判断" aria-hidden="true" tabindex="-1">#</a>我的判断</h2>
-<p>WSP 是 RSI 的使能技术，不是 RSI 本身。它改变改进算子的成本曲线与工程可行性，不改变理论上的可能性边界。</p>
-<p>在 Gödel Machine 的意义上，它把「可证明的自我改进」降级成了「可评测的自我修改」。这个降级不丢人，可评测已经比不可评测强得多，但它离自指还差一整圈。</p>
-<p>有一个实验能把它拆开：把第五个实验的规则源码删掉，只给奖励函数和交互接口，重跑零前向那组。成绩保留，说明 WSP 独立于程序合成，是真在做权重空间的优化；成绩崩掉，说明「写权重」约等于「写程序加手工编译」，那它只是把编译器换了个壳。</p>
-<p>不构成 RSI 不等于不重要。省下四到五个数量级是真的，把可解释性从「读出电路」推进到「改写电路」也是真的。</p>
-<details class="fold">
-<summary>主要参考</summary>
-<div class="fold-b">
-<p>Good, I. J. (1965). <em>Speculations Concerning the First Ultraintelligent Machine</em>. Advances in Computers, 6.</p>
-<p>Schmidhuber, J. (2003). <em>Gödel Machines: Self-Referential Universal Problem Solvers Making Provably Optimal Self-Improvements</em>. arXiv:cs/0309048.</p>
-<p>Yudkowsky, E. (2013). <em>Intelligence Explosion Microeconomics</em>. Machine Intelligence Research Institute.</p>
-<p>Chalmers, D. J. (2010). <em>The Singularity: A Philosophical Analysis</em>. Journal of Consciousness Studies, 17(9–10).</p>
-<p>Orseau, L., &amp; Armstrong, S. (2016). <em>Safely Interruptible Agents</em>. UAI 2016.</p>
-<p>Everitt, T., Filan, D., Daswani, M., &amp; Hutter, M. (2016). <em>Self-Modification of Policy and Utility Function in Rational Agents</em>. arXiv:1605.03142.</p>
-<p>Fallenstein, B., &amp; Soares, N. (2015). <em>Vingean Reflection: Reliable Reasoning for Self-Improving Agents</em>. MIRI.</p>
-<p>Nivel, E., et al. (2013). <em>Bounded Recursive Self-Improvement</em>. arXiv:1312.6764.</p>
-<p>Elhage, N., et al. (2021). <em>A Mathematical Framework for Transformer Circuits</em>. Transformer Circuits Thread.</p>
-<p>Elhage, N., et al. (2022). <em>Toy Models of Superposition</em>. Transformer Circuits Thread.</p>
-<p>Olsson, C., et al. (2022). <em>In-context Learning and Induction Heads</em>. arXiv:2209.11895.</p>
-<p>Arditi, A., et al. (2024). <em>Refusal in Language Models Is Mediated by a Single Direction</em>. arXiv:2406.11717.</p>
-<p>Ainsworth, S. K., Hayase, J., &amp; Srinivasa, S. (2023). <em>Git Re-Basin: Merging Models modulo Permutation Symmetries</em>. arXiv:2209.04836.</p>
-<p>Dettmers, T., &amp; Zettlemoyer, L. (2023). <em>The case for 4-bit precision: k-bit Inference Scaling Laws</em>. arXiv:2212.09720.</p>
-<p>Kirkpatrick, J., et al. (2017). <em>Overcoming catastrophic forgetting in neural networks</em>. arXiv:1612.00796.</p>
-<p>Hubinger, E., et al. (2019). <em>Risks from Learned Optimization in Advanced Machine Learning Systems</em>. arXiv:1906.01820.</p>
-<p>Skalse, J., et al. (2022). <em>Defining and Characterizing Reward Hacking</em>. arXiv:2209.13085.</p>
-<p>Huang, J., et al. (2023). <em>Large Language Models Cannot Self-Correct Reasoning Yet</em>. arXiv:2310.01798.</p>
-<p>Novikov, A., et al. (2025). <em>AlphaEvolve: A coding agent for scientific and algorithmic discovery</em>. arXiv:2506.13131.</p>
-<p>Romera-Paredes, B., et al. (2024). <em>Mathematical discoveries from program search with large language models</em>. Nature 625.</p>
-<p>Zhang, J., et al. (2025). <em>Darwin Gödel Machine: Open-Ended Evolution of Self-Improving Agents</em>. arXiv:2505.22954.</p>
-<p>Takehi, R., Teoh, J., Zhang, A., &amp; Khattab, O. (2026). <em>Sparks of Weight-Space Programming: LLMs can natively read &amp; write neural network weights</em>. <a href="https://rikiyat.github.io/blog/weight-space-programming/">博客原文</a></p>
-</div>
-</details>
         </div>
       </div>
     </div>

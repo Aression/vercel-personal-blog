@@ -224,7 +224,9 @@ section:last-of-type{border-bottom:none}
 .art-rule{border:none;border-top:1px solid var(--border);margin:26px 0 8px;max-width:760px}
 
 /* ── 正文 ── */
-.prose{font-size:16.5px;line-height:1.86;color:var(--fg-soft);max-width:760px}
+.prose{font-size:16.5px;line-height:1.86;color:var(--fg-soft);max-width:760px;
+  overflow-wrap:break-word}   /* 脚注里的长 URL、长英文串必须能断行，否则窄屏溢出 */
+.prose a,.prose code{overflow-wrap:anywhere}
 .prose>:first-child{margin-top:0}
 .prose h2{font-size:clamp(21px,2.2vw,25px);line-height:1.32;letter-spacing:-.015em;color:var(--fg);
   margin:50px 0 14px;font-weight:600;scroll-margin-top:88px;position:relative}
