@@ -52,7 +52,7 @@
           <div class="art-meta">
             <span>2026-10-28</span>
             <span class="sep">·</span>
-            <span>约 9 分钟</span>
+            <span>约 10 分钟</span>
             <span>复杂性理论</span><span>ETH</span><span>SAT</span><span>算法</span>
           </div>
           <h1>ETH 被推翻后，哪些下界还站得住</h1>
@@ -63,7 +63,7 @@
         <div class="prose">
 <p>2026 年 10 月 26 日，OpenAI 公告其内部模型证伪了指数时间假设（Exponential Time Hypothesis，ETH）<sup id="fnref:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。同一条新闻在中文讨论里被误认成以太坊，也有人直接推到了「算法理论基础倒塌」这一步。要判断这次事件对具体工作的影响，需要分开回答三个问题：被推翻的确切是哪个命题，哪些结论以它为唯一前提，以及新算法自身能走多远。第一问决定是否还有讨论空间，第二问决定要不要改引用，第三问决定它有没有工程意义。</p>
 <h2 id="被推翻的确切命题"><a class="anchor" href="#被推翻的确切命题" aria-hidden="true" tabindex="-1">#</a>被推翻的确切命题</h2>
-<p>ETH 由 Impagliazzo 和 Paturi 在 1999 年提出、2001 年正式发表<sup id="fnref:2-3"><a class="footnote-ref" href="#fn:2-3">3</a></sup>，断言存在常数 s &gt; 0，使 3-SAT 在最坏情况下不能在 O(2^(s·n)) 时间内求解。它有一个等价形式依赖稀疏化引理<sup id="fnref:2-4"><a class="footnote-ref" href="#fn:2-4">4</a></sup>：任意 k-CNF 都能写成至多 2^(εn) 个稀疏 CNF 的并，因此 ETH 成立等价于每个固定 k ≥ 3 的 k-SAT 都没有亚指数算法。</p>
+<p>ETH 由 Impagliazzo、Paturi 和 Zane 在 1998 年的 FOCS 上提出，2001 年在 JCSS 正式发表<sup id="fnref:2-3"><a class="footnote-ref" href="#fn:2-3">3</a></sup>，断言存在常数 s &gt; 0，使 3-SAT 在最坏情况下不能在 O(2^(s·n)) 时间内求解。它有一个等价形式依赖稀疏化引理<sup id="fnref:2-4"><a class="footnote-ref" href="#fn:2-4">4</a></sup>：任意 k-CNF 都能写成至多 2^(εn) 个稀疏 CNF 的并，因此 ETH 成立等价于每个固定 k ≥ 3 的 k-SAT 都没有亚指数算法。</p>
 <p>这个假设之所以被反复引用，是因为它绕开了一个僵局。直接证明某问题很难等价于证明 P ≠ NP，这条路上二十多年没有实质进展；改证条件命题「如果 3-SAT 很难，那么 X 也很难」，只要前提有共识，整套论证就能运转。围绕 ETH 形成了一个家族：SETH 要求 k-SAT 的底数随 k 增大逼向 2，Gap-ETH 处理带间隙的稀疏实例，NSETH 管非确定性算法，#ETH 管精确计数<sup id="fnref2:2-3"><a class="footnote-ref" href="#fn:2-3">3</a></sup>。这个家族是过去二十年细粒度复杂性的承重结构，任何一条被更快的算法击穿，挂在它上面的结论都会失去前提。</p>
 <p>新论文标题是 THE EXPONENTIAL TIME HYPOTHESIS IS FALSE，2026 年 10 月 17 日首发，10 月 25 日修订到第三版；模型在 10 月 16 日给出证明，次日 Lean 形式化通过，10 月 26 日连同 Lean 文件公开<sup id="fnref:2-2"><a class="footnote-ref" href="#fn:2-2">2</a></sup>。</p>
 <p>验证状态需要说清楚。这是 OpenAI 的声明加 Lean 形式化，不等于通过同行评审。Lean 检查通过，意味着定理在其形式化语句下成立，不意味着那句形式化语句就是研究者原本想表达的那句话，这两件事之间的距离，做过形式化的人都有体会。公告把「从原始研究数据变成科学理解」这一步交给外部专家，计算机科学部分的组织者是 Impagliazzo、Paturi 和 Ryan Williams<sup id="fnref2:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>，让原假设的提出者参与验证是合适的安排。同一时期，数学与人工智能顾问组（AGMAI）在 10 月 25 日发表声明，反对把 AI 结果先交给少数内部专家评审<sup id="fnref3:2-1"><a class="footnote-ref" href="#fn:2-1">1</a></sup>。</p>
@@ -87,7 +87,7 @@
 <tr>
 <td>最简界 vs 随机 1.307032^n</td>
 <td>约 814</td>
-<td>那尺寸双方都跑不动</td>
+<td>仅 m = O(n) 时成立，那尺寸双方都跑不动</td>
 </tr>
 <tr>
 <td>最简界 vs 确定性 1.32793^n</td>
@@ -97,29 +97,25 @@
 <tr>
 <td>完整界（含 log log n）vs 随机</td>
 <td>约 4.8×10^78</td>
-<td>远大于可观测宇宙原子数</td>
-</tr>
-<tr>
-<td>Lean 形式化版本 vs 随机</td>
-<td>n 约 2400 位十进制</td>
-<td>形式化后的界更松</td>
+<td>稠密实例走这个界，远大于可观测宇宙原子数</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p class="table-note">交叉点指新算法第一次在指数增长率上优于现有最好算法的变量数。数值留整数位。</p>
+<p class="table-note">交叉点指新算法第一次在指数增长率上优于现有最好算法的变量数，数值留整数位。前两行用 m = O(n) 时的稀疏界 n/√(ln n)；子句稠密时只有 n·log log n/√log n，交叉点完全不同，见第三行。</p>
 
-<p>在最可能被引用的那两行里，交叉点落在两个算法都无法实际运行规模上，比较的只是指数增长率。用完整界时，交叉点被推到 4.8×10^78，Lean 里那版更松。所以这不是一个能实际运行的算法，而是一个改变教科书的算法：工程上需要立刻处理的，只是那些写着 assuming ETH 的论文脚注。</p>
+<p>在最可能被引用的那两行里，交叉点落在两个算法都无法实际运行的规模上，比较的只是指数增长率。换成稠密实例要用的完整界，交叉点被推到 4.8×10^78。Lean 形式化版本我没有列入比较：它把常数留作存在量化，没有可代入的数值指数，算不出交叉点，论文与 Lean 文件里也没有给出那个常数的具体取值。所以这不是一个能实际运行的算法：工程上需要立刻处理的，只是那些写着 assuming ETH 的论文脚注。</p>
 <h2 id="哪些结论失效-哪些不受影响"><a class="anchor" href="#哪些结论失效-哪些不受影响" aria-hidden="true" tabindex="-1">#</a>哪些结论失效，哪些不受影响</h2>
 <p>失效范围是 ETH、SETH、Gap-ETH、NSETH、#ETH 及其随机化版本，以及以它们的成立为唯一前提的全部条件性下界。</p>
 <p>措辞需要准确。那些定理没有变成假命题，而是变成空真（vacuously true）：前提不成立，蕴涵式自动为真，数学上仍然成立，信息量为零。这个区别对写论文的人有实际意义，因为空真的定理依然可以引用，只是不再告诉你任何事。</p>
-<p>具体失效的是这批结果。参数化复杂性的最优点，例如 k-Clique 的 n^Θ(k) 在 ETH 下是紧的。多项式时间问题里的二次壁垒，包括编辑距离、最长公共子序列、动态时间规整、Fréchet 距离、正则表达式匹配的亚二次下界，过去十年里「我们相信 O(n²) 已是最优」的多数说法由 SETH 背书。近似算法硬度，Gap-ETH 用于 Label Cover 和稠密 CSP 的近似难度，以及 Clique、支配集在参数化近似上的排除结果。还有动态算法的下界，例如维护可达性计数和动态最大强连通分量。</p>
-<p>与上面形成对照的是另一批结果，它们不依赖 ETH 家族，因而未受影响。把两类混在一起谈是这次讨论中最常见的错误。</p>
-<p>P ≠ NP 完全没被触及，因为 2^(o(n)) 的加速不传递到多项式时间。密码学同理：攻击实际密码系统需要多项式时间算法，Williams 请人检查过，没有现成系统被波及<sup id="fnref:2-8"><a class="footnote-ref" href="#fn:2-8">8</a></sup>。同一条限制也让新结果无法推出 NP 的亚指数算法。</p>
+<p>具体失效的是这批结果。参数化复杂性的最优点，例如 k-Clique 的 n^Θ(k) 在 ETH 下是紧的。多项式时间问题里的二次壁垒，包括编辑距离、最长公共子序列、动态时间规整、Fréchet 距离、正则表达式匹配的亚二次下界，过去十年里「我们相信 O(n²) 已是最优」的多数说法由 SETH 背书。</p>
+<p>这一串要分开看：最长公共子序列、正则表达式匹配、Fréchet 距离和图的直径近似另有 OVC 或一般 CNF-SAT 假设支撑，SETH 失效收走的是其中一部分证明路径，二次壁垒本身不一定跟着倒。近似算法硬度，Gap-ETH 用于 Label Cover 和稠密 CSP 的近似难度，以及 Clique、支配集在参数化近似上的排除结果。还有动态算法的下界，例如维护可达性计数和动态最大强连通分量。</p>
+<p>与上面形成对照的是另一批结果，它们不依赖 ETH 家族，因而未受影响。把两类混在一起谈，是这次讨论里反复出现的错误<sup id="fnref:2-6"><a class="footnote-ref" href="#fn:2-6">6</a></sup>。</p>
+<p>P ≠ NP 完全没被触及，因为 2^(o(n)) 的加速不传递到多项式时间。密码学同理：攻击实际密码系统需要多项式时间算法，而这条加速到不了多项式时间。据 Aaronson 的转述，他与 Williams 核对过现有方案，没有现成系统被波及<sup id="fnref:2-8"><a class="footnote-ref" href="#fn:2-8">8</a></sup>；这是对已有方案的经验判断，不是定理。同一条限制也让新结果无法推出 NP 的亚指数算法。</p>
 <p>正交向量猜想（OVC）仍然存活，最长公共子序列和正则表达式匹配的下界可以从 OVC 重新推导，不必依赖 SETH。一般 CNF-SAT 假设也没被推翻：「宽度随 n 增长的一般 CNF-SAT 不存在 2^((1-δ)n) 算法」这句话与新结果无关，因为新算法只对固定宽度 k 成立。证明系统的指数下界，例如 regular resolution 的无条件下界，本来就与 ETH 无关。弱 ETH，即 2^(n^(1-ε)) 这种弱化形式，仍可能成立，多数研究者会直接改用这一版。</p>
 <h2 id="意外落地的无条件结论"><a class="anchor" href="#意外落地的无条件结论" aria-hidden="true" tabindex="-1">#</a>意外落地的无条件结论</h2>
 <p>这里有一个方向相反的后果：一个条件结果的前提被推翻，反而使它变成了无条件定理。</p>
-<p>Ryan Williams 在 2013 年证明过：如果 ETH 为假，那么 ENP 不包含于 SIZE(O(n))，也就是存在一个 NP 可解但没有线性大小电路的语言<sup id="fnref:2-5"><a class="footnote-ref" href="#fn:2-5">5</a></sup>。前提现在成立，后件因此无条件成立。论文给出的定量版本是：存在 L ∈ ENP 和常数 c &gt; 0，使无穷多个 n 上电路门数 C_L(n) &gt; c·√(n log n)<sup id="fnref5:2-2"><a class="footnote-ref" href="#fn:2-2">2</a></sup>。</p>
+<p>Ryan Williams 在 2013 年证明过：如果 ETH 为假，那么 ENP 不包含于 SIZE(O(n))，也就是存在一个 NP 可解但没有线性大小电路的语言<sup id="fnref:2-5"><a class="footnote-ref" href="#fn:2-5">5</a></sup>。前提现在成立，后件因此无条件成立。论文给出的定量版本是：存在 L ∈ ENP 和常数 c &gt; 0，使无穷多个 n 上电路门数 C_L(n) &gt; c·n·√(log n)<sup id="fnref5:2-2"><a class="footnote-ref" href="#fn:2-2">2</a></sup>。这个界只比线性略强，推不出更强的结论。</p>
 <p>同时落地的还有几个具体算法：独立集个数与固定 q 的 q-着色方案数可以在 2^(o(v)) 内精确计数，完美匹配数为 2^(o(v+e))；Max-k-SAT 对任意 ε&gt;0 能以 1-2^(-Ω(n)) 的概率找到满足至少 OPT-εm 个子句的赋值；常数局部布尔映射的反演在 2^(o(n)) 内可精确计数、求原像和均匀采样<sup id="fnref6:2-2"><a class="footnote-ref" href="#fn:2-2">2</a></sup>。最后一条排除了 Goldreich 那类候选单向函数的 2^Ω(n) 反演硬度，但不排除多项式时间单向性，所以密码学依然安全。</p>
 <h2 id="手上依赖-eth-的工作如何处理"><a class="anchor" href="#手上依赖-eth-的工作如何处理" aria-hidden="true" tabindex="-1">#</a>手上依赖 ETH 的工作如何处理</h2>
 <p>理论计算机科学界的实际反应集中在 cstheory 上 10 月 27 日最热的一个问题：《How to salvage arguments that assume ETH》<sup id="fnref:2-7"><a class="footnote-ref" href="#fn:2-7">7</a></sup>。提问者的观察是，如果这些声称成立，一大批不可能性结果变成空真，但论文的概念信息大多还在，因为对目标问题拿到更快的算法，等于对 3-SAT 的改进算法。</p>
@@ -139,13 +135,13 @@
 <p>OpenAI, <em>THE EXPONENTIAL TIME HYPOTHESIS IS FALSE</em>, 2026-10-17，第三版 2026-10-25。论文与 Lean 文件：github.com/openai/math/tree/main/preprints/The-Exponential-Time-Hypothesis-is-False-October-25-2026&#160;<a class="footnote-backref" href="#fnref:2-2" title="Jump back to footnote 2 in the text">↩</a><a class="footnote-backref" href="#fnref2:2-2" title="Jump back to footnote 2 in the text">↩</a><a class="footnote-backref" href="#fnref3:2-2" title="Jump back to footnote 2 in the text">↩</a><a class="footnote-backref" href="#fnref4:2-2" title="Jump back to footnote 2 in the text">↩</a><a class="footnote-backref" href="#fnref5:2-2" title="Jump back to footnote 2 in the text">↩</a><a class="footnote-backref" href="#fnref6:2-2" title="Jump back to footnote 2 in the text">↩</a><a class="footnote-backref" href="#fnref7:2-2" title="Jump back to footnote 2 in the text">↩</a></p>
 </li>
 <li id="fn:2-3">
-<p>R. Impagliazzo, R. Paturi, <em>Which Problems Have Strongly Exponential Complexity?</em>, Journal of Computer and System Sciences, 2001.&#160;<a class="footnote-backref" href="#fnref:2-3" title="Jump back to footnote 3 in the text">↩</a><a class="footnote-backref" href="#fnref2:2-3" title="Jump back to footnote 3 in the text">↩</a></p>
+<p>R. Impagliazzo, R. Paturi, F. Zane, <em>Which Problems Have Strongly Exponential Complexity?</em>, FOCS 1998（会议版）；Journal of Computer and System Sciences 63, 2001, 512–530（期刊版）。&#160;<a class="footnote-backref" href="#fnref:2-3" title="Jump back to footnote 3 in the text">↩</a><a class="footnote-backref" href="#fnref2:2-3" title="Jump back to footnote 3 in the text">↩</a></p>
 </li>
 <li id="fn:2-4">
-<p>R. Impagliazzo, R. Paturi, F. Zane, <em>On the complexity of k-SAT</em>（稀疏化引理）, 2001.&#160;<a class="footnote-backref" href="#fnref:2-4" title="Jump back to footnote 4 in the text">↩</a></p>
+<p>R. Impagliazzo, R. Paturi, <em>On the complexity of k-SAT</em>（稀疏化引理）, Journal of Computer and System Sciences 62(2), 2001, 367–375.&#160;<a class="footnote-backref" href="#fnref:2-4" title="Jump back to footnote 4 in the text">↩</a></p>
 </li>
 <li id="fn:2-5">
-<p>R. Williams, <em>Alternations of Nondeterministic Classes and Circuit Lower Bounds</em>, 2013.&#160;<a class="footnote-backref" href="#fnref:2-5" title="Jump back to footnote 5 in the text">↩</a></p>
+<p>R. Williams, <em>Improving Exhaustive Search Implies Superpolynomial Lower Bounds</em>, STOC 2010（会议版）；SIAM Journal on Computing 42(3), 2013（期刊版）。&#160;<a class="footnote-backref" href="#fnref:2-5" title="Jump back to footnote 5 in the text">↩</a></p>
 </li>
 <li id="fn:2-6">
 <p>Hacker News 讨论帖，778 points / 282 comments，2026-10-26。&#160;<a class="footnote-backref" href="#fnref:2-6" title="Jump back to footnote 6 in the text">↩</a></p>

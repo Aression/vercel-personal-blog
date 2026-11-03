@@ -19,7 +19,7 @@
     <link href="https://lvdi-profile.vercel.app/blog/finding-ledger-evidence-memory.html"/>
     <id>https://lvdi-profile.vercel.app/blog/finding-ledger-evidence-memory.html</id>
     <updated>2026-10-28T00:00:00+08:00</updated>
-    <summary>一次第 40 轮的重复排查暴露了三类失效，它们指向同一个建模错误：把对话当成要记住的东西。这篇按因果链讲 Finding Ledger 的设计，为什么存「发现」、为什么一条结论要同时回答三个不相关的问题、以及为什么检索拒绝用向量。</summary>
+    <summary>一次第 40 轮的重复排查暴露了会话记忆的根本问题：把对话当成要记住的单位。这篇按因果链讲 Finding Ledger 的设计，为什么存「发现」、为什么一条结论要同时回答三个不相关的问题、以及为什么检索不用向量。</summary>
   </entry>
   <entry>
     <title>ETH 被推翻后，哪些下界还站得住</title>
