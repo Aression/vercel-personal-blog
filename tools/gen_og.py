@@ -39,6 +39,20 @@ def parse_front_matter(raw):
     return meta
 
 
+def brief(text, limit=40):
+    """摘要压到一行：截断时不切断英文单词，末尾补省略号。"""
+    text = (text or "").strip()
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    # 如果切在英文单词中间，退回到上一个空白
+    if re.search(r"[A-Za-z]", text[limit - 1:limit + 1] or ""):
+        sp = cut.rfind(" ")
+        if sp > limit * 0.6:
+            cut = cut[:sp]
+    return cut.rstrip(" ,，、·") + "…"
+
+
 def collect(force):
     jobs = []
     posts_dir = os.path.join(ROOT, "content", "posts")
@@ -55,7 +69,7 @@ def collect(force):
         jobs.append({
             "title": meta.get("title", slug),
             "kicker": meta.get("date", ""),
-            "foot": meta.get("summary", "")[:34] + ("…" if len(meta.get("summary", "")) > 34 else ""),
+            "foot": brief(meta.get("summary", "")),
             "tags": tags,
             "brand": BRAND,
             "domain": DOMAIN,

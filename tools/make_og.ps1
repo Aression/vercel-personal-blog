@@ -38,22 +38,65 @@ foreach ($job in $list) {
         $g.DrawString($job.kicker, $fKick, $mute, 96, 96)
     }
 
-    # 标题：按实际字宽折行，最多 4 行
+    # 标题：优先在标点处断行（中文不该切断语义单元），不行再按字宽硬折
     $maxW = 800
     $lines = New-Object System.Collections.ArrayList
-    $cur = ''
-    foreach ($ch in $job.title.ToCharArray()) {
-        $try = $cur + [string]$ch
-        $w = $g.MeasureString($try, $fTitle).Width
-        if ($w -gt $maxW -and $cur.Length -gt 0) {
-            [void]$lines.Add($cur)
-            $cur = [string]$ch
-        }
-        else {
-            $cur = $try
+    $title = $job.title
+
+    $puncts = @('，', '、', '；', '：', '！', '？', '—', '·', ',', ' ')
+    $best = $null
+    foreach ($p in $puncts) {
+        $idx = $title.IndexOf($p)
+        while ($idx -gt 0 -and $idx -lt $title.Length - 1) {
+            $a = $title.Substring(0, $idx + 1).Trim()
+            $b = $title.Substring($idx + 1).Trim()
+            if ($a.Length -gt 0 -and $b.Length -gt 0) {
+                $wa = $g.MeasureString($a, $fTitle).Width
+                $wb = $g.MeasureString($b, $fTitle).Width
+                if ($wa -le $maxW -and $wb -le $maxW) {
+                    $ratio = [Math]::Min($wa, $wb) / [Math]::Max($wa, $wb)
+                    if ($ratio -ge 0.45 -and ($null -eq $best -or $ratio -gt $best.ratio)) {
+                        $best = @{ a = $a; b = $b; ratio = $ratio }
+                    }
+                }
+            }
+            $idx = $title.IndexOf($p, $idx + 1)
         }
     }
-    if ($cur.Length -gt 0) { [void]$lines.Add($cur) }
+
+    if ($null -ne $best) {
+        [void]$lines.Add($best.a)
+        [void]$lines.Add($best.b)
+    }
+    else {
+        $cur = ''
+        foreach ($ch in $title.ToCharArray()) {
+            $try = $cur + [string]$ch
+            $w = $g.MeasureString($try, $fTitle).Width
+            if ($w -gt $maxW -and $cur.Length -gt 0) {
+                [void]$lines.Add($cur)
+                $cur = [string]$ch
+            }
+            else {
+                $cur = $try
+            }
+        }
+        if ($cur.Length -gt 0) { [void]$lines.Add($cur) }
+        # 避免末行孤字：末行太短就从上一行末尾搬字下来
+        if ($lines.Count -ge 2) {
+            $total = 0
+            foreach ($ln in $lines) { $total += $ln.Length }
+            $avg = [int]($total / $lines.Count)
+            $minLen = [Math]::Max(4, [int]($avg * 0.45))
+            $last = $lines.Count - 1
+            while ($lines[$last].Length -lt $minLen -and $lines[$last - 1].Length -gt $minLen + 2) {
+                $prev = $lines[$last - 1]
+                $move = $prev.Substring($prev.Length - 1)
+                $lines[$last - 1] = $prev.Substring(0, $prev.Length - 1)
+                $lines[$last] = $move + $lines[$last]
+            }
+        }
+    }
     if ($lines.Count -gt 4) {
         $lines = $lines.GetRange(0, 4)
         $lines[3] = $lines[3] + '…'
