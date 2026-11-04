@@ -4,9 +4,16 @@
   <subtitle>吕迪（LYU Di，@Aression）的个人主页：Agentic RL、AI Infra，以及偶尔写的技术长文。</subtitle>
   <link href="https://lvdi-profile.vercel.app/feed.xml" rel="self"/>
   <link href="https://lvdi-profile.vercel.app/blog/"/>
-  <updated>2026-11-03T00:00:00+08:00</updated>
+  <updated>2026-11-04T00:00:00+08:00</updated>
   <id>https://lvdi-profile.vercel.app/feed.xml</id>
   <author><name>LYU Di</name><email>lvdifine@foxmail.com</email></author>
+  <entry>
+    <title>Jev 决策模型在 AMD 卡上：能跑，但场景窄</title>
+    <link href="https://lvdi-profile.vercel.app/blog/jev-decision-model-amd-vulkan.html"/>
+    <id>https://lvdi-profile.vercel.app/blog/jev-decision-model-amd-vulkan.html</id>
+    <updated>2026-11-04T00:00:00+08:00</updated>
+    <summary>官方推理引擎只发了 CUDA 和 Metal，AMD 一行没有。我把它当普通模型喂给 llama.cpp，自己写了个 shim 补回 /v1/systemone 接口，然后拿 40 条真实快讯测它到底准不准、快不快，顺便把两条看起来最诱人的提速路线证伪了。</summary>
+  </entry>
   <entry>
     <title>LLM 能改权重了，但它一次都没改过自己</title>
     <link href="https://lvdi-profile.vercel.app/blog/weight-space-programming-rsi.html"/>

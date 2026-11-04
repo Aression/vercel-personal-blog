@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>Jev 决策模型在 AMD 卡上：能跑，但场景窄 — 吕迪</title>
+<meta name="description" content="官方推理引擎只发了 CUDA 和 Metal，AMD 一行没有。我把它当普通模型喂给 llama.cpp，自己写了个 shim 补回 /v1/systemone 接口，然后拿 40 条真实快讯测它到底准不准、快不快，顺便把两条看起来最诱人的提速路线证伪了。">
+<meta name="author" content="Di Lv (吕迪)">
+<link rel="canonical" href="https://lvdi-profile.vercel.app/blog/jev-decision-model-amd-vulkan.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
+<link rel="alternate" type="application/atom+xml" title="吕迪 · 文章" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Jev 决策模型在 AMD 卡上：能跑，但场景窄 — 吕迪">
+<meta property="og:description" content="官方推理引擎只发了 CUDA 和 Metal，AMD 一行没有。我把它当普通模型喂给 llama.cpp，自己写了个 shim 补回 /v1/systemone 接口，然后拿 40 条真实快讯测它到底准不准、快不快，顺便把两条看起来最诱人的提速路线证伪了。">
+<meta property="og:url" content="https://lvdi-profile.vercel.app/blog/jev-decision-model-amd-vulkan.html">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="吕迪 · LYU Di">
+<meta property="og:image" content="https://lvdi-profile.vercel.app/assets/og/jev-decision-model-amd-vulkan.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Jev 决策模型在 AMD 卡上：能跑，但场景窄 — 吕迪">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://lvdi-profile.vercel.app/assets/og/jev-decision-model-amd-vulkan.png">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/">吕迪</a>
+    <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">菜单</button>
+    <nav id="nav" aria-label="页面导航">
+      <ul>
+        <li><a href="/">首页</a></li>
+        <li><a href="/about.html">关于</a></li>
+        <li><a href="/projects.html">项目</a></li>
+        <li><a href="/blog/" class="active" aria-current="page">文章</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="progress" aria-hidden="true"></div>
+  <article class="article">
+    <div class="art-layout">
+<aside class="toc-side" aria-label="目录"><nav class="toc"><p class="toc-h">本页目录</p><ul><li><a class="h2" href="#这一类模型到底在做什么">这一类模型到底在做什么</a></li><li><a class="h2" href="#官方引擎没有-amd-这一档">官方引擎没有 AMD 这一档</a></li><li><a class="h2" href="#读字母-剩下都交给代码">读字母，剩下都交给代码</a></li><li><a class="h2" href="#准是准的-慢也是真的">准是准的，慢也是真的</a></li><li><a class="h2" href="#两条提速的路-一条没用-一条有毒">两条提速的路，一条没用，一条有毒</a></li><li><a class="h2" href="#它认选项-不认坐标">它认选项，不认坐标</a></li><li><a class="h2" href="#什么情况下值得用">什么情况下值得用</a></li></ul></nav></aside>
+      <div class="art-main">
+        <div class="article-head">
+          <div class="art-meta">
+            <span>2026-11-04</span>
+            <span class="sep">·</span>
+            <span>约 7 分钟</span>
+            <span>决策模型</span><span>Jev</span><span>llama.cpp</span><span>Vulkan</span><span>AMD</span><span>本地推理</span>
+          </div>
+          <h1>Jev 决策模型在 AMD 卡上：能跑，但场景窄</h1>
+          <p class="art-sum">官方推理引擎只发了 CUDA 和 Metal，AMD 一行没有。我把它当普通模型喂给 llama.cpp，自己写了个 shim 补回 /v1/systemone 接口，然后拿 40 条真实快讯测它到底准不准、快不快，顺便把两条看起来最诱人的提速路线证伪了。</p>
+        </div>
+<details class="toc-inline"><summary>本页目录（7 节）</summary><div class="toc-box"><nav class="toc"><ul><li><a class="h2" href="#这一类模型到底在做什么">这一类模型到底在做什么</a></li><li><a class="h2" href="#官方引擎没有-amd-这一档">官方引擎没有 AMD 这一档</a></li><li><a class="h2" href="#读字母-剩下都交给代码">读字母，剩下都交给代码</a></li><li><a class="h2" href="#准是准的-慢也是真的">准是准的，慢也是真的</a></li><li><a class="h2" href="#两条提速的路-一条没用-一条有毒">两条提速的路，一条没用，一条有毒</a></li><li><a class="h2" href="#它认选项-不认坐标">它认选项，不认坐标</a></li><li><a class="h2" href="#什么情况下值得用">什么情况下值得用</a></li></ul></nav></div></details>
+        <hr class="art-rule">
+        <div class="prose">
+<p>Winnow-12B 的权重是 12.67 GB，Q8_0 量化，模型卡上写着 16 GB 显存够用。我的卡是 RX 9070 XT，也是 16 GB。权重能装下，模型能加载，接口却一个都调不通，因为官方推理引擎只发 Linux/NVIDIA CUDA 和 Apple Silicon Metal 两套后端。这篇文章只讨论决策模型在单张 AMD 消费卡上的部署与实测，不讨论训练，也不讨论它跟 LLM 谁更强。</p>
+<h2 id="这一类模型到底在做什么"><a class="anchor" href="#这一类模型到底在做什么" aria-hidden="true" tabindex="-1">#</a>这一类模型到底在做什么</h2>
+<p>Jev 是 TypeSafe AI 提出的一类模型，输入是一份状态加若干组候选答案，输出是每个候选的概率，不生成任何文本。llama.cpp 在 2026 年 10 月 2 日合入 PR #29818，server 端加了 <code>/v1/systemone</code> 端点，此后 Laya、Julia-1、Kev-4B、lev、OpenJev、Clef 都能用同一套接口调用。题型只有三种：<code>choice</code> 从选项里挑一个，<code>noul</code> 给一个是/否的概率，<code>score</code> 在一串有序档位里给期望值。</p>
+<p>我在 JevBench v1.7.48 上看了一圈，Winnow-12B 是 235 个开源系统里的第 39 名，72.2 分。排名更高的型号要么不带视觉，要么不能同时当聊天模型用，要么是闭源 API。选它的理由只有一条：官方验证的硬件配置就是 16 GB 显存加 64K 上下文加视觉，跟我的卡对得上。</p>
+<h2 id="官方引擎没有-amd-这一档"><a class="anchor" href="#官方引擎没有-amd-这一档" aria-hidden="true" tabindex="-1">#</a>官方引擎没有 AMD 这一档</h2>
+<p><code>winnow-inference</code> 的 README 写得很直白，支持的组合是 Linux + NVIDIA GPU，或者 Apple Silicon Mac 24 GB 以上统一内存。要跑的判断看 <code>scripts/winnow.py setup</code> 里的 CUDA 版本检查，Blackwell 要求 12.8 以上。整套东西没有 Vulkan 分支。</p>
+<p>我去看了它到底改了什么，本质是给 llama.cpp 打了个补丁，加一层原生决策集成。既然底子是 llama.cpp，那就换个思路：用官方 llama.cpp 把 Winnow-12B 当普通 gemma4 模型加载，接口自己补。代价立刻出现，llama-server 启动日志里没有 <code>decision model type</code> 那一行，说明 GGUF 里的决策元数据没被识别，<code>/v1/systemone</code> 这个路由根本不存在。模型能跑，但它现在只会聊天。</p>
+<h2 id="读字母-剩下都交给代码"><a class="anchor" href="#读字母-剩下都交给代码" aria-hidden="true" tabindex="-1">#</a>读字母，剩下都交给代码</h2>
+<p>补接口的办法不是我发明的，是 Cygnet 那个配方的移植。Cygnet 在 JevBench v1.5.4 上排第一，73.70 分，压过 TypeSafe 自家的 Jev 1.13.0，而它的做法朴素得有点意外：用冻结的 <code>google/gemma-4-12B-it</code>，零微调，把候选选项写成 A、B、C，只让模型输出一个字母，读那个位置的概率，最后乘一个校准温度 3.4。公开集 231 题答对 87.9%。</p>
+<p>我自己写的 shim 三百行不到，核心就是一次 chat 请求拿回答案位置的 logprobs，按字母聚合：</p>
+<div class="code-block"><div class="code-bar"><span class="code-lang">python</span><button class="code-copy" type="button" aria-label="复制代码">复制</button></div><pre><code><span class="tok-com"># max_tokens=1，取答案位置的 top-20 logprobs</span>
+<span class="tok-kw">for</span> slot <span class="tok-kw">in</span> logprobs_content:
+    <span class="tok-kw">for</span> item <span class="tok-kw">in</span> slot[<span class="tok-str">&quot;top_logprobs&quot;</span>]:
+        tok = item[<span class="tok-str">&quot;token&quot;</span>].<span class="tok-fn">strip</span>().<span class="tok-fn">strip</span>(<span class="tok-str">&quot;[]().,. &quot;</span>)
+        <span class="tok-kw">if</span> <span class="tok-bi">len</span>(tok) == <span class="tok-num">1</span> <span class="tok-kw">and</span> tok.<span class="tok-fn">upper</span>() <span class="tok-kw">in</span> <span class="tok-str">&quot;ABCDEFGHIJ&quot;</span>:
+            bucket[tok.<span class="tok-fn">upper</span>()] += math.<span class="tok-fn">exp</span>(item[<span class="tok-str">&quot;logprob&quot;</span>])</code></pre></div>
+<p>这里有一个必须处理的细节。Gemma 的词表里有不止一个 token 解码出来是同一个字母，<code>B</code>、<code>B</code>、<code>[B]</code> 都是独立 token，如果按字典键直接覆盖，概率质量会丢，分布会被压平。Cygnet 的 README 专门提了一句，我测的时候也验证了：按字母求和再重新归一，才拿得到干净分布。</p>
+<p>第二个坑出在模型自己身上。Gemma 4 是思考型模型，不显式关掉思考，<code>max_tokens=4</code> 会被推理过程全部吃掉，返回的 <code>content</code> 是空字符串，<code>reasoning_content</code> 里塞着一堆自我分析。我第一次测坐标定位就撞在这儿，拿到空输出还以为是视觉能力坏了。加上 <code>chat_template_kwargs: {"enable_thinking": false}</code> 之后才恢复正常。</p>
+<h2 id="准是准的-慢也是真的"><a class="anchor" href="#准是准的-慢也是真的" aria-hidden="true" tabindex="-1">#</a>准是准的，慢也是真的</h2>
+<p>同一台机器，Vulkan 后端，上下文 16384，先给裸能力的数据。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>结果</th>
+<th>耗时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>英文三题型（路由、情绪、紧急度）</td>
+<td>billing 0.969、angry 0.981、urgency 2.60</td>
+<td>1.13 s</td>
+</tr>
+<tr>
+<td>中文三题型</td>
+<td>billing 0.955、angry 0.987、紧急度落在「立刻」</td>
+<td>1.9 s</td>
+</tr>
+<tr>
+<td>截图三题型（发票识别）</td>
+<td>invoice 0.969、未付款 0.026、总额 2124.40 USD 0.947</td>
+<td>1.20 s</td>
+</tr>
+</tbody>
+</table>
+<p>同一组问题连续跑两次结果完全一致，稳态耗时落在 0.67 到 0.83 秒之间。然后拿真实数据压，本地有一个快讯归档库，6 万多条，11 月 3 号一天就进了 1392 条。我取了最近 40 条，全是美国中期选举前后的碎片，带上持仓上下文问它三件事：这条会不会影响我持有的黄金和 A 股指数基金、影响哪个板块、有多急。</p>
+<p>40 条里有 9 条判为相关，逐条看判断质量，比我预期稳。霍尔木兹海峡四艘油轮触雷，相关性 0.74，紧急度全场最高，板块落宏观，这条对黄金确实是引信；黄金承压那条相关性 0.78，板块直接锁到 gold；长鑫科技、寒武纪、中微密集发声那组相关性 0.72，板块落 tech。各州初选结果那种碎片，「共和党人承认在得州众议院选举中败选」「预计赢得阿拉巴马州州长选举」，相关性全在 0.06 到 0.15 之间，被干净地当噪声滤掉。翻车的只有一条：港股午评被拉成 0.63，板块给了 gold，恒指午评跟黄金没有直接关系，它大概是看见「创新药板块领涨」这类词串了线。</p>
+<p>速度就没这么好看了。单条三题型的中位数是 1.97 秒，40 条跑 91.5 秒，按每天 1300 条推演，全跑一遍要 49.6 分钟。</p>
+<h2 id="两条提速的路-一条没用-一条有毒"><a class="anchor" href="#两条提速的路-一条没用-一条有毒" aria-hidden="true" tabindex="-1">#</a>两条提速的路，一条没用，一条有毒</h2>
+<p>第一反应是开并发。13B 级别的模型配 12 GB 权重，Vulkan 后端理论上能吃多路。我把 <code>-np 4</code> 打开，得到 4 个 slot，每槽 4096 上下文，脚本改成 4 线程，40 条三题型从 91.5 秒变成 90.0 秒，加速 1.0 倍。</p>
+<p>原因在墙钟延迟上看得出来：串行时单请求 0.66 秒，四路并发时涨到 2.26 秒。Vulkan 在并发场景下是分时复用同一块 GPU，四路请求挤在一起分算力，吞吐一点没动。这条路在 AMD 上是死的，别浪费时间试。</p>
+<p>第二个想法是把多条新闻塞进一次请求。一次 prefill 处理 20 条，让它按顺序吐 20 个字母，读 20 个 token 位置的 logprobs，理论上能把这 49 分钟压到 9 分钟。实测确实到了 0.14 秒一条，快 5.6 倍。</p>
+<p>然后我拿它跟单条结果逐条对比，一致性只有 30%。州长初选碎片在单条下是 0.063，批量下变成 0.875；「美元这轮上涨会跟着中期选举收场吗」单条 0.742，批量给 0.000。输出塌成了模板串，<code>AABAAABAAABAAABAAABAA</code> 这样规律地重复，它把一整串新闻当成一个宏观话题在回答，位置一多就放弃逐条判断。快 5.6 倍但结果不能用，这条路废弃。</p>
+<p>真正有效的只有减少请求数。两阶段：全部先跑单题（是否相关），每条约 0.78 秒，命中的约四分之一再补板块和紧急度，1300 条从 49.6 分钟降到 25 分钟上下。再往前叠加一层关键词规则粗筛，把候选压到 200 条，全程能进 5 分钟。</p>
+<h2 id="它认选项-不认坐标"><a class="anchor" href="#它认选项-不认坐标" aria-hidden="true" tabindex="-1">#</a>它认选项，不认坐标</h2>
+<p>我顺手测了 computer use。同样是那张登录页截图，给它目标和五个候选动作，<code>fill_username</code> 拿到 0.902，其余四个分到 0.038、0.028、0.011、0.000，判断完全正确；问「用户名是否已填」P(yes) 是 0.029，问「两项都填好可以提交了吗」是 0.016，步骤验证也对。</p>
+<p>换成要坐标就彻底不行。我让它给出 Submit 按钮中心的像素位置，真值是 (278, 335)，它答 (450, 380)，横向偏 172 像素，点下去会打到导航栏上。六分区那题它答右下，正确答案是左下，两个选项的概率差 0.01，等于抛硬币。所以它在 agent 循环里的位置只有一层：外部代码观察界面、枚举合法动作集，它负责在有界选项里选一个、给个概率，执行交给确定性执行器。坐标和定位是 GUI grounding 的活，得配专门的模型。</p>
+<h2 id="什么情况下值得用"><a class="anchor" href="#什么情况下值得用" aria-hidden="true" tabindex="-1">#</a>什么情况下值得用</h2>
+<p>我把这套东西停掉闲置了，理由是数据量不够。每天 1300 条快讯听着多，人工扫一遍也就二十分钟，而维护一条流水线要写粗筛规则、要盯阈值、要处理误报，这笔账在小批量上是亏的。</p>
+<p>判据可以写死成四条，任意一条成立再用：</p>
+<ol>
+<li>待分类数据进到万级每天，或者一次性要处理上万条历史数据。</li>
+<li>需要 cron 常驻、无人值守地持续分流。</li>
+<li>人工判断成了瓶颈，某一类筛选每天固定吃掉二十分钟以上。</li>
+<li>需要可审计的概率阈值而不是硬规则，比如按置信度把一部分甩给人工。</li>
+</ol>
+<p>最后一条才是这个品类真正的价值。<code>noul</code> 给的 0.95 和 <code>choice</code> 给的 0.95 不是一回事，<code>score</code> 给的 2.53 意味着答案落在第二档和第三档之间，这些数可以直接进代码做阈值判断，LLM 给不了。</p>
+<p>温度校准别省。T=1 时它的概率是 0.9999 和 0.0000 这种量级，什么都判得斩钉截铁，做阈值等于没做。我把它设成 3.4，同一个问题 0.9999 回到 0.8568，argmax 不变，分布终于能用了。这个 3.4 是从 Cygnet 那边借来的估值，同一底座，但没在 Winnow 上重新拟合过，真要上线得自己标一遍。</p>
+<p>整套速记和实测数据我记在了本地笔记里，模型权重留在盘上，两个启动脚本没删。哪天数据量真的上来了，把它叫醒就行。</p>
+        </div>
+      </div>
+    </div>
+        <div class="art-foot">
+          <a href="/blog/">← 全部文章</a><a href="/blog/weight-space-programming-rsi.html">LLM 能改权重了，但它一次都没改过自己… →</a>
+        </div>
+  </article>
+
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="foot-contact">
+      <a href="mailto:lvdifine@foxmail.com">lvdifine@foxmail.com</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub</a>
+      <span class="sep">·</span>
+      <a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">ResearchGate</a>
+      <span class="sep">·</span>
+      <a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">Bilibili</a>
+      <span class="sep">·</span>
+      <a href="/feed.xml">RSS</a>
+    </div>
+    <p class="foot-meta">© <span id="year">2026</span> 吕迪 · LYU Di · 手写 HTML/CSS/JS</p>
+  </div>
+</footer>
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

@@ -41,13 +41,21 @@
   <div class="page-head">
     <div class="wrap">
       <h1>文章</h1>
-      <p>技术长文与笔记 · 目前 3 篇。不追热点，追把原理讲清楚。</p>
+      <p>技术长文与笔记 · 目前 4 篇。不追热点，追把原理讲清楚。</p>
     </div>
   </div>
 
   <section id="posts">
     <div class="wrap">
       <ul class="post-list" data-paginate data-page-size="5" data-pager-target="#pager-posts">
+      <li class="post-item reveal" data-page-item>
+        <div class="post-date">2026-11-04</div>
+        <div>
+          <h3 class="post-h"><a href="/blog/jev-decision-model-amd-vulkan.html">Jev 决策模型在 AMD 卡上：能跑，但场景窄</a></h3>
+          <p class="post-sum">官方推理引擎只发了 CUDA 和 Metal，AMD 一行没有。我把它当普通模型喂给 llama.cpp，自己写了个 shim 补回 /v1/systemone 接口，然后拿 40 条真实快讯测它到底准不准、快不快，顺便把两条看起来最诱人的提速路线证伪了。</p>
+          <div class="post-tags"><span>决策模型</span><span>Jev</span><span>llama.cpp</span><span>约 7 分钟</span></div>
+        </div>
+      </li>
       <li class="post-item reveal" data-page-item>
         <div class="post-date">2026-11-03</div>
         <div>
