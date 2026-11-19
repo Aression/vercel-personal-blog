@@ -21,8 +21,8 @@
     --border-hi: rgba(15, 23, 42, 0.22);
     --fg: #0b1120;
     --fg-soft: #334155;
-    --muted: #64748b;
-    --dim: #94a3b8;
+    --muted: #556277;
+    --dim: #64748b;
     --ink: #0b1120;
     --ink-inv: #ffffff;
     --accent: #059669;
@@ -166,7 +166,7 @@
     max-width: var(--wrap);
     margin: 0 auto;
     height: 58px;
-    padding: 0 14px 0 16px;
+    padding: 0 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -179,6 +179,8 @@
     box-shadow: var(--shadow-md);
   }
   .dock-brand {
+    flex: 1 1 0;
+    min-width: 0;
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -215,7 +217,7 @@
   .dock-nav a:hover { color: var(--fg); background: var(--accent-soft); }
   .dock-nav a.active { color: var(--fg); background: var(--surface-solid); border: 1px solid var(--border); }
 
-  .dock-right { display: inline-flex; align-items: center; gap: 8px; }
+  .dock-right { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; }
   .dock-clock {
     font-family: var(--mono);
     font-size: 11.5px;
@@ -878,6 +880,27 @@
    旧版这里是以 width 驱动的 width:0 规则，移植过来会把新条压成 0 宽，
    故在补丁层内显式让位给 @layer components 里的新版定义。 */
 
+/* ══════════════════════════════════════════════════════════════════
+   子页区块节奏（旧版 section 元素选择器规则的等价实现）
+   旧 site.css 用无类元素选择器定义：
+       section{padding:60px 0;border-bottom:1px solid var(--border)}
+       section:last-of-type{border-bottom:none}
+   这类规则在按类名移植时会被整条丢弃，导致 about/blog/projects 的
+   区块间距从 120px 塌成十几像素、标题黏在正文上。
+   首页的 section 都带 .hero-stage / .section-block（各自在 components
+   层有 padding），因此这里显式排除，避免污染首页节奏。
+   ══════════════════════════════════════════════════════════════════ */
+section:not(.hero-stage):not(.section-block) {
+  padding: 60px 0;
+  border-bottom: 1px solid var(--border);
+}
+section:not(.hero-stage):not(.section-block):last-of-type {
+  border-bottom: none;
+}
+
+/* 目录/锚点跳转时给吸顶 dock 留出空间（dock 高 58px） */
+html { scroll-padding-top: 88px; }
+
 .sec-head{margin:0 0 26px}
 
 .sec-title{font-size:clamp(22px,2.2vw,28px);line-height:1.2;letter-spacing:-.02em;font-weight:600;color:var(--fg);margin:0}
@@ -980,6 +1003,14 @@
 .pub-meta-line .venue{color:var(--fg);font-weight:500}
 
 .pub-meta-line .role{color:var(--dim)}
+/* 元信息之间加显式分隔符，会议名长短不一时靠 · 切断，比纯留白更好扫读 */
+.pub-meta-line > span + span::before{content:'·';margin-right:10px;color:var(--border-hi);font-weight:400}
+/* 最后一条不再画线，避免和区块底部的分隔线形成双线 */
+.pub-item:last-child{padding-bottom:0;border-bottom:none}
+/* 限行宽 + 均衡换行，长英文标题不再横贯整栏、也不留孤行短尾 */
+.pub-t{text-wrap:pretty}
+/* 作者列表里突出本人 */
+.pub-authors .me{color:var(--fg);font-weight:600}
 
 .pub-t{font-size:15.5px;line-height:1.5;color:var(--fg);margin:0;font-weight:500}
 

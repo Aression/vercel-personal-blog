@@ -971,7 +971,7 @@ PUBS = [
         "authors": "Lin Yi; Di Lv; Dinghao Liu; Suhuan Li; Ran Liu",
     },
     {
-        "venue": "ICASSP 2025",
+        "venue": "ICASSP",
         "year": "2025",
         "role": "第一作者",
         "title": "YOLO-TCT: An Effective Network For Long-Tailed Cervical Cell Detection",
@@ -987,7 +987,7 @@ PUBS = [
         "authors": "Fengchun Tian; Haochen Wang; Zhenlong Wan; Ran Liu; Ruilong Liu; Di Lv; Yingcheng Lin",
     },
     {
-        "venue": "IJCNN 2024",
+        "venue": "IJCNN",
         "year": "2024",
         "role": "参与作者",
         "title": "TSO-DETR: A Network for Small Object Detection of Cervical Cells in TCT Smear",
@@ -1020,8 +1020,8 @@ SKILLS = [
     ("英语", ["CET-6", "CET-4"]),
 ]
 EDU = [
-    ("重庆大学（985）", "计算机技术 · 硕士 | 2023.09 – 2026.06", "GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。"),
-    ("重庆大学（985）", "计算机科学与技术 · 本科 | 2019.09 – 2023.06", "GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。"),
+    ("重庆大学（985）", "计算机技术 · 硕士｜2023.09 – 2026.06", "GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。"),
+    ("重庆大学", "计算机科学与技术 · 本科｜2019.09 – 2023.06", "GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。"),
     ("生物感知与智能信息处理", "重庆市重点实验室 · 成员", ""),
 ]
 
@@ -1362,7 +1362,9 @@ def build_about(posts):
     for p in PUBS:
         title = (f'<a href="{p["url"]}" target="_blank" rel="noopener">{esc(p["title"])}</a>'
                  if p["url"] else esc(p["title"]))
-        authors = f'<p class="pub-authors">{esc(p["authors"])}</p>' if p["authors"] else ""
+        # 个人主页上把作者本人从灰色里挑出来，方便 HR/同行一眼定位
+        authors_html = esc(p["authors"]).replace("Di Lv", '<strong class="me">Di Lv</strong>')
+        authors = f'<p class="pub-authors">{authors_html}</p>' if p["authors"] else ""
         pub_items.append(f"""        <li class="pub-item">
           <div class="pub-meta-line">
             <span class="venue">{esc(p['venue'])}</span>
