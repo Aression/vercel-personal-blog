@@ -670,9 +670,20 @@ def toc_html(tokens, inline=False):
 # ══════════════════════════ 模板 ══════════════════════════
 FAVICON = (
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
-    "%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' "
-    "font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' "
-    "fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E"
+    "%3Crect width='32' height='32' rx='7' fill='%2305070c'/%3E%3Ctext x='16' y='23' "
+    "font-family='ui-monospace,monospace' font-size='16' font-weight='700' "
+    "fill='%2300e5a0' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E"
+)
+
+# 防闪烁主题引导：必须在 <link rel=stylesheet> 之前内联执行，
+# 否则暗色模式用户会先看到一帧浅色再翻转（FOUC）。
+THEME_BOOT_SCRIPT = (
+    "<script>(function(){try{var s=localStorage.getItem('lvdi-theme');"
+    "var t=(s==='dark'||s==='light')?s:(window.matchMedia&&window.matchMedia("
+    "'(prefers-color-scheme: dark)').matches?'dark':'light');"
+    "document.documentElement.setAttribute('data-theme',t);"
+    "var m=document.querySelector('meta[name=\"theme-color\"]');"
+    "if(m)m.setAttribute('content',t==='dark'?'#05070c':'#f6f8fb');}catch(e){}})();</script>"
 )
 
 
@@ -681,35 +692,45 @@ def nav_html(active):
     for href, label in NAV:
         cls = ' class="active"' if href == active else ""
         cur = ' aria-current="page"' if href == active else ""
-        items.append(f'        <li><a href="{href}"{cls}{cur}>{label}</a></li>')
-    return f"""<header class="nav">
-  <div class="wrap nav-in">
-    <a class="brand" href="/">{SITE['name']}</a>
-    <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">菜单</button>
-    <nav id="nav" aria-label="页面导航">
-      <ul>
+        items.append(f'          <li><a href="{href}"{cls}{cur}>{label}</a></li>')
+    return f"""<header class="dock-wrap">
+  <div class="dock">
+    <a class="dock-brand" href="/">
+      <span class="dock-logo" aria-hidden="true">di</span>
+      <span>lvdi://shanghai</span>
+    </a>
+    <nav aria-label="主导航">
+      <ul class="dock-nav" id="dockNav">
 {chr(10).join(items)}
       </ul>
     </nav>
+    <div class="dock-right">
+      <span class="dock-clock" id="shClock" aria-label="上海时间">SHA --:--:--</span>
+      <button type="button" class="icon-btn cmd-btn" id="cmdOpen" aria-label="打开命令面板" title="快捷命令 (⌘K / Ctrl+K)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="cmd-txt">⌘K</span>
+      </button>
+      <button type="button" class="icon-btn theme-toggle" id="themeToggle" aria-label="切换明暗主题" title="切换明暗主题 (T)">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+      <button type="button" class="icon-btn dock-menu-btn" id="dockMenuBtn" aria-label="展开导航" aria-expanded="false">☰</button>
+    </div>
   </div>
 </header>"""
 
 
 def footer_html():
-    return f"""<footer>
-  <div class="wrap foot-in">
-    <div class="foot-contact">
-      <a href="mailto:{SITE['email']}">{SITE['email']}</a>
-      <span class="sep">·</span>
+    return f"""<footer class="site-footer">
+  <div class="wrap foot-grid">
+    <div class="foot-links">
+      <button type="button" id="copyMailBtn" data-mail="{SITE['email']}" title="点击复制邮箱">{SITE['email']}</button>
       <a href="{SITE['github']}" target="_blank" rel="noopener">GitHub</a>
-      <span class="sep">·</span>
       <a href="{SITE['researchgate']}" target="_blank" rel="noopener">ResearchGate</a>
-      <span class="sep">·</span>
       <a href="{SITE['bilibili']}" target="_blank" rel="noopener">Bilibili</a>
-      <span class="sep">·</span>
       <a href="/feed.xml">RSS</a>
     </div>
-    <p class="foot-meta">© <span id="year">2026</span> {SITE['name']} · {SITE['name_en']} · 手写 HTML/CSS/JS</p>
+    <div>© <span id="year">2026</span> {SITE['name']} · {SITE['name_en']} · // Handcrafted Zero-Framework</div>
   </div>
 </footer>"""
 
@@ -720,7 +741,7 @@ def page(title, desc, path, body, active, og_type="website", og_image=None,
     head = [
         '<meta charset="UTF-8">',
         '<meta name="viewport" content="width=device-width, initial-scale=1">',
-        '<meta name="theme-color" content="#ffffff">',
+        '<meta name="theme-color" content="#f6f8fb">',
         f'<title>{title}</title>',
         f'<meta name="description" content="{esc(desc)}">',
         '<meta name="author" content="Di Lv (吕迪)">',
@@ -747,7 +768,11 @@ def page(title, desc, path, body, active, og_type="website", og_image=None,
         head.append('<meta name="twitter:card" content="summary">')
     if noindex:
         head.append('<meta name="robots" content="noindex, follow">')
+    head.append(THEME_BOOT_SCRIPT)
     head.append('<link rel="stylesheet" href="/assets/site.css">')
+    # 兜底：site.js 若因任何原因未执行，.reveal 会永远停在 opacity:0
+    # 让整页看起来是空的。禁用脚本时直接把它们显示出来。
+    head.append('<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>')
     if extra_head:
         head.append(extra_head)
     return f"""<!DOCTYPE html>
@@ -1096,78 +1121,235 @@ def post_card(post):
 
 
 # ══════════════════════════ 页面 ══════════════════════════
+# 首页 Bento 矩阵的工程偏好遥测条（非项目数据）
+HOME_TELEMETRY = [
+    ("Agentic RL &amp; Context Memory", "PRIMARY", 95),
+    ("AI Infra &amp; Local Inference (llama.cpp)", "ACTIVE", 90),
+    ("Systems / Harness / SQLite Tooling", "DAILY", 86),
+    ("CV Research (ICASSP · PR · 2 Patents)", "ARCHIVE", 78),
+]
+
+# 首页文章分类规则：命中关键词即归入该 filter，未命中走 misc
+POST_CAT_RULES = (
+    ("inference", ("llama.cpp", "vulkan", "推理", "inference", "amd", "部署", "决策模型")),
+    ("interp", ("权重", "可解释", "interp", "递归", "自我改进", "机制")),
+)
+CAT_LABEL = {"inference": "本地推理栈", "interp": "权重与可解释性", "misc": "其他"}
+
+GRAPH_VIZ = """<svg class="graph-viz" viewBox="0 0 540 96" role="img" aria-label="版本化证据图结构示意">
+            <path class="graph-edge" d="M88 48 L148 48 M224 48 L284 48 M366 48 L426 48"/>
+            <g class="graph-node" transform="translate(12,30)"><rect width="76" height="36" rx="8"/><text x="38" y="22" text-anchor="middle">Source</text></g>
+            <g class="graph-node" transform="translate(148,30)"><rect width="76" height="36" rx="8"/><text x="38" y="22" text-anchor="middle">Claim</text></g>
+            <g class="graph-node" transform="translate(284,30)"><rect width="82" height="36" rx="8"/><text x="41" y="22" text-anchor="middle">L0–L7 Gate</text></g>
+            <g class="graph-node" transform="translate(426,30)"><rect width="100" height="36" rx="8"/><text x="50" y="22" text-anchor="middle">Prediction</text></g>
+          </svg>"""
+
+
+def post_cat(post):
+    blob = (str(post.get("title", "")) + " " + " ".join(post.get("tags", []))).lower()
+    for key, kws in POST_CAT_RULES:
+        if any(k.lower() in blob for k in kws):
+            return key
+    return "misc"
+
+
+def split_role(role):
+    parts = [x.strip() for x in str(role).split("·") if x.strip()]
+    lang = parts[0] if parts else ""
+    date = next((x for x in parts if re.search(r"\d{4}", x)), "")
+    return lang, date
+
+
 def build_home(posts):
-    proj_cards = []
-    for p in PROJECT_GROUPS[0][2][:3]:
-        pts = "".join(f"<li>{x}</li>" for x in p["points"][:2])
-        stack = "".join(f"<span>{esc(s)}</span>" for s in p["stack"][:4])
-        link = card_link(p)
-        proj_cards.append(f"""        <article class="card reveal">
-          <div class="card-top"><span class="card-role">{esc(p['role'])}</span></div>
+    # ── 项目卡（前三张，span 7 / 5 / 4 铺满首行与次行） ──
+    cards = []
+    spans = ["span-7", "span-5", "span-4"]
+    for i, p in enumerate(PROJECT_GROUPS[0][2][:3]):
+        lang, date = split_role(p["role"])
+        if "进行中" in p["role"]:
+            badges = (
+                f'<span class="badge-live">● 进行中 · {esc(date)}</span>'
+                f'<span class="badge-muted">Flagship · {esc(lang)}</span>'
+            )
+        else:
+            badges = f'<span class="badge-muted">{esc(p["role"])}</span>'
+        # 头牌项目多保留一条 rigorous 表述（L0–L7 的「非行业标准」限定语不能再丢）
+        pts = p["points"][:2] if i == 0 else p["points"][:1]
+        desc = "".join(f"<p>{x}</p>" for x in pts)
+        pills = "".join(f'<span class="pill">{esc(s)}</span>' for s in p["stack"][:4])
+        if p.get("url"):
+            label = "GitHub ↗" if "github.com" in p["url"] else "访问站点 ↗"
+            action = (f'<a class="card-action" href="{p["url"]}" target="_blank" '
+                      f'rel="noopener">{label}</a>')
+        else:
+            action = ""
+        cards.append(f"""        <article class="bento-card {spans[i]} reveal">
+          <div class="bento-meta">{badges}</div>
           <h3>{esc(p['title'])}</h3>
-          <ul>{pts}</ul>
-          <div class="stack">{stack}</div>
-          {link}
+          <div class="bento-desc">{desc}</div>
+          {GRAPH_VIZ if i == 0 else ""}
+          <div class="pill-row">{pills}</div>
+          {action}
         </article>""")
 
+    # ── 工程偏好遥测卡 ──
+    tel_rows = "".join(
+        f"""            <div class="tel-row">
+              <div class="tel-head"><span>{label}</span><span>{tag}</span></div>
+              <div class="tel-track"><div class="tel-fill" data-w="{w}"></div></div>
+            </div>"""
+        for label, tag, w in HOME_TELEMETRY
+    )
+
+    # ── 教育卡 ──
+    creds = "".join(
+        f"""              <div class="cred-item">
+                <div class="cred-t">{t}</div>
+                <div class="cred-s">{s}</div>
+                {f'<div class="cred-s">{d}</div>' if d else ''}
+              </div>"""
+        for t, s, d in EDU[:2]
+    )
+
+    # ── 文章卡 + 动态分类计数 ──
     latest = posts[:2]
+    cats = {}
+    log_cards = []
+    for p in latest:
+        c = post_cat(p)
+        cats[c] = cats.get(c, 0) + 1
+        pills = "".join(f'<span class="pill">{esc(t)}</span>' for t in p["tags"][:3])
+        log_cards.append(f"""        <article class="log-card reveal" data-cat="{c}">
+          <div class="log-top"><span>{esc(p['date'])}</span><span>约 {p['minutes']} 分钟</span></div>
+          <h3><a href="/blog/{p['slug']}.html">{esc(p['title'])}</a></h3>
+          <p>{esc(p['summary'])}</p>
+          <div class="pill-row">{pills}</div>
+        </article>""")
     if latest:
-        post_block = f"""      <ul class="post-list">
-{chr(10).join(post_card(p) for p in latest)}
-      </ul>
-      <p class="sec-more"><a href="/blog/">全部文章 →</a></p>"""
+        filters = [
+            f'<button type="button" class="filter-btn active" data-filter="all">'
+            f'全部 ({len(latest)})</button>'
+        ]
+        for key, label in CAT_LABEL.items():
+            if cats.get(key):
+                filters.append(
+                    f'<button type="button" class="filter-btn" '
+                    f'data-filter="{key}">{label} ({cats[key]})</button>'
+                )
+        filter_bar = (
+            '<div class="filter-bar" role="group" aria-label="按主题筛选文章">'
+            + "".join(filters) + "</div>"
+        )
+        log_block = '<div class="log-list">\n' + "\n".join(log_cards) + "\n      </div>"
     else:
-        post_block = '      <p class="sec-note">还没写，先空着。</p>'
+        filter_bar = ""
+        log_block = '<p class="sec-note">还没写，先空着。</p>'
 
-    body = f"""  <section class="hero">
-    <div class="wrap">
-      <h1>{SITE['name']}</h1>
-      <p class="id-line">{SITE['name_en']} · {SITE['handle']}</p>
-      <p class="tagline">{SITE['tagline']}</p>
-      <p class="status"><span class="dot" aria-hidden="true"></span> {SITE['status']}</p>
-      <ul class="links">
-        <li><a href="{SITE['github']}" target="_blank" rel="noopener">GitHub ↗</a></li>
-        <li><a href="/blog/">文章</a></li>
-        <li><a href="mailto:{SITE['email']}">Email</a></li>
-      </ul>
-    </div>
-  </section>
-
-  <section id="now">
-    <div class="wrap">
-      <div class="two-col">
-        <div class="prose-sm reveal">
-          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——agent 的上下文与记忆、本地推理栈、RL 训练与推理基础设施那一摊；晚上大概率在折腾什么小工具。</p>
-          <p>重庆大学计算机技术硕士毕业。研究生阶段做计算机视觉（长尾识别、半监督检测、医学影像），一作发过 ICASSP、共一发过 Pattern Recognition，两项发明专利，细节都在<a href="/about.html">关于</a>里；现在重心已经整个挪到 Agent 和系统方向，<a href="/projects.html">项目</a>里大半是这半年新写的。</p>
-          <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优；偶尔为了搞懂原理，会把底层的东西自己实现一遍——RPC 框架、推理后端、甚至这个站点的排版。</p>
+    body = f"""  <section class="hero-stage">
+    <canvas id="heroCanvas" aria-hidden="true"></canvas>
+    <div class="wrap hero-grid">
+      <div>
+        <div class="status-pill">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span>ONLINE · 上海 · Agentic RL &amp; 本地推理栈</span>
         </div>
-        <div class="side-list reveal">
-          {edu_items(2)}
+        <h1 class="hero-title">
+          <span>{SITE['name']}</span>
+          <span class="hero-title-en">// {SITE['name_en']} · {SITE['handle']}</span>
+        </h1>
+        <p class="hero-tagline" id="heroTagline">Agentic RL · AI Infra · Local Inference Stack</p>
+        <div class="hero-bio">
+          <p>在上海，白天写 <strong>Agentic RL</strong> 与 <strong>AI Infra</strong>——agent 的上下文与记忆、本地推理栈、RL 训练与推理基础设施那一摊；晚上折腾底层工具链与性能调优。能脚本化的绝不手动，为了吃透原理常把底层自己重写一遍。</p>
+          <p>重庆大学计算机技术硕士，研究生阶段做计算机视觉（长尾识别、半监督检测、医学影像），一作发过 ICASSP、共一发过 Pattern Recognition，两项发明专利；现在重心整个挪到 Agent 与系统方向。细节都在<a href="/about.html">关于</a>里。</p>
+        </div>
+        <div class="hero-cta">
+          <a class="btn-primary" href="#bento">探索系统矩阵 ↓</a>
+          <a class="btn-ghost" href="/blog/">技术长文</a>
+          <a class="btn-ghost" href="{SITE['github']}" target="_blank" rel="noopener">GitHub ↗</a>
         </div>
       </div>
+
+      <div class="term-window" aria-label="交互式终端">
+        <div class="term-bar">
+          <span class="term-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="term-title">di@shanghai: ~/profile — zsh</span>
+          <span class="term-title">v4.0</span>
+        </div>
+        <div class="term-body" id="termOut">
+          <div class="term-line"><span class="t-acc">di@shanghai:~$</span> neofetch --short</div>
+          <div class="term-line"><span class="t-sky">User</span>   : {SITE['name']} ({SITE['name_en']} / {SITE['handle']})</div>
+          <div class="term-line"><span class="t-sky">Focus</span>  : Agentic RL · AI Infra · Local Inference</div>
+          <div class="term-line"><span class="t-sky">Stack</span>  : Python · TypeScript · llama.cpp · SQLite</div>
+          <div class="term-line"><span class="t-mut"># 输入 help / whoami / projects / theme 或点击下方快捷指令</span></div>
+        </div>
+        <div class="term-input-row">
+          <span class="term-prompt">di@shanghai:~$</span>
+          <input type="text" class="term-input" id="termInput" placeholder="输入命令后回车 (help / theme)..." autocomplete="off" spellcheck="false" aria-label="终端命令输入">
+        </div>
+        <div class="term-chips">
+          <button type="button" class="term-chip" data-cmd="whoami">whoami</button>
+          <button type="button" class="term-chip" data-cmd="stack">stack</button>
+          <button type="button" class="term-chip" data-cmd="projects">projects</button>
+          <button type="button" class="term-chip" data-cmd="neofetch">neofetch</button>
+          <button type="button" class="term-chip" data-cmd="theme">theme</button>
+          <button type="button" class="term-chip" data-cmd="clear">clear</button>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section id="projects-preview">
+  <section class="section-block" id="bento">
     <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">在折腾的东西</h2>
-        <p class="sec-note">挑三个最近的，全部在<a href="/projects.html">项目</a></p>
+      <div class="section-bar reveal">
+        <div>
+          <p class="section-kicker">// System Matrix</p>
+          <h2 class="section-h">在折腾的系统与工程版图</h2>
+        </div>
+        <a class="section-link" href="/projects.html">查看全部项目 →</a>
       </div>
-      <div class="card-grid">
-{chr(10).join(proj_cards)}
+
+      <div class="bento-grid">
+{chr(10).join(cards)}
+
+        <article class="bento-card span-4 reveal">
+          <div class="bento-meta">
+            <span class="badge-muted">Telemetry · Engineering</span>
+            <span class="badge-muted">2026</span>
+          </div>
+          <h3>重心迁移与工程偏好</h3>
+          <div class="bento-desc"><p>从计算机视觉研究全面转向 <strong>Agentic RL</strong> 与系统基础设施，痴迷本地推理栈调优与自动化工具链。</p></div>
+          <div class="telemetry-list">
+{tel_rows}
+          </div>
+          <a class="card-action" href="/about.html">完整履历与论文专利 →</a>
+        </article>
+
+        <article class="bento-card span-4 reveal">
+          <div class="bento-meta">
+            <span class="badge-muted">Academic · CQU (985)</span>
+            <span class="badge-muted">2019–2026</span>
+          </div>
+          <h3>教育与研究底色</h3>
+          <div class="cred-list">
+{creds}
+          </div>
+          <a class="card-action" href="/about.html">更多关于我 →</a>
+        </article>
       </div>
-      <p class="sec-more"><a href="/projects.html">全部项目 →</a></p>
     </div>
   </section>
 
-  <section id="writing">
+  <section class="section-block" id="writing">
     <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">最近写的</h2>
-        <p class="sec-note">技术长文，不追热点，追把原理讲清楚</p>
+      <div class="section-bar reveal">
+        <div>
+          <p class="section-kicker">// Technical Log</p>
+          <h2 class="section-h">最近写的技术长文</h2>
+        </div>
+        {filter_bar}
       </div>
-{post_block}
+
+      {log_block}
     </div>
   </section>
 """

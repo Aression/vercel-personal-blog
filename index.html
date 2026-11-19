@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#f6f8fb">
 <title>吕迪 · LYU Di — Agentic RL · AI Infra</title>
 <meta name="description" content="吕迪（LYU Di，@Aression）的个人主页：Agentic RL、AI Infra，以及偶尔写的技术长文。">
 <meta name="author" content="Di Lv (吕迪)">
 <link rel="canonical" href="https://lvdi-profile.vercel.app/">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2305070c'/%3E%3Ctext x='16' y='23' font-family='ui-monospace,monospace' font-size='16' font-weight='700' fill='%2300e5a0' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
 <link rel="alternate" type="application/atom+xml" title="吕迪 · 文章" href="/feed.xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="吕迪 · LYU Di — Agentic RL · AI Infra">
@@ -22,133 +22,225 @@
 <meta property="og:image:alt" content="吕迪 · LYU Di — Agentic RL · AI Infra">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://lvdi-profile.vercel.app/assets/og/home.png">
+<script>(function(){try{var s=localStorage.getItem('lvdi-theme');var t=(s==='dark'||s==='light')?s:(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#05070c':'#f6f8fb');}catch(e){}})();</script>
 <link rel="stylesheet" href="/assets/site.css">
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
 <a class="skip" href="#main">跳到主要内容</a>
 
-<header class="nav">
-  <div class="wrap nav-in">
-    <a class="brand" href="/">吕迪</a>
-    <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">菜单</button>
-    <nav id="nav" aria-label="页面导航">
-      <ul>
-        <li><a href="/" class="active" aria-current="page">首页</a></li>
-        <li><a href="/about.html">关于</a></li>
-        <li><a href="/projects.html">项目</a></li>
-        <li><a href="/blog/">文章</a></li>
+<header class="dock-wrap">
+  <div class="dock">
+    <a class="dock-brand" href="/">
+      <span class="dock-logo" aria-hidden="true">di</span>
+      <span>lvdi://shanghai</span>
+    </a>
+    <nav aria-label="主导航">
+      <ul class="dock-nav" id="dockNav">
+          <li><a href="/" class="active" aria-current="page">首页</a></li>
+          <li><a href="/about.html">关于</a></li>
+          <li><a href="/projects.html">项目</a></li>
+          <li><a href="/blog/">文章</a></li>
       </ul>
     </nav>
+    <div class="dock-right">
+      <span class="dock-clock" id="shClock" aria-label="上海时间">SHA --:--:--</span>
+      <button type="button" class="icon-btn cmd-btn" id="cmdOpen" aria-label="打开命令面板" title="快捷命令 (⌘K / Ctrl+K)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="cmd-txt">⌘K</span>
+      </button>
+      <button type="button" class="icon-btn theme-toggle" id="themeToggle" aria-label="切换明暗主题" title="切换明暗主题 (T)">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+      <button type="button" class="icon-btn dock-menu-btn" id="dockMenuBtn" aria-label="展开导航" aria-expanded="false">☰</button>
+    </div>
   </div>
 </header>
 
 <main id="main">
-  <section class="hero">
-    <div class="wrap">
-      <h1>吕迪</h1>
-      <p class="id-line">LYU Di · @Aression</p>
-      <p class="tagline">Agentic RL · AI Infra</p>
-      <p class="status"><span class="dot" aria-hidden="true"></span> 上海 · 白天写 Agentic RL / AI Infra，晚上折腾本地推理栈</p>
-      <ul class="links">
-        <li><a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub ↗</a></li>
-        <li><a href="/blog/">文章</a></li>
-        <li><a href="mailto:lvdifine@foxmail.com">Email</a></li>
-      </ul>
-    </div>
-  </section>
-
-  <section id="now">
-    <div class="wrap">
-      <div class="two-col">
-        <div class="prose-sm reveal">
-          <p>在上海，白天写 <strong>Agentic RL</strong> 和 <strong>AI Infra</strong>——agent 的上下文与记忆、本地推理栈、RL 训练与推理基础设施那一摊；晚上大概率在折腾什么小工具。</p>
-          <p>重庆大学计算机技术硕士毕业。研究生阶段做计算机视觉（长尾识别、半监督检测、医学影像），一作发过 ICASSP、共一发过 Pattern Recognition，两项发明专利，细节都在<a href="/about.html">关于</a>里；现在重心已经整个挪到 Agent 和系统方向，<a href="/projects.html">项目</a>里大半是这半年新写的。</p>
-          <p>工程上是个自动化强迫症：能脚本化的绝不手动，爱折腾本地工具链和性能调优；偶尔为了搞懂原理，会把底层的东西自己实现一遍——RPC 框架、推理后端、甚至这个站点的排版。</p>
+  <section class="hero-stage">
+    <canvas id="heroCanvas" aria-hidden="true"></canvas>
+    <div class="wrap hero-grid">
+      <div>
+        <div class="status-pill">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span>ONLINE · 上海 · Agentic RL &amp; 本地推理栈</span>
         </div>
-        <div class="side-list reveal">
-          <div class="side-item"><div class="side-t">重庆大学（985）</div><div class="side-s">计算机技术 · 硕士 | 2023.09 – 2026.06</div><div class="side-d">GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。</div></div><div class="side-item"><div class="side-t">重庆大学（985）</div><div class="side-s">计算机科学与技术 · 本科 | 2019.09 – 2023.06</div><div class="side-d">GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。</div></div>
+        <h1 class="hero-title">
+          <span>吕迪</span>
+          <span class="hero-title-en">// LYU Di · @Aression</span>
+        </h1>
+        <p class="hero-tagline" id="heroTagline">Agentic RL · AI Infra · Local Inference Stack</p>
+        <div class="hero-bio">
+          <p>在上海，白天写 <strong>Agentic RL</strong> 与 <strong>AI Infra</strong>——agent 的上下文与记忆、本地推理栈、RL 训练与推理基础设施那一摊；晚上折腾底层工具链与性能调优。能脚本化的绝不手动，为了吃透原理常把底层自己重写一遍。</p>
+          <p>重庆大学计算机技术硕士，研究生阶段做计算机视觉（长尾识别、半监督检测、医学影像），一作发过 ICASSP、共一发过 Pattern Recognition，两项发明专利；现在重心整个挪到 Agent 与系统方向。细节都在<a href="/about.html">关于</a>里。</p>
+        </div>
+        <div class="hero-cta">
+          <a class="btn-primary" href="#bento">探索系统矩阵 ↓</a>
+          <a class="btn-ghost" href="/blog/">技术长文</a>
+          <a class="btn-ghost" href="https://github.com/Aression" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+      </div>
+
+      <div class="term-window" aria-label="交互式终端">
+        <div class="term-bar">
+          <span class="term-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="term-title">di@shanghai: ~/profile — zsh</span>
+          <span class="term-title">v4.0</span>
+        </div>
+        <div class="term-body" id="termOut">
+          <div class="term-line"><span class="t-acc">di@shanghai:~$</span> neofetch --short</div>
+          <div class="term-line"><span class="t-sky">User</span>   : 吕迪 (LYU Di / @Aression)</div>
+          <div class="term-line"><span class="t-sky">Focus</span>  : Agentic RL · AI Infra · Local Inference</div>
+          <div class="term-line"><span class="t-sky">Stack</span>  : Python · TypeScript · llama.cpp · SQLite</div>
+          <div class="term-line"><span class="t-mut"># 输入 help / whoami / projects / theme 或点击下方快捷指令</span></div>
+        </div>
+        <div class="term-input-row">
+          <span class="term-prompt">di@shanghai:~$</span>
+          <input type="text" class="term-input" id="termInput" placeholder="输入命令后回车 (help / theme)..." autocomplete="off" spellcheck="false" aria-label="终端命令输入">
+        </div>
+        <div class="term-chips">
+          <button type="button" class="term-chip" data-cmd="whoami">whoami</button>
+          <button type="button" class="term-chip" data-cmd="stack">stack</button>
+          <button type="button" class="term-chip" data-cmd="projects">projects</button>
+          <button type="button" class="term-chip" data-cmd="neofetch">neofetch</button>
+          <button type="button" class="term-chip" data-cmd="theme">theme</button>
+          <button type="button" class="term-chip" data-cmd="clear">clear</button>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="projects-preview">
+  <section class="section-block" id="bento">
     <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">在折腾的东西</h2>
-        <p class="sec-note">挑三个最近的，全部在<a href="/projects.html">项目</a></p>
+      <div class="section-bar reveal">
+        <div>
+          <p class="section-kicker">// System Matrix</p>
+          <h2 class="section-h">在折腾的系统与工程版图</h2>
+        </div>
+        <a class="section-link" href="/projects.html">查看全部项目 →</a>
       </div>
-      <div class="card-grid">
-        <article class="card reveal">
-          <div class="card-top"><span class="card-role">TypeScript · 2026.10 · 进行中</span></div>
+
+      <div class="bento-grid">
+        <article class="bento-card span-7 reveal">
+          <div class="bento-meta"><span class="badge-live">● 进行中 · 2026.10</span><span class="badge-muted">Flagship · TypeScript</span></div>
           <h3>Human&#x27;s Last Dashboard</h3>
-          <ul><li>证据可追溯的 AGI 进展监控与递归自我改进看板，核心是一张<strong>版本化证据图</strong>：连接来源、主张、证据、能力评估、因果假设与预测</li><li>自建 L0–L7 能力分级（明确声明为项目内工作分类而非行业标准），每一级都必须过证据门与反证据检验</li></ul>
-          <div class="stack"><span>TypeScript</span><span>证据图</span><span>数据看板</span></div>
-          <div class="card-links"><a href="https://github.com/Aression/human-last-dashboard" target="_blank" rel="noopener">GitHub ↗</a></div>
+          <div class="bento-desc"><p>证据可追溯的 AGI 进展监控与递归自我改进看板，核心是一张<strong>版本化证据图</strong>：连接来源、主张、证据、能力评估、因果假设与预测</p><p>自建 L0–L7 能力分级（明确声明为项目内工作分类而非行业标准），每一级都必须过证据门与反证据检验</p></div>
+          <svg class="graph-viz" viewBox="0 0 540 96" role="img" aria-label="版本化证据图结构示意">
+            <path class="graph-edge" d="M88 48 L148 48 M224 48 L284 48 M366 48 L426 48"/>
+            <g class="graph-node" transform="translate(12,30)"><rect width="76" height="36" rx="8"/><text x="38" y="22" text-anchor="middle">Source</text></g>
+            <g class="graph-node" transform="translate(148,30)"><rect width="76" height="36" rx="8"/><text x="38" y="22" text-anchor="middle">Claim</text></g>
+            <g class="graph-node" transform="translate(284,30)"><rect width="82" height="36" rx="8"/><text x="41" y="22" text-anchor="middle">L0–L7 Gate</text></g>
+            <g class="graph-node" transform="translate(426,30)"><rect width="100" height="36" rx="8"/><text x="50" y="22" text-anchor="middle">Prediction</text></g>
+          </svg>
+          <div class="pill-row"><span class="pill">TypeScript</span><span class="pill">证据图</span><span class="pill">数据看板</span></div>
+          <a class="card-action" href="https://github.com/Aression/human-last-dashboard" target="_blank" rel="noopener">GitHub ↗</a>
         </article>
-        <article class="card reveal">
-          <div class="card-top"><span class="card-role">DeepSeek Harness 插件 · 2026.10</span></div>
+        <article class="bento-card span-5 reveal">
+          <div class="bento-meta"><span class="badge-muted">DeepSeek Harness 插件 · 2026.10</span></div>
           <h3>Finding Ledger · 发现账本</h3>
-          <ul><li>面向长程故障排查的<strong>证据化发现账本</strong>：上下文压缩、换会话、任务切换之后，只把「仍然相关且适用条件仍然成立」的发现交回模型</li><li>直指三种可复现的失败模式——压缩后遗忘、假设被摘要写成事实、结论在版本/后端变化后仍被套用</li></ul>
-          <div class="stack"><span>Node.js</span><span>node:sqlite</span><span>DSH 插件</span></div>
-          <div class="card-links"><a href="https://github.com/Aression/Finding-Ledger" target="_blank" rel="noopener">GitHub ↗</a></div>
+          <div class="bento-desc"><p>面向长程故障排查的<strong>证据化发现账本</strong>：上下文压缩、换会话、任务切换之后，只把「仍然相关且适用条件仍然成立」的发现交回模型</p></div>
+          
+          <div class="pill-row"><span class="pill">Node.js</span><span class="pill">node:sqlite</span><span class="pill">DSH 插件</span></div>
+          <a class="card-action" href="https://github.com/Aression/Finding-Ledger" target="_blank" rel="noopener">GitHub ↗</a>
         </article>
-        <article class="card reveal">
-          <div class="card-top"><span class="card-role">知识库 + 研究导航 · 2026.09</span></div>
+        <article class="bento-card span-4 reveal">
+          <div class="bento-meta"><span class="badge-muted">知识库 + 研究导航 · 2026.09</span></div>
           <h3>Agentic RL Atlas</h3>
-          <ul><li>可持续维护的 Agentic RL 个人知识库：原子笔记 → SQLite 内容库 → 导出 JSON → 站点</li><li>内置<strong>知识图谱</strong>视图（先修、相关、共享来源、共享概念）与<strong>研究雷达</strong>：抓 HuggingFace Daily Papers，按关键词过滤后交由 DeepSeek 分成 review / archive / skip</li></ul>
-          <div class="stack"><span>Python</span><span>SQLite</span><span>DeepSeek</span><span>HF Papers</span></div>
-          <div class="card-links"><a href="https://agentic-rl-atlas.vercel.app" target="_blank" rel="noopener">访问 ↗</a></div>
+          <div class="bento-desc"><p>可持续维护的 Agentic RL 个人知识库：原子笔记 → SQLite 内容库 → 导出 JSON → 站点</p></div>
+          
+          <div class="pill-row"><span class="pill">Python</span><span class="pill">SQLite</span><span class="pill">DeepSeek</span><span class="pill">HF Papers</span></div>
+          <a class="card-action" href="https://agentic-rl-atlas.vercel.app" target="_blank" rel="noopener">访问站点 ↗</a>
+        </article>
+
+        <article class="bento-card span-4 reveal">
+          <div class="bento-meta">
+            <span class="badge-muted">Telemetry · Engineering</span>
+            <span class="badge-muted">2026</span>
+          </div>
+          <h3>重心迁移与工程偏好</h3>
+          <div class="bento-desc"><p>从计算机视觉研究全面转向 <strong>Agentic RL</strong> 与系统基础设施，痴迷本地推理栈调优与自动化工具链。</p></div>
+          <div class="telemetry-list">
+            <div class="tel-row">
+              <div class="tel-head"><span>Agentic RL &amp; Context Memory</span><span>PRIMARY</span></div>
+              <div class="tel-track"><div class="tel-fill" data-w="95"></div></div>
+            </div>            <div class="tel-row">
+              <div class="tel-head"><span>AI Infra &amp; Local Inference (llama.cpp)</span><span>ACTIVE</span></div>
+              <div class="tel-track"><div class="tel-fill" data-w="90"></div></div>
+            </div>            <div class="tel-row">
+              <div class="tel-head"><span>Systems / Harness / SQLite Tooling</span><span>DAILY</span></div>
+              <div class="tel-track"><div class="tel-fill" data-w="86"></div></div>
+            </div>            <div class="tel-row">
+              <div class="tel-head"><span>CV Research (ICASSP · PR · 2 Patents)</span><span>ARCHIVE</span></div>
+              <div class="tel-track"><div class="tel-fill" data-w="78"></div></div>
+            </div>
+          </div>
+          <a class="card-action" href="/about.html">完整履历与论文专利 →</a>
+        </article>
+
+        <article class="bento-card span-4 reveal">
+          <div class="bento-meta">
+            <span class="badge-muted">Academic · CQU (985)</span>
+            <span class="badge-muted">2019–2026</span>
+          </div>
+          <h3>教育与研究底色</h3>
+          <div class="cred-list">
+              <div class="cred-item">
+                <div class="cred-t">重庆大学（985）</div>
+                <div class="cred-s">计算机技术 · 硕士 | 2023.09 – 2026.06</div>
+                <div class="cred-s">GPA <em>3.59/4.0</em>；方向计算机视觉，毕业论文做半监督目标检测。</div>
+              </div>              <div class="cred-item">
+                <div class="cred-t">重庆大学（985）</div>
+                <div class="cred-s">计算机科学与技术 · 本科 | 2019.09 – 2023.06</div>
+                <div class="cred-s">GPA <em>3.46/4.0</em>；主修计算机组成原理、数据结构、计算机网络、操作系统。</div>
+              </div>
+          </div>
+          <a class="card-action" href="/about.html">更多关于我 →</a>
         </article>
       </div>
-      <p class="sec-more"><a href="/projects.html">全部项目 →</a></p>
     </div>
   </section>
 
-  <section id="writing">
+  <section class="section-block" id="writing">
     <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="sec-title">最近写的</h2>
-        <p class="sec-note">技术长文，不追热点，追把原理讲清楚</p>
+      <div class="section-bar reveal">
+        <div>
+          <p class="section-kicker">// Technical Log</p>
+          <h2 class="section-h">最近写的技术长文</h2>
+        </div>
+        <div class="filter-bar" role="group" aria-label="按主题筛选文章"><button type="button" class="filter-btn active" data-filter="all">全部 (2)</button><button type="button" class="filter-btn" data-filter="inference">本地推理栈 (1)</button><button type="button" class="filter-btn" data-filter="interp">权重与可解释性 (1)</button></div>
       </div>
-      <ul class="post-list">
-      <li class="post-item reveal" data-page-item>
-        <div class="post-date">2026-11-04</div>
-        <div>
-          <h3 class="post-h"><a href="/blog/jev-decision-model-amd-vulkan.html">Jev 决策模型在 AMD 卡上：能跑，但场景窄</a></h3>
-          <p class="post-sum">官方推理引擎只发了 CUDA 和 Metal，AMD 一行没有。我把它当普通模型喂给 llama.cpp，自己写了个 shim 补回 /v1/systemone 接口，然后拿 40 条真实快讯测它到底准不准、快不快，顺便把两条看起来最诱人的提速路线证伪了。</p>
-          <div class="post-tags"><span>决策模型</span><span>Jev</span><span>llama.cpp</span><span>约 7 分钟</span></div>
-        </div>
-      </li>
-      <li class="post-item reveal" data-page-item>
-        <div class="post-date">2026-11-03</div>
-        <div>
-          <h3 class="post-h"><a href="/blog/weight-space-programming-rsi.html">LLM 能改权重了，但它一次都没改过自己</a></h3>
-          <p class="post-sum">2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。这篇按三个连续问题读它的八个实验：实验究竟证明了什么、距离递归自我改进还缺什么、这项工作实际改变了什么。</p>
-          <div class="post-tags"><span>权重空间编程</span><span>递归自我改进</span><span>机制可解释性</span><span>约 11 分钟</span></div>
-        </div>
-      </li>
-      </ul>
-      <p class="sec-more"><a href="/blog/">全部文章 →</a></p>
+
+      <div class="log-list">
+        <article class="log-card reveal" data-cat="inference">
+          <div class="log-top"><span>2026-11-04</span><span>约 7 分钟</span></div>
+          <h3><a href="/blog/jev-decision-model-amd-vulkan.html">Jev 决策模型在 AMD 卡上：能跑，但场景窄</a></h3>
+          <p>官方推理引擎只发了 CUDA 和 Metal，AMD 一行没有。我把它当普通模型喂给 llama.cpp，自己写了个 shim 补回 /v1/systemone 接口，然后拿 40 条真实快讯测它到底准不准、快不快，顺便把两条看起来最诱人的提速路线证伪了。</p>
+          <div class="pill-row"><span class="pill">决策模型</span><span class="pill">Jev</span><span class="pill">llama.cpp</span></div>
+        </article>
+        <article class="log-card reveal" data-cat="interp">
+          <div class="log-top"><span>2026-11-03</span><span>约 11 分钟</span></div>
+          <h3><a href="/blog/weight-space-programming-rsi.html">LLM 能改权重了，但它一次都没改过自己</a></h3>
+          <p>2026 年 11 月那篇 Sparks of Weight-Space Programming 在文末把权重编辑接到了递归自我改进上。这篇按三个连续问题读它的八个实验：实验究竟证明了什么、距离递归自我改进还缺什么、这项工作实际改变了什么。</p>
+          <div class="pill-row"><span class="pill">权重空间编程</span><span class="pill">递归自我改进</span><span class="pill">机制可解释性</span></div>
+        </article>
+      </div>
     </div>
   </section>
 
 </main>
 
-<footer>
-  <div class="wrap foot-in">
-    <div class="foot-contact">
-      <a href="mailto:lvdifine@foxmail.com">lvdifine@foxmail.com</a>
-      <span class="sep">·</span>
+<footer class="site-footer">
+  <div class="wrap foot-grid">
+    <div class="foot-links">
+      <button type="button" id="copyMailBtn" data-mail="lvdifine@foxmail.com" title="点击复制邮箱">lvdifine@foxmail.com</button>
       <a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub</a>
-      <span class="sep">·</span>
       <a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">ResearchGate</a>
-      <span class="sep">·</span>
       <a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">Bilibili</a>
-      <span class="sep">·</span>
       <a href="/feed.xml">RSS</a>
     </div>
-    <p class="foot-meta">© <span id="year">2026</span> 吕迪 · LYU Di · 手写 HTML/CSS/JS</p>
+    <div>© <span id="year">2026</span> 吕迪 · LYU Di · // Handcrafted Zero-Framework</div>
   </div>
 </footer>
 <script src="/assets/site.js" defer></script>

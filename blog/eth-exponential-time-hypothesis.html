@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#f6f8fb">
 <title>ETH 被推翻后，哪些下界还站得住 — 吕迪</title>
 <meta name="description" content="把这次事件拆成三个问题来看：被推翻的确切是哪个命题，哪些结论以它为唯一前提，以及新算法自己能走多远。前两问决定要不要改手上的引用，第三问决定它是不是一个能用的算法。">
 <meta name="author" content="Di Lv (吕迪)">
 <link rel="canonical" href="https://lvdi-profile.vercel.app/blog/eth-exponential-time-hypothesis.html">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111111'/%3E%3Ctext x='16' y='23' font-family='-apple-system,Segoe UI,sans-serif' font-size='18' font-weight='600' fill='%23ffffff' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2305070c'/%3E%3Ctext x='16' y='23' font-family='ui-monospace,monospace' font-size='16' font-weight='700' fill='%2300e5a0' text-anchor='middle'%3Edi%3C/text%3E%3C/svg%3E">
 <link rel="alternate" type="application/atom+xml" title="吕迪 · 文章" href="/feed.xml">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ETH 被推翻后，哪些下界还站得住 — 吕迪">
@@ -22,23 +22,39 @@
 <meta property="og:image:alt" content="ETH 被推翻后，哪些下界还站得住 — 吕迪">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://lvdi-profile.vercel.app/assets/og/eth-exponential-time-hypothesis.png">
+<script>(function(){try{var s=localStorage.getItem('lvdi-theme');var t=(s==='dark'||s==='light')?s:(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#05070c':'#f6f8fb');}catch(e){}})();</script>
 <link rel="stylesheet" href="/assets/site.css">
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
 <a class="skip" href="#main">跳到主要内容</a>
 
-<header class="nav">
-  <div class="wrap nav-in">
-    <a class="brand" href="/">吕迪</a>
-    <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">菜单</button>
-    <nav id="nav" aria-label="页面导航">
-      <ul>
-        <li><a href="/">首页</a></li>
-        <li><a href="/about.html">关于</a></li>
-        <li><a href="/projects.html">项目</a></li>
-        <li><a href="/blog/" class="active" aria-current="page">文章</a></li>
+<header class="dock-wrap">
+  <div class="dock">
+    <a class="dock-brand" href="/">
+      <span class="dock-logo" aria-hidden="true">di</span>
+      <span>lvdi://shanghai</span>
+    </a>
+    <nav aria-label="主导航">
+      <ul class="dock-nav" id="dockNav">
+          <li><a href="/">首页</a></li>
+          <li><a href="/about.html">关于</a></li>
+          <li><a href="/projects.html">项目</a></li>
+          <li><a href="/blog/" class="active" aria-current="page">文章</a></li>
       </ul>
     </nav>
+    <div class="dock-right">
+      <span class="dock-clock" id="shClock" aria-label="上海时间">SHA --:--:--</span>
+      <button type="button" class="icon-btn cmd-btn" id="cmdOpen" aria-label="打开命令面板" title="快捷命令 (⌘K / Ctrl+K)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="cmd-txt">⌘K</span>
+      </button>
+      <button type="button" class="icon-btn theme-toggle" id="themeToggle" aria-label="切换明暗主题" title="切换明暗主题 (T)">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+      <button type="button" class="icon-btn dock-menu-btn" id="dockMenuBtn" aria-label="展开导航" aria-expanded="false">☰</button>
+    </div>
   </div>
 </header>
 
@@ -164,20 +180,16 @@
 
 </main>
 
-<footer>
-  <div class="wrap foot-in">
-    <div class="foot-contact">
-      <a href="mailto:lvdifine@foxmail.com">lvdifine@foxmail.com</a>
-      <span class="sep">·</span>
+<footer class="site-footer">
+  <div class="wrap foot-grid">
+    <div class="foot-links">
+      <button type="button" id="copyMailBtn" data-mail="lvdifine@foxmail.com" title="点击复制邮箱">lvdifine@foxmail.com</button>
       <a href="https://github.com/Aression" target="_blank" rel="noopener">GitHub</a>
-      <span class="sep">·</span>
       <a href="https://www.researchgate.net/profile/Di-Lv-6" target="_blank" rel="noopener">ResearchGate</a>
-      <span class="sep">·</span>
       <a href="https://space.bilibili.com/7676105" target="_blank" rel="noopener">Bilibili</a>
-      <span class="sep">·</span>
       <a href="/feed.xml">RSS</a>
     </div>
-    <p class="foot-meta">© <span id="year">2026</span> 吕迪 · LYU Di · 手写 HTML/CSS/JS</p>
+    <div>© <span id="year">2026</span> 吕迪 · LYU Di · // Handcrafted Zero-Framework</div>
   </div>
 </footer>
 <script src="/assets/site.js" defer></script>
